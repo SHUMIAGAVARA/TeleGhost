@@ -1083,7 +1083,13 @@
     color: var(--text-secondary);
   }
 
-  .no-chat-logo img { width: 150px; height: 150px; opacity: 0.5; }
+  .no-chat-logo img { 
+    width: 150px; 
+    height: 150px; 
+    opacity: 0.7; 
+    border-radius: 50%; 
+    object-fit: cover;
+  }
   .no-chat h2 { color: var(--text-primary); font-size: 28px; }
 
   /* === Scrollbar === */

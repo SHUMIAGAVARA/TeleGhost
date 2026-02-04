@@ -3,6 +3,8 @@ module teleghost
 go 1.24.0
 
 require (
+	github.com/go-i2p/i2pkeys v0.0.0-20241108200332-e4f5ccdff8c4
+	github.com/go-i2p/sam3 v0.33.92
 	github.com/google/uuid v1.6.0
 	github.com/mattn/go-sqlite3 v1.14.33
 	github.com/tyler-smith/go-bip39 v1.1.0
@@ -29,6 +31,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/samber/lo v1.49.1 // indirect
+	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/tkrajina/go-reflector v0.5.8 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect

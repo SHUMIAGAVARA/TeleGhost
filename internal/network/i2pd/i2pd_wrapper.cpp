@@ -45,7 +45,7 @@ void i2pd_init(const char *datadir, int sam_enabled, int sam_port) {
 
   // SAM configuration
   if (sam_enabled) {
-    args_storage.push_back("--sam.enabled=true");
+    // args_storage.push_back("--sam.enabled=true");
     args_storage.push_back("--sam.address=127.0.0.1");
     args_storage.push_back("--sam.port=" + std::to_string(sam_port));
   } else {

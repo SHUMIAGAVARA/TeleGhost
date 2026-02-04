@@ -13,6 +13,7 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <vector>
 
 // i2pd includes
 #include "ClientContext.h"
@@ -32,48 +33,55 @@ extern "C" {
 void i2pd_init(const char *datadir, int sam_enabled, int sam_port) {
   g_datadir = datadir ? datadir : ".i2pd";
 
-  // Prepare arguments for i2pd
-  std::vector<const char *> args;
-  args.push_back("teleghost"); // argv[0]
+  // Storage for strings to ensure they stay alive until InitI2P call
+  static std::vector<std::string> args_storage;
+  args_storage.clear();
 
-  std::string datadir_arg = "--datadir=" + g_datadir;
-  args.push_back(datadir_arg.c_str());
+  // Prepare arguments for i2pd
+  args_storage.push_back("teleghost"); // argv[0]
+
+  args_storage.push_back("--datadir=" + g_datadir);
 
   // SAM configuration
   if (sam_enabled) {
-    args.push_back("--sam.enabled=true");
-    std::string sam_port_arg = "--sam.port=" + std::to_string(sam_port);
-    args.push_back(sam_port_arg.c_str());
+    args_storage.push_back("--sam.enabled=true");
+    args_storage.push_back("--sam.port=" + std::to_string(sam_port));
   } else {
-    args.push_back("--sam.enabled=false");
+    args_storage.push_back("--sam.enabled=false");
   }
 
   // Enable NTCP2 and SSU2 for NAT traversal
-  args.push_back("--ntcp2.enabled=true");
-  args.push_back("--ssu2.enabled=true");
+  args_storage.push_back("--ntcp2.enabled=true");
+  args_storage.push_back("--ssu2.enabled=true");
 
   // Disable HTTP console and other services we don't need
-  args.push_back("--http.enabled=false");
-  args.push_back("--httpproxy.enabled=false");
-  args.push_back("--socksproxy.enabled=false");
-  args.push_back("--bob.enabled=false");
-  args.push_back("--i2cp.enabled=false");
-  args.push_back("--i2pcontrol.enabled=false");
+  args_storage.push_back("--http.enabled=false");
+  args_storage.push_back("--httpproxy.enabled=false");
+  args_storage.push_back("--socksproxy.enabled=false");
+  args_storage.push_back("--bob.enabled=false");
+  args_storage.push_back("--i2cp.enabled=false");
+  args_storage.push_back("--i2pcontrol.enabled=false");
 
   // Floodfill off for client mode
-  args.push_back("--floodfill=false");
+  // args_storage.push_back("--floodfill=false"); // Error: does not take
+  // arguments (implicit false)
 
   // Logging
-  args.push_back("--log=file");
-  std::string log_arg = "--logfile=" + g_datadir + "/i2pd.log";
-  args.push_back(log_arg.c_str());
-  args.push_back("--loglevel=warn");
+  args_storage.push_back("--log=file");
+  args_storage.push_back("--logfile=" + g_datadir + "/i2pd.log");
+  args_storage.push_back("--loglevel=warn");
 
   // Bandwidth settings for faster bootstrap
-  args.push_back("--bandwidth=O"); // 256 Kbps
+  args_storage.push_back("--bandwidth=O"); // 256 Kbps
+
+  // Create argv pointers
+  std::vector<char *> args_ptrs;
+  for (auto &arg : args_storage) {
+    args_ptrs.push_back(const_cast<char *>(arg.c_str()));
+  }
 
   // Initialize i2pd
-  i2p::api::InitI2P(args.size(), const_cast<char **>(args.data()), "TeleGhost");
+  i2p::api::InitI2P(args_ptrs.size(), args_ptrs.data(), "TeleGhost");
 }
 
 // Start i2pd router

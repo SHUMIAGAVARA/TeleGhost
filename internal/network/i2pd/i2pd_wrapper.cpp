@@ -10,6 +10,7 @@
 #include <atomic>
 #include <cstring>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <thread>
@@ -45,6 +46,7 @@ void i2pd_init(const char *datadir, int sam_enabled, int sam_port) {
   // SAM configuration
   if (sam_enabled) {
     args_storage.push_back("--sam.enabled=true");
+    args_storage.push_back("--sam.address=127.0.0.1");
     args_storage.push_back("--sam.port=" + std::to_string(sam_port));
   } else {
     args_storage.push_back("--sam.enabled=false");
@@ -75,9 +77,12 @@ void i2pd_init(const char *datadir, int sam_enabled, int sam_port) {
 
   // Create argv pointers
   std::vector<char *> args_ptrs;
+  std::cout << "DEBUG: i2pd args:" << std::endl;
   for (auto &arg : args_storage) {
     args_ptrs.push_back(const_cast<char *>(arg.c_str()));
+    std::cout << "  " << arg << std::endl;
   }
+  std::cout << "-----------------" << std::endl;
 
   // Initialize i2pd
   i2p::api::InitI2P(args_ptrs.size(), args_ptrs.data(), "TeleGhost");

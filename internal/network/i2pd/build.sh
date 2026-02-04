@@ -93,14 +93,14 @@ cmake -DWITH_STATIC=ON \
       ..
 
 # Build
-make -j$(nproc) libi2pd
+make -j$(nproc) libi2pd libi2pdclient libi2pdlang
 
 echo "Built ✓"
 
 # Copy library to current directory for CGO
-cp libi2pd.a "$SCRIPT_DIR/"
+cp libi2pd.a libi2pdclient.a libi2pdlang.a "$SCRIPT_DIR/"
 
-echo "Built libi2pd.a ✓"
+echo "Built libi2pd libraries ✓"
 
 echo ""
 echo "=== Build Complete ==="

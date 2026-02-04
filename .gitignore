@@ -1,0 +1,49 @@
+# Wails build output
+build/bin
+build/darwin
+build/windows
+build/linux
+
+# Frontend
+node_modules
+frontend/dist
+frontend/build
+frontend/.svelte-kit
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TeleGhost specific
+.teleghost/
+*.db
+*.db-shm
+*.db-wal
+
+# I2P data
+i2p/
+netDb/
+peerProfiles/
+
+# Secrets (ВАЖНО!)
+*.key
+*.pem
+mnemonic.txt
+private_keys/

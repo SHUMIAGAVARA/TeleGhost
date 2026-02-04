@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package teleghost;
+
+option go_package = "github.com/teleghost/internal/proto;proto";
+
+// PacketType определяет тип пакета
+enum PacketType {
+  PACKET_TYPE_UNSPECIFIED = 0;
+  HEARTBEAT = 1;         // Keep-alive сигнал
+  TEXT_MESSAGE = 2;      // Текстовое сообщение
+  PROFILE_UPDATE = 3;    // Обновление профиля
+  HANDSHAKE = 4;         // Рукопожатие для установки соединения
+}
+
+// Packet — универсальная обёртка для всех сообщений в сети
+message Packet {
+  // Версия протокола для обратной совместимости
+  uint32 version = 1;
+  
+  // Тип содержимого пакета
+  PacketType type = 2;
+  
+  // Публичный ключ отправителя (Ed25519, 32 bytes)
+  bytes sender_pub_key = 3;
+  
+  // Подпись payload (Ed25519 signature, 64 bytes)
+  bytes signature = 4;
+  
+  // Зашифрованное/сериализованное содержимое (в зависимости от type)
+  bytes payload = 5;
+}
+
+// TextMessage — текстовое сообщение в чате
+message TextMessage {
+  // Уникальный ID чата (обычно hash публичных ключей обоих участников)
+  string chat_id = 1;
+  
+  // Содержимое сообщения (UTF-8)
+  string content = 2;
+  
+  // Unix timestamp в миллисекундах
+  int64 timestamp = 3;
+  
+  // Уникальный ID сообщения (UUID)
+  string message_id = 4;
+}
+
+// ProfileUpdate — обновление профиля пользователя
+message ProfileUpdate {
+  // Никнейм пользователя (max 64 символа)
+  string nickname = 1;
+  
+  // Описание/био (max 256 символов)
+  string bio = 2;
+  
+  // Аватар (сжатое изображение, max 64KB, WebP/JPEG)
+  bytes avatar = 3;
+}
+
+// Handshake — начало сессии между двумя пирами
+message Handshake {
+  // Публичный ключ инициатора
+  bytes initiator_pub_key = 1;
+  
+  // Временный ключ для ECDH (X25519)
+  bytes ephemeral_pub_key = 2;
+  
+  // Nonce для предотвращения replay атак
+  bytes nonce = 3;
+  
+  // Timestamp для проверки свежести
+  int64 timestamp = 4;
+}

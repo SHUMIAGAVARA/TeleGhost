@@ -66,10 +66,9 @@ void i2pd_init(const char *datadir, int sam_enabled, int sam_port) {
   // args_storage.push_back("--floodfill=false"); // Error: does not take
   // arguments (implicit false)
 
-  // Logging
-  args_storage.push_back("--log=file");
-  args_storage.push_back("--logfile=" + g_datadir + "/i2pd.log");
-  args_storage.push_back("--loglevel=warn");
+  // Logging to stdout for debugging
+  args_storage.push_back("--log=stdout");
+  args_storage.push_back("--loglevel=info");
 
   // Bandwidth settings for faster bootstrap
   args_storage.push_back("--bandwidth=O"); // 256 Kbps

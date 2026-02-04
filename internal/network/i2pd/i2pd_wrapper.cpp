@@ -53,27 +53,27 @@ void i2pd_init(const char *datadir, int sam_enabled, int sam_port) {
   }
 
   // Enable NTCP2 and SSU2 for NAT traversal
-  args_storage.push_back("--ntcp2.enabled=true");
-  args_storage.push_back("--ssu2.enabled=true");
+  // args_storage.push_back("--ntcp2.enabled=true");
+  // args_storage.push_back("--ssu2.enabled=true");
 
   // Disable HTTP console and other services we don't need
-  args_storage.push_back("--http.enabled=false");
-  args_storage.push_back("--httpproxy.enabled=false");
-  args_storage.push_back("--socksproxy.enabled=false");
-  args_storage.push_back("--bob.enabled=false");
-  args_storage.push_back("--i2cp.enabled=false");
-  args_storage.push_back("--i2pcontrol.enabled=false");
+  // args_storage.push_back("--http.enabled=false");
+  // args_storage.push_back("--httpproxy.enabled=false");
+  // args_storage.push_back("--socksproxy.enabled=false");
+  // args_storage.push_back("--bob.enabled=false");
+  // args_storage.push_back("--i2cp.enabled=false");
+  // args_storage.push_back("--i2pcontrol.enabled=false");
 
   // Floodfill off for client mode
   // args_storage.push_back("--floodfill=false"); // Error: does not take
   // arguments (implicit false)
 
   // Logging to stdout for debugging
-  args_storage.push_back("--log=stdout");
+  // args_storage.push_back("--log=stdout");
   args_storage.push_back("--loglevel=info");
 
   // Bandwidth settings for faster bootstrap
-  args_storage.push_back("--bandwidth=O"); // 256 Kbps
+  // args_storage.push_back("--bandwidth=O"); // 256 Kbps
 
   // Create argv pointers
   std::vector<char *> args_ptrs;

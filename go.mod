@@ -2,7 +2,10 @@ module teleghost
 
 go 1.23
 
-require github.com/wailsapp/wails/v2 v2.11.0
+require (
+	github.com/wailsapp/wails/v2 v2.11.0
+	google.golang.org/protobuf v1.36.11
+)
 
 require (
 	github.com/bep/debounce v1.2.1 // indirect

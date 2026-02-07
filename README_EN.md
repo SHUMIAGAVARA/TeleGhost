@@ -8,12 +8,34 @@
 
 ### ✨ Features
 
-- **Out-of-the-box Anonymity**: All traffic goes through the I2P network, hiding your real IP address.
+- **Out-of-the-box Anonymity**: All traffic goes through the embedded **i2pd** node, hiding your real IP address.
 - **End-to-End Encryption (E2EE)**: Your messages can only be read by you and your recipient.
 - **Chat Folders**: Organize your contacts exactly how you want. Now with custom emoji support!
-- **Avatars & Profiles**: Personalize your account; your data syncs with contacts via I2P.
+- **Avatars & Profiles**: Personalize your account; your data syncs with contacts via I2P (in real-time).
 - **Fast Search**: Find the right chats and messages instantly.
 - **Premium UI**: Modern design with dark mode and smooth animations.
+
+## 🗺 Roadmap
+
+### Phase 1: Rich Media (In Progress)
+- **Voice Messages**: Opus compression + chunked delivery for I2P stability.
+- **Files & Photos**: On-client compression and Resume capability for file transfers.
+- **Local Security**: Full SQLite database encryption using a key derived from your Seed phrase.
+
+### Phase 2: GhostMail & Federation
+- **Offline Delivery**: Hybrid P2P + Home Server (Store-and-Forward) architecture.
+- **Server Federation**: Encrypted mail exchange between trusted nodes.
+- **Anti-Spam**: Proof-of-Work (RandomX/SHA) implementation for unknown senders.
+
+### Phase 3: Real-Time & Modes
+- **Calls**: Audio calls via UDP (SSU2) support.
+- **Security Profiles**: On-the-fly tunnel mode switching (🚀 **Fast**, 🛡️ **Default**, 👻 **Invisible**).
+
+### Phase 4: Ecosystem
+- **Gateways**: Email gateways to the clear web via PoW payment.
+- **Mobile**: Core engine porting to Android (Gomobile).
+- **Fidonet 2.0**: A network of transit nodes to ensure unblockable communication.
+
 
 ---
 

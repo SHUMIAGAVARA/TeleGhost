@@ -2,6 +2,7 @@
 build/bin
 build/darwin
 build/windows
+!build/windows/icon.ico
 build/linux
 
 # Frontend
@@ -47,3 +48,11 @@ peerProfiles/
 *.pem
 mnemonic.txt
 private_keys/
+
+# AI & Testing Metafiles (Internal)
+ai-context.md
+TESTING.md
+TEST_REPORT.md
+task.md
+implementation_plan.md
+walkthrough.md

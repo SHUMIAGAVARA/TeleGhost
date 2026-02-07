@@ -106,8 +106,8 @@ jobs:
           # Ensure Go bin is in path for Wails
           export PATH=$PATH:$(go env GOPATH)/bin
           
-          # Build with cgo_i2pd
-          wails build -tags cgo_i2pd -platform windows/amd64
+          # Build with cgo_i2pd and static linking
+          wails build -tags cgo_i2pd -platform windows/amd64 -ldflags '-extldflags "-static"'
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

@@ -22,10 +22,13 @@ cd "$I2PD_DIR/build"
 rm -rf obj && mkdir -p obj && cd obj
 
 echo "Configuring for Windows (MinGW64)..."
-cmake -DWITH_STATIC=ON \
+cmake -G "MinGW Makefiles" \
+      -DWITH_STATIC=ON \
       -DWITH_BINARY=OFF \
       -DWITH_UPNP=OFF \
       -DCMAKE_BUILD_TYPE=Release \
+      -DOPENSSL_USE_STATIC_LIBS=ON \
+      -DBOOST_STATIC=ON \
       ..
 
 echo "Building targets..."

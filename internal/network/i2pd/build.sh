@@ -57,14 +57,16 @@ fi
 
 echo "All dependencies installed ✓"
 
-# Clone i2pd if not exists
+# Clone i2pd if not exists or is incomplete
 echo ""
 echo "[2/4] Cloning i2pd repository..."
-if [ ! -d "$I2PD_DIR" ]; then
+if [ ! -d "$I2PD_DIR/.git" ] || [ ! -f "$I2PD_DIR/build/CMakeLists.txt" ]; then
+    echo "i2pd directory is missing, incomplete, or not a git repo. Cleaning and cloning fresh..."
+    rm -rf "$I2PD_DIR"
     git clone --depth 1 https://github.com/PurpleI2P/i2pd.git "$I2PD_DIR"
     echo "Cloned ✓"
 else
-    echo "Already exists, pulling latest..."
+    echo "Repository exists, pulling latest..."
     cd "$I2PD_DIR" && git pull && cd "$SCRIPT_DIR"
     echo "Updated ✓"
 fi

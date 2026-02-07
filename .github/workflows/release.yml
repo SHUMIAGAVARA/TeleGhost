@@ -41,7 +41,7 @@ jobs:
 
       - name: Build Wails App
         run: |
-          export CGO_LDFLAGS_ALLOW=".*"
+          export CGO_LDFLAGS_ALLOW="-Wl,--whole-archive|-Wl,--no-whole-archive|-Wl,--start-group|-Wl,--end-group"
           wails build -tags cgo_i2pd -platform linux/amd64
 
       - name: Rename and Prepare Binary
@@ -102,6 +102,7 @@ jobs:
       - name: Build Wails App
         shell: msys2 {0}
         run: |
+          export CGO_LDFLAGS_ALLOW="-Wl,--whole-archive|-Wl,--no-whole-archive"
           # Ensure Go bin is in path for Wails
           export PATH=$PATH:$(go env GOPATH)/bin
           

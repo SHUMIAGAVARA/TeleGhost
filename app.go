@@ -28,8 +28,15 @@ import (
 
 	"bytes"
 	"image"
+	_ "image/gif"
 	_ "image/jpeg"
 	"image/png"
+
+	_ "golang.org/x/image/bmp"
+	_ "golang.org/x/image/tiff"
+	_ "golang.org/x/image/webp"
+
+	"github.com/nfnt/resize"
 )
 
 // NetworkStatus статус подключения к I2P
@@ -1333,4 +1340,29 @@ func (a *App) CopyImageToClipboard(path string) error {
 	// Write to clipboard
 	clipboard.Write(clipboard.FmtImage, buf.Bytes())
 	return nil
+}
+
+// GetImageThumbnail создает уменьшенную копию изображения и возвращает base64
+func (a *App) GetImageThumbnail(path string, width, height uint) (string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return "", err
+	}
+
+	// Bilinear resampling for speed
+	m := resize.Thumbnail(width, height, img, resize.Bilinear)
+
+	var buf bytes.Buffer
+	err = png.Encode(&buf, m)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
 }

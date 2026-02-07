@@ -13,6 +13,7 @@ enum PacketType {
   HANDSHAKE = 4;         // Рукопожатие для установки соединения
   MESSAGE_EDIT = 5;      // Редактирование сообщения
   MESSAGE_DELETE = 6;    // Удаление сообщения
+  PROFILE_REQUEST = 7;   // Запрос обновления профиля
 }
 
 // Packet — универсальная обёртка для всех сообщений в сети
@@ -33,6 +34,18 @@ message Packet {
   bytes payload = 5;
 }
 
+// Attachment — вложение к сообщению (изображение, файл)
+message Attachment {
+  string id = 1;
+  string filename = 2;
+  string mime_type = 3;
+  int64 size = 4;
+  bytes data = 5;        // Данные файла
+  bool is_compressed = 6; // true если это сжатая версия
+  int32 width = 7;       // Ширина (для изображений)
+  int32 height = 8;      // Высота (для изображений)
+}
+
 // TextMessage — текстовое сообщение в чате
 message TextMessage {
   // Уникальный ID чата (обычно hash публичных ключей обоих участников)
@@ -46,6 +59,9 @@ message TextMessage {
   
   // Уникальный ID сообщения (UUID)
   string message_id = 4;
+
+  // Вложения
+  repeated Attachment attachments = 5;
 }
 
 // ProfileUpdate — обновление профиля пользователя

@@ -151,6 +151,22 @@ type Message struct {
 
 	// UpdatedAt — время последнего обновления (статус и т.д.)
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+
+	// Attachments — список вложений
+	Attachments []*Attachment `json:"attachments,omitempty" db:"-"`
+}
+
+// Attachment представляет вложение (файл/изображение)
+type Attachment struct {
+	ID           string `json:"id" db:"id"`
+	MessageID    string `json:"message_id" db:"message_id"`
+	Filename     string `json:"filename" db:"filename"`
+	MimeType     string `json:"mime_type" db:"mime_type"`
+	Size         int64  `json:"size" db:"size"`
+	LocalPath    string `json:"local_path" db:"local_path"`
+	IsCompressed bool   `json:"is_compressed" db:"is_compressed"`
+	Width        int    `json:"width,omitempty" db:"width"`
+	Height       int    `json:"height,omitempty" db:"height"`
 }
 
 // Chat представляет чат (диалог) с контактом

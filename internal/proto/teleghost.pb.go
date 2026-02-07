@@ -32,6 +32,7 @@ const (
 	PacketType_HANDSHAKE               PacketType = 4 // Рукопожатие для установки соединения
 	PacketType_MESSAGE_EDIT            PacketType = 5 // Редактирование сообщения
 	PacketType_MESSAGE_DELETE          PacketType = 6 // Удаление сообщения
+	PacketType_PROFILE_REQUEST         PacketType = 7 // Запрос обновления профиля
 )
 
 // Enum value maps for PacketType.
@@ -44,6 +45,7 @@ var (
 		4: "HANDSHAKE",
 		5: "MESSAGE_EDIT",
 		6: "MESSAGE_DELETE",
+		7: "PROFILE_REQUEST",
 	}
 	PacketType_value = map[string]int32{
 		"PACKET_TYPE_UNSPECIFIED": 0,
@@ -53,6 +55,7 @@ var (
 		"HANDSHAKE":               4,
 		"MESSAGE_EDIT":            5,
 		"MESSAGE_DELETE":          6,
+		"PROFILE_REQUEST":         7,
 	}
 )
 
@@ -165,6 +168,107 @@ func (x *Packet) GetPayload() []byte {
 	return nil
 }
 
+// Attachment — вложение к сообщению (изображение, файл)
+type Attachment struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Filename      string                 `protobuf:"bytes,2,opt,name=filename,proto3" json:"filename,omitempty"`
+	MimeType      string                 `protobuf:"bytes,3,opt,name=mime_type,json=mimeType,proto3" json:"mime_type,omitempty"`
+	Size          int64                  `protobuf:"varint,4,opt,name=size,proto3" json:"size,omitempty"`
+	Data          []byte                 `protobuf:"bytes,5,opt,name=data,proto3" json:"data,omitempty"`                                      // Данные файла
+	IsCompressed  bool                   `protobuf:"varint,6,opt,name=is_compressed,json=isCompressed,proto3" json:"is_compressed,omitempty"` // true если это сжатая версия
+	Width         int32                  `protobuf:"varint,7,opt,name=width,proto3" json:"width,omitempty"`                                   // Ширина (для изображений)
+	Height        int32                  `protobuf:"varint,8,opt,name=height,proto3" json:"height,omitempty"`                                 // Высота (для изображений)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Attachment) Reset() {
+	*x = Attachment{}
+	mi := &file_proto_teleghost_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Attachment) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Attachment) ProtoMessage() {}
+
+func (x *Attachment) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_teleghost_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Attachment.ProtoReflect.Descriptor instead.
+func (*Attachment) Descriptor() ([]byte, []int) {
+	return file_proto_teleghost_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Attachment) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Attachment) GetFilename() string {
+	if x != nil {
+		return x.Filename
+	}
+	return ""
+}
+
+func (x *Attachment) GetMimeType() string {
+	if x != nil {
+		return x.MimeType
+	}
+	return ""
+}
+
+func (x *Attachment) GetSize() int64 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+func (x *Attachment) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *Attachment) GetIsCompressed() bool {
+	if x != nil {
+		return x.IsCompressed
+	}
+	return false
+}
+
+func (x *Attachment) GetWidth() int32 {
+	if x != nil {
+		return x.Width
+	}
+	return 0
+}
+
+func (x *Attachment) GetHeight() int32 {
+	if x != nil {
+		return x.Height
+	}
+	return 0
+}
+
 // TextMessage — текстовое сообщение в чате
 type TextMessage struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -175,14 +279,16 @@ type TextMessage struct {
 	// Unix timestamp в миллисекундах
 	Timestamp int64 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	// Уникальный ID сообщения (UUID)
-	MessageId     string `protobuf:"bytes,4,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+	MessageId string `protobuf:"bytes,4,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+	// Вложения
+	Attachments   []*Attachment `protobuf:"bytes,5,rep,name=attachments,proto3" json:"attachments,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *TextMessage) Reset() {
 	*x = TextMessage{}
-	mi := &file_proto_teleghost_proto_msgTypes[1]
+	mi := &file_proto_teleghost_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -194,7 +300,7 @@ func (x *TextMessage) String() string {
 func (*TextMessage) ProtoMessage() {}
 
 func (x *TextMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_teleghost_proto_msgTypes[1]
+	mi := &file_proto_teleghost_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -207,7 +313,7 @@ func (x *TextMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TextMessage.ProtoReflect.Descriptor instead.
 func (*TextMessage) Descriptor() ([]byte, []int) {
-	return file_proto_teleghost_proto_rawDescGZIP(), []int{1}
+	return file_proto_teleghost_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *TextMessage) GetChatId() string {
@@ -238,6 +344,13 @@ func (x *TextMessage) GetMessageId() string {
 	return ""
 }
 
+func (x *TextMessage) GetAttachments() []*Attachment {
+	if x != nil {
+		return x.Attachments
+	}
+	return nil
+}
+
 // ProfileUpdate — обновление профиля пользователя
 type ProfileUpdate struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -253,7 +366,7 @@ type ProfileUpdate struct {
 
 func (x *ProfileUpdate) Reset() {
 	*x = ProfileUpdate{}
-	mi := &file_proto_teleghost_proto_msgTypes[2]
+	mi := &file_proto_teleghost_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -265,7 +378,7 @@ func (x *ProfileUpdate) String() string {
 func (*ProfileUpdate) ProtoMessage() {}
 
 func (x *ProfileUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_teleghost_proto_msgTypes[2]
+	mi := &file_proto_teleghost_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -278,7 +391,7 @@ func (x *ProfileUpdate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProfileUpdate.ProtoReflect.Descriptor instead.
 func (*ProfileUpdate) Descriptor() ([]byte, []int) {
-	return file_proto_teleghost_proto_rawDescGZIP(), []int{2}
+	return file_proto_teleghost_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ProfileUpdate) GetNickname() string {
@@ -316,14 +429,16 @@ type Handshake struct {
 	// Никнейм отправителя (для отображения в UI)
 	Nickname string `protobuf:"bytes,5,opt,name=nickname,proto3" json:"nickname,omitempty"`
 	// I2P адрес отправителя (для обратной связи)
-	I2PAddress    string `protobuf:"bytes,6,opt,name=i2p_address,json=i2pAddress,proto3" json:"i2p_address,omitempty"`
+	I2PAddress string `protobuf:"bytes,6,opt,name=i2p_address,json=i2pAddress,proto3" json:"i2p_address,omitempty"`
+	// Аватар отправителя (сжатое изображение)
+	Avatar        []byte `protobuf:"bytes,7,opt,name=avatar,proto3" json:"avatar,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Handshake) Reset() {
 	*x = Handshake{}
-	mi := &file_proto_teleghost_proto_msgTypes[3]
+	mi := &file_proto_teleghost_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -335,7 +450,7 @@ func (x *Handshake) String() string {
 func (*Handshake) ProtoMessage() {}
 
 func (x *Handshake) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_teleghost_proto_msgTypes[3]
+	mi := &file_proto_teleghost_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -348,7 +463,7 @@ func (x *Handshake) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Handshake.ProtoReflect.Descriptor instead.
 func (*Handshake) Descriptor() ([]byte, []int) {
-	return file_proto_teleghost_proto_rawDescGZIP(), []int{3}
+	return file_proto_teleghost_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Handshake) GetInitiatorPubKey() []byte {
@@ -393,6 +508,13 @@ func (x *Handshake) GetI2PAddress() string {
 	return ""
 }
 
+func (x *Handshake) GetAvatar() []byte {
+	if x != nil {
+		return x.Avatar
+	}
+	return nil
+}
+
 // MessageEdit — редактирование существующего сообщения
 type MessageEdit struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -410,7 +532,7 @@ type MessageEdit struct {
 
 func (x *MessageEdit) Reset() {
 	*x = MessageEdit{}
-	mi := &file_proto_teleghost_proto_msgTypes[4]
+	mi := &file_proto_teleghost_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -422,7 +544,7 @@ func (x *MessageEdit) String() string {
 func (*MessageEdit) ProtoMessage() {}
 
 func (x *MessageEdit) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_teleghost_proto_msgTypes[4]
+	mi := &file_proto_teleghost_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -435,7 +557,7 @@ func (x *MessageEdit) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MessageEdit.ProtoReflect.Descriptor instead.
 func (*MessageEdit) Descriptor() ([]byte, []int) {
-	return file_proto_teleghost_proto_rawDescGZIP(), []int{4}
+	return file_proto_teleghost_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *MessageEdit) GetMessageId() string {
@@ -483,7 +605,7 @@ type MessageDelete struct {
 
 func (x *MessageDelete) Reset() {
 	*x = MessageDelete{}
-	mi := &file_proto_teleghost_proto_msgTypes[5]
+	mi := &file_proto_teleghost_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -495,7 +617,7 @@ func (x *MessageDelete) String() string {
 func (*MessageDelete) ProtoMessage() {}
 
 func (x *MessageDelete) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_teleghost_proto_msgTypes[5]
+	mi := &file_proto_teleghost_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -508,7 +630,7 @@ func (x *MessageDelete) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MessageDelete.ProtoReflect.Descriptor instead.
 func (*MessageDelete) Descriptor() ([]byte, []int) {
-	return file_proto_teleghost_proto_rawDescGZIP(), []int{5}
+	return file_proto_teleghost_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *MessageDelete) GetMessageId() string {
@@ -549,17 +671,28 @@ const file_proto_teleghost_proto_rawDesc = "" +
 	"\x04type\x18\x02 \x01(\x0e2\x15.teleghost.PacketTypeR\x04type\x12$\n" +
 	"\x0esender_pub_key\x18\x03 \x01(\fR\fsenderPubKey\x12\x1c\n" +
 	"\tsignature\x18\x04 \x01(\fR\tsignature\x12\x18\n" +
-	"\apayload\x18\x05 \x01(\fR\apayload\"}\n" +
+	"\apayload\x18\x05 \x01(\fR\apayload\"\xd0\x01\n" +
+	"\n" +
+	"Attachment\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
+	"\bfilename\x18\x02 \x01(\tR\bfilename\x12\x1b\n" +
+	"\tmime_type\x18\x03 \x01(\tR\bmimeType\x12\x12\n" +
+	"\x04size\x18\x04 \x01(\x03R\x04size\x12\x12\n" +
+	"\x04data\x18\x05 \x01(\fR\x04data\x12#\n" +
+	"\ris_compressed\x18\x06 \x01(\bR\fisCompressed\x12\x14\n" +
+	"\x05width\x18\a \x01(\x05R\x05width\x12\x16\n" +
+	"\x06height\x18\b \x01(\x05R\x06height\"\xb6\x01\n" +
 	"\vTextMessage\x12\x17\n" +
 	"\achat_id\x18\x01 \x01(\tR\x06chatId\x12\x18\n" +
 	"\acontent\x18\x02 \x01(\tR\acontent\x12\x1c\n" +
 	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\x12\x1d\n" +
 	"\n" +
-	"message_id\x18\x04 \x01(\tR\tmessageId\"U\n" +
+	"message_id\x18\x04 \x01(\tR\tmessageId\x127\n" +
+	"\vattachments\x18\x05 \x03(\v2\x15.teleghost.AttachmentR\vattachments\"U\n" +
 	"\rProfileUpdate\x12\x1a\n" +
 	"\bnickname\x18\x01 \x01(\tR\bnickname\x12\x10\n" +
 	"\x03bio\x18\x02 \x01(\tR\x03bio\x12\x16\n" +
-	"\x06avatar\x18\x03 \x01(\fR\x06avatar\"\xd4\x01\n" +
+	"\x06avatar\x18\x03 \x01(\fR\x06avatar\"\xec\x01\n" +
 	"\tHandshake\x12*\n" +
 	"\x11initiator_pub_key\x18\x01 \x01(\fR\x0finitiatorPubKey\x12*\n" +
 	"\x11ephemeral_pub_key\x18\x02 \x01(\fR\x0fephemeralPubKey\x12\x14\n" +
@@ -567,7 +700,8 @@ const file_proto_teleghost_proto_rawDesc = "" +
 	"\ttimestamp\x18\x04 \x01(\x03R\ttimestamp\x12\x1a\n" +
 	"\bnickname\x18\x05 \x01(\tR\bnickname\x12\x1f\n" +
 	"\vi2p_address\x18\x06 \x01(\tR\n" +
-	"i2pAddress\"\x84\x01\n" +
+	"i2pAddress\x12\x16\n" +
+	"\x06avatar\x18\a \x01(\fR\x06avatar\"\x84\x01\n" +
 	"\vMessageEdit\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x01 \x01(\tR\tmessageId\x12\x1f\n" +
@@ -580,7 +714,7 @@ const file_proto_teleghost_proto_rawDesc = "" +
 	"message_id\x18\x01 \x01(\tR\tmessageId\x12\x1c\n" +
 	"\ttimestamp\x18\x02 \x01(\x03R\ttimestamp\x12\x17\n" +
 	"\achat_id\x18\x03 \x01(\tR\x06chatId\x12$\n" +
-	"\x0edelete_for_all\x18\x04 \x01(\bR\fdeleteForAll*\x93\x01\n" +
+	"\x0edelete_for_all\x18\x04 \x01(\bR\fdeleteForAll*\xa8\x01\n" +
 	"\n" +
 	"PacketType\x12\x1b\n" +
 	"\x17PACKET_TYPE_UNSPECIFIED\x10\x00\x12\r\n" +
@@ -589,7 +723,8 @@ const file_proto_teleghost_proto_rawDesc = "" +
 	"\x0ePROFILE_UPDATE\x10\x03\x12\r\n" +
 	"\tHANDSHAKE\x10\x04\x12\x10\n" +
 	"\fMESSAGE_EDIT\x10\x05\x12\x12\n" +
-	"\x0eMESSAGE_DELETE\x10\x06B+Z)github.com/teleghost/internal/proto;protob\x06proto3"
+	"\x0eMESSAGE_DELETE\x10\x06\x12\x13\n" +
+	"\x0fPROFILE_REQUEST\x10\aB+Z)github.com/teleghost/internal/proto;protob\x06proto3"
 
 var (
 	file_proto_teleghost_proto_rawDescOnce sync.Once
@@ -604,23 +739,25 @@ func file_proto_teleghost_proto_rawDescGZIP() []byte {
 }
 
 var file_proto_teleghost_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_proto_teleghost_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_proto_teleghost_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_proto_teleghost_proto_goTypes = []any{
 	(PacketType)(0),       // 0: teleghost.PacketType
 	(*Packet)(nil),        // 1: teleghost.Packet
-	(*TextMessage)(nil),   // 2: teleghost.TextMessage
-	(*ProfileUpdate)(nil), // 3: teleghost.ProfileUpdate
-	(*Handshake)(nil),     // 4: teleghost.Handshake
-	(*MessageEdit)(nil),   // 5: teleghost.MessageEdit
-	(*MessageDelete)(nil), // 6: teleghost.MessageDelete
+	(*Attachment)(nil),    // 2: teleghost.Attachment
+	(*TextMessage)(nil),   // 3: teleghost.TextMessage
+	(*ProfileUpdate)(nil), // 4: teleghost.ProfileUpdate
+	(*Handshake)(nil),     // 5: teleghost.Handshake
+	(*MessageEdit)(nil),   // 6: teleghost.MessageEdit
+	(*MessageDelete)(nil), // 7: teleghost.MessageDelete
 }
 var file_proto_teleghost_proto_depIdxs = []int32{
 	0, // 0: teleghost.Packet.type:type_name -> teleghost.PacketType
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	2, // 1: teleghost.TextMessage.attachments:type_name -> teleghost.Attachment
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_proto_teleghost_proto_init() }
@@ -634,7 +771,7 @@ func file_proto_teleghost_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_teleghost_proto_rawDesc), len(file_proto_teleghost_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   6,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

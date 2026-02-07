@@ -469,30 +469,30 @@
   async function handleSelectImages() {
     try {
       const files = await SelectImages();
-      if (files && files.length > 0) {
-        // Limit to 6 total including existing
-        const availableSlots = 6 - selectedFiles.length;
-        if (availableSlots <= 0) {
-            showToast('Максимум 6 вложений', 'error');
-            return;
-        }
-        const newFiles = files.slice(0, availableSlots);
-        selectedFiles = [...selectedFiles, ...newFiles];
-        
-        // Generate previews
-        for (const path of newFiles) {
-            if (!filePreviews[path]) {
-                try {
-                    const b64 = await GetFileBase64(path);
-                    filePreviews[path] = b64;
-                } catch(e) {
-                    console.error('Preview error', e);
-                }
-            }
-        }
+      if (!files || files.length === 0) return;
+      
+      const availableSlots = 6 - selectedFiles.length;
+      if (availableSlots <= 0) {
+          showToast('Максимум 6 вложений', 'error');
+          return;
+      }
+      
+      const newFiles = files.slice(0, availableSlots);
+      // Immediately add paths so user sees loading state
+      selectedFiles = [...selectedFiles, ...newFiles];
+      
+      // Load thumbnails in background without blocking state too much
+      for (const path of newFiles) {
+          if (!filePreviews[path]) {
+              GetImageThumbnail(path, 100, 100).then(b64 => {
+                  filePreviews[path] = b64;
+                  filePreviews = filePreviews;
+              }).catch(e => console.error("Thumb error", e));
+          }
       }
     } catch (e) {
       console.error(e);
+      showToast('Ошибка выбора изображений', 'error');
     }
   }
 
@@ -1483,18 +1483,23 @@
           {/if}
         </div>
         
-        <div class="input-area">
+        <div class="input-area-wrapper">
           {#if selectedFiles.length > 0}
             <div class="attachment-preview">
               {#each selectedFiles as file, i}
                   <div class="preview-item">
                      <!-- svelte-ignore a11y-click-events-have-key-events -->
-                     <img 
-                         src="data:image/jpeg;base64,{filePreviews[file]}" 
-                         class="preview-img" 
-                         alt="preview" 
-                         on:click={() => previewImage = "data:image/jpeg;base64," + filePreviews[file]}
-                     />
+                      <img 
+                          src={filePreviews[file] ? `data:image/png;base64,${filePreviews[file]}` : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="} 
+                          class="preview-img" 
+                          alt="preview" 
+                          on:click={() => {
+                              // For full preview, we can load full image on demand
+                              GetFileBase64(file).then(b64 => {
+                                  previewImage = "data:image/jpeg;base64," + b64;
+                              });
+                          }}
+                      />
                      <button class="btn-remove-att" on:click={() => removeFile(i)}>X</button>
                   </div>
               {/each}
@@ -1507,9 +1512,10 @@
             </div>
           {/if}
           
-          <button class="btn-icon" on:click={handleSelectImages} title="Прикрепить фото">
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5a.5.5 0 0 1-1 0V5a1.5 1.5 0 0 0-3 0v12.5c0 1.38 1.12 2.5 2.5 2.5 1.38 0 2.5-1.12 2.5-2.5V6a.5.5 0 0 1 1 0z"/></svg>
-          </button>
+          <div class="input-area">
+            <button class="btn-icon" on:click={handleSelectImages} title="Прикрепить фото">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5a.5.5 0 0 1-1 0V5a1.5 1.5 0 0 0-3 0v12.5c0 1.38 1.12 2.5 2.5 2.5 1.38 0 2.5-1.12 2.5-2.5V6a.5.5 0 0 1 1 0z"/></svg>
+            </button>
           
           <textarea
             class="message-input"
@@ -1526,6 +1532,7 @@
           </button>
         </div>
       </div>
+    </div>
 
     {:else}
       <!-- No Chat Selected -->
@@ -1637,6 +1644,7 @@
     background: var(--bg-secondary);
     border-radius: var(--radius);
     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    border: 1px solid var(--border);
   }
 
   .login-logo { margin-bottom: 24px; }
@@ -2304,27 +2312,29 @@
 
   .no-messages-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; }
 
+  .input-area-wrapper {
+      display: flex;
+      flex-direction: column;
+      border-top: 1px solid var(--border);
+      background: var(--bg-primary);
+  }
+
   .input-area {
-    padding: 16px 20px;
+    padding: 12px 20px;
     display: flex;
-    align-items: flex-end;
-    gap: 14px;
-    background: var(--bg-secondary);
-    border-top: 1px solid var(--border);
+    align-items: center;
+    gap: 12px;
     position: relative;
   }
   
   .attachment-preview {
-      position: absolute;
-      bottom: 100%;
-      left: 0;
       width: 100%;
       background: var(--bg-secondary);
       padding: 10px 20px;
       display: flex;
       gap: 10px;
       overflow-x: auto;
-      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
       align-items: center;
   }
   

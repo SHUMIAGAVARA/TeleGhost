@@ -23,8 +23,8 @@ const (
 	// ProtocolVersion текущая версия протокола
 	ProtocolVersion = 1
 
-	// MaxPacketSize максимальный размер пакета (64KB)
-	MaxPacketSize = 64 * 1024
+	// MaxPacketSize максимальный размер пакета (10MB for images)
+	MaxPacketSize = 10 * 1024 * 1024
 
 	// HeartbeatInterval интервал отправки heartbeat
 	HeartbeatInterval = 60 * time.Second
@@ -51,15 +51,18 @@ type Service struct {
 	identity       *identity.Keys
 	handler        MessageHandler
 	contactHandler ContactRequestHandler
-	profileHandler ProfileUpdateHandler
-	connections    map[string]net.Conn // destination -> connection
-	connMu         sync.RWMutex
-	ctx            context.Context
-	cancel         context.CancelFunc
-	wg             sync.WaitGroup
-	started        bool
-	mu             sync.Mutex
-	myNickname     string // Для отправки в handshake
+
+	profileHandler        ProfileUpdateHandler
+	profileRequestHandler ProfileRequestHandler
+	attachmentSaver       AttachmentSaver
+	connections           map[string]net.Conn // destination -> connection
+	connMu                sync.RWMutex
+	ctx                   context.Context
+	cancel                context.CancelFunc
+	wg                    sync.WaitGroup
+	started               bool
+	mu                    sync.Mutex
+	myNickname            string // Для отправки в handshake
 }
 
 // NewService создаёт новый MessengerService
@@ -238,6 +241,17 @@ func (s *Service) SendHandshake(destination string) error {
 	return s.SendMessage(destination, packet)
 }
 
+// SendProfileRequest отправляет запрос на обновление профиля
+func (s *Service) SendProfileRequest(destination string) error {
+	packet := &pb.Packet{
+		Type:    pb.PacketType_PROFILE_REQUEST,
+		Payload: []byte{}, // Empty payload
+	}
+
+	log.Printf("[Messenger] Sending profile request to %s...", destination[:32])
+	return s.SendMessage(destination, packet)
+}
+
 // getOrCreateConnection получает существующее или создаёт новое соединение
 func (s *Service) getOrCreateConnection(destination string) (net.Conn, error) {
 	s.connMu.RLock()
@@ -362,7 +376,7 @@ func (s *Service) listenLoop() {
 				return
 			}
 			// Проверяем на ошибку закрытия (строковое сравнение для надежности с разными реализациями)
-			if err != nil && (err.Error() == "use of closed network connection" || err.Error() == "listener closed") {
+			if err.Error() == "use of closed network connection" || err.Error() == "listener closed" {
 				return
 			}
 
@@ -439,9 +453,99 @@ func (s *Service) handlePacket(packet *pb.Packet, remoteAddr string) {
 	case pb.PacketType_HANDSHAKE:
 		s.handleHandshake(packet, senderPubKey)
 
+	case pb.PacketType_PROFILE_REQUEST:
+		s.handleProfileRequest(packet, senderPubKey)
+
 	default:
 		log.Printf("[Messenger] Unknown packet type: %v", packet.Type)
 	}
+}
+
+// handleProfileRequest обрабатывает запрос на обновление профиля
+func (s *Service) handleProfileRequest(packet *pb.Packet, senderPubKey string) {
+	log.Printf("[Messenger] Profile request from %s", senderPubKey[:16])
+
+	// Получаем текущий профиль (или используем дефолтные значения из s.myNickname)
+	// В идеале сервис должен иметь доступ к репозиторию, но сейчас у нас есть s.profileHandler
+	// Который работает ВХОДЯЩИЕ обновления.
+	// Нам нужно отправить ИСХОДЯЩЕЕ обновление.
+	// Для простоты, мы можем добавить Callback "GetMyProfile" или передавать данные при старте.
+	// Но пока используем s.myNickname, а био и аватар пустые (или нужно прокинуть их).
+	// TODO: Прокинуть полный профиль в MessengerService
+
+	// Отправляем ответ с текущим никнеймом пакетом PROFILE_UPDATE
+	// Аватар и био пока пустые, если нет доступа к ним
+	// В App.go мы можем отправить Update сразу после получения запроса, но это сложно связать.
+	// Поэтому лучше Messenger просто уведомляет App "запросили профиль", а App отправляет Update.
+	if s.profileRequestHandler != nil {
+		s.profileRequestHandler(senderPubKey)
+	}
+}
+
+// ProfileRequestHandler handler for incoming profile requests
+type ProfileRequestHandler func(requestorPubKey string)
+
+// AttachmentSaver сохраняет вложение и возвращает путь
+type AttachmentSaver func(filename string, data []byte) (string, error)
+
+// SetAttachmentSaver устанавливает функцию сохранения вложений
+func (s *Service) SetAttachmentSaver(saver AttachmentSaver) {
+	s.attachmentSaver = saver
+}
+
+// SendAttachmentMessage отправляет сообщение с вложениями
+func (s *Service) SendAttachmentMessage(destination, chatID, content string, attachments []*pb.Attachment) error {
+	now := time.Now().UnixMilli()
+
+	// Создаём TextMessage
+	textMsg := &pb.TextMessage{
+		ChatId:      chatID,
+		Content:     content,
+		Timestamp:   now,
+		MessageId:   fmt.Sprintf("%d-%s", now, s.identity.UserID[:8]),
+		Attachments: attachments,
+	}
+
+	payload, err := proto.Marshal(textMsg)
+	if err != nil {
+		return fmt.Errorf("marshal text message failed: %w", err)
+	}
+
+	packet := &pb.Packet{
+		Version:      ProtocolVersion,
+		Type:         pb.PacketType_TEXT_MESSAGE,
+		SenderPubKey: []byte(s.identity.PublicKeyBase64),
+		Payload:      payload,
+	}
+
+	// Подписываем payload
+	if len(packet.Payload) > 0 {
+		packet.Signature = s.identity.SignMessage(packet.Payload)
+	}
+
+	// Получаем или создаём соединение
+	conn, err := s.getOrCreateConnection(destination)
+	if err != nil {
+		return fmt.Errorf("connection failed: %w", err)
+	}
+
+	// Сериализуем пакет
+	data, err := proto.Marshal(packet)
+	if err != nil {
+		return fmt.Errorf("marshal packet failed: %w", err)
+	}
+
+	if len(data) > MaxPacketSize {
+		return fmt.Errorf("packet too large: %d > %d", len(data), MaxPacketSize)
+	}
+
+	// Отправляем
+	if err := s.writePacket(conn, data); err != nil {
+		s.removeConnection(destination)
+		return fmt.Errorf("send failed: %w", err)
+	}
+
+	return nil
 }
 
 // handleTextMessage обрабатывает текстовое сообщение
@@ -466,7 +570,37 @@ func (s *Service) handleTextMessage(packet *pb.Packet, senderPubKey, remoteAddr 
 		UpdatedAt:   time.Now(),
 	}
 
-	log.Printf("[Messenger] Received message: %s...", textMsg.Content[:min(20, len(textMsg.Content))])
+	// Обрабатываем вложения
+	if len(textMsg.Attachments) > 0 {
+		msg.ContentType = "mixed" // или оставить text, но с вложениями
+		for _, att := range textMsg.Attachments {
+			path := ""
+			// Сохраняем файл если есть saver
+			if s.attachmentSaver != nil {
+				savedPath, err := s.attachmentSaver(att.Filename, att.Data)
+				if err != nil {
+					log.Printf("[Messenger] Failed to save attachment %s: %v", att.Filename, err)
+				} else {
+					path = savedPath
+				}
+			}
+
+			coreAtt := &core.Attachment{
+				ID:           att.Id,
+				MessageID:    msg.ID,
+				Filename:     att.Filename,
+				MimeType:     att.MimeType,
+				Size:         att.Size,
+				LocalPath:    path,
+				IsCompressed: att.IsCompressed,
+				Width:        int(att.Width),
+				Height:       int(att.Height),
+			}
+			msg.Attachments = append(msg.Attachments, coreAtt)
+		}
+	}
+
+	log.Printf("[Messenger] Received message: %s... (atts: %d)", textMsg.Content[:min(20, len(textMsg.Content))], len(textMsg.Attachments))
 
 	// Вызываем callback для обработки
 	if s.handler != nil {
@@ -573,4 +707,9 @@ func (s *Service) Broadcast(packet *pb.Packet) {
 	for _, dest := range destinations {
 		_ = s.SendMessage(dest, packet)
 	}
+}
+
+// SetProfileRequestHandler sets the profile request handler
+func (s *Service) SetProfileRequestHandler(h ProfileRequestHandler) {
+	s.profileRequestHandler = h
 }

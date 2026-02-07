@@ -73,6 +73,19 @@ func (r *Repository) Migrate(ctx context.Context) error {
 		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	);
 
+	-- Таблица чатов
+	CREATE TABLE IF NOT EXISTS chats (
+		id TEXT PRIMARY KEY,
+		contact_id TEXT NOT NULL UNIQUE,
+		last_message_id TEXT,
+		unread_count INTEGER DEFAULT 0,
+		is_pinned INTEGER DEFAULT 0,
+		is_muted INTEGER DEFAULT 0,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY(contact_id) REFERENCES contacts(id)
+	);
+
 	-- Таблица сообщений
 	CREATE TABLE IF NOT EXISTS messages (
 		id TEXT PRIMARY KEY,
@@ -106,8 +119,22 @@ func (r *Repository) Migrate(ctx context.Context) error {
 		folder_id TEXT NOT NULL,
 		contact_id TEXT NOT NULL,
 		PRIMARY KEY(folder_id, contact_id),
-		FOREIGN KEY(folder_id) REFERENCES folders(id) ON DELETE CASCADE
+		FOREIGN KEY(folder_id) REFERENCES folders(id) ON DELETE CASCADE,
+		FOREIGN KEY(contact_id) REFERENCES contacts(id) ON DELETE CASCADE
 	);
+	CREATE TABLE IF NOT EXISTS message_attachments (
+		id TEXT PRIMARY KEY,
+		message_id TEXT NOT NULL,
+		filename TEXT NOT NULL,
+		mime_type TEXT NOT NULL,
+		size INTEGER NOT NULL,
+		local_path TEXT NOT NULL,
+		is_compressed INTEGER DEFAULT 0,
+		width INTEGER DEFAULT 0,
+		height INTEGER DEFAULT 0,
+		FOREIGN KEY(message_id) REFERENCES messages(id) ON DELETE CASCADE
+	);
+	CREATE INDEX IF NOT EXISTS idx_attachments_message_id ON message_attachments(message_id);
 	`
 
 	_, err := r.db.ExecContext(ctx, schema)
@@ -380,6 +407,21 @@ func (r *Repository) SaveMessage(ctx context.Context, msg *core.Message) error {
 		return fmt.Errorf("failed to save message: %w", err)
 	}
 
+	// Сохраняем вложения
+	if len(msg.Attachments) > 0 {
+		attQuery := `INSERT INTO message_attachments (id, message_id, filename, mime_type, size, local_path, is_compressed, width, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING`
+		for _, att := range msg.Attachments {
+			// Ensure MessageID is set
+			if att.MessageID == "" {
+				att.MessageID = msg.ID
+			}
+			_, err := r.db.ExecContext(ctx, attQuery, att.ID, att.MessageID, att.Filename, att.MimeType, att.Size, att.LocalPath, att.IsCompressed, att.Width, att.Height)
+			if err != nil {
+				return fmt.Errorf("failed to save attachment %s: %w", att.ID, err)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -391,20 +433,79 @@ func (r *Repository) GetMessage(ctx context.Context, id string) (*core.Message, 
 		FROM messages WHERE id = ?
 	`
 
-	msg := &core.Message{}
-	err := r.db.QueryRowContext(ctx, query, id).Scan(
-		&msg.ID, &msg.ChatID, &msg.SenderID, &msg.Content, &msg.ContentType, &msg.Status,
-		&msg.IsOutgoing, &msg.ReplyToID, &msg.Timestamp, &msg.CreatedAt, &msg.UpdatedAt,
-	)
-
+	msg, err := r.scanMessage(r.db.QueryRowContext(ctx, query, id))
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
 	if err != nil {
-		return nil, fmt.Errorf("failed to get message: %w", err)
+		return nil, err
+	}
+
+	if err := r.enrichMessagesWithAttachments(ctx, []*core.Message{msg}); err != nil {
+		return nil, fmt.Errorf("failed to enrich message: %w", err)
 	}
 
 	return msg, nil
+}
+
+func (r *Repository) scanMessage(row interface {
+	Scan(dest ...interface{}) error
+}) (*core.Message, error) {
+	msg := &core.Message{}
+	err := row.Scan(
+		&msg.ID, &msg.ChatID, &msg.SenderID, &msg.Content, &msg.ContentType, &msg.Status,
+		&msg.IsOutgoing, &msg.ReplyToID, &msg.Timestamp, &msg.CreatedAt, &msg.UpdatedAt,
+	)
+	return msg, err
+}
+
+// enrichMessagesWithAttachments загружает вложения для списка сообщений
+func (r *Repository) enrichMessagesWithAttachments(ctx context.Context, messages []*core.Message) error {
+	if len(messages) == 0 {
+		return nil
+	}
+
+	msgMap := make(map[string]*core.Message)
+	ids := make([]interface{}, len(messages))
+	for i, m := range messages {
+		msgMap[m.ID] = m
+		ids[i] = m.ID
+		m.Attachments = make([]*core.Attachment, 0)
+	}
+
+	// SQLite limit for parameters is usually 999 or higher, but safer to batch if needed.
+	// For now simple IN clause.
+	placeholders := ""
+	for i := 0; i < len(ids); i++ {
+		if i > 0 {
+			placeholders += ","
+		}
+		placeholders += "?"
+	}
+
+	query := fmt.Sprintf(`SELECT id, message_id, filename, mime_type, size, local_path, is_compressed, width, height FROM message_attachments WHERE message_id IN (%s)`, placeholders)
+
+	rows, err := r.db.QueryContext(ctx, query, ids...)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		att := &core.Attachment{}
+		var width, height sql.NullInt32 // Handle potentially null if old records (though declared default 0)
+		err := rows.Scan(&att.ID, &att.MessageID, &att.Filename, &att.MimeType, &att.Size, &att.LocalPath, &att.IsCompressed, &width, &height)
+		if err != nil {
+			return err
+		}
+		att.Width = int(width.Int32)
+		att.Height = int(height.Int32)
+
+		if msg, ok := msgMap[att.MessageID]; ok {
+			msg.Attachments = append(msg.Attachments, att)
+		}
+	}
+	return rows.Err()
 }
 
 // GetChatHistory возвращает историю сообщений чата с пагинацией
@@ -437,7 +538,7 @@ func (r *Repository) GetChatHistory(ctx context.Context, chatID string, limit, o
 		messages = append(messages, msg)
 	}
 
-	return messages, rows.Err()
+	return messages, r.enrichMessagesWithAttachments(ctx, messages)
 }
 
 // UpdateMessageStatus обновляет статус доставки сообщения
@@ -508,7 +609,34 @@ func (r *Repository) SearchMessages(ctx context.Context, chatID, queryStr string
 		messages = append(messages, msg)
 	}
 
-	return messages, rows.Err()
+	return messages, r.enrichMessagesWithAttachments(ctx, messages)
+}
+
+// === Chat Methods ===
+
+// GetChat возвращает чат по ID
+func (r *Repository) GetChat(ctx context.Context, id string) (*core.Chat, error) {
+	query := `SELECT id, contact_id, last_message_id, unread_count, is_muted, created_at, updated_at FROM chats WHERE id = ?`
+
+	chat := &core.Chat{}
+	var lastMsgID sql.NullString
+
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
+		&chat.ID, &chat.ContactID, &lastMsgID, &chat.UnreadCount, &chat.IsMuted, &chat.CreatedAt, &chat.UpdatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("chat not found")
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	if lastMsgID.Valid {
+		chat.LastMessageID = &lastMsgID.String
+	}
+
+	return chat, nil
 }
 
 // === Folder Methods ===

@@ -18,6 +18,10 @@ export function CopyToClipboard(arg1) {
   return window['go']['main']['App']['CopyToClipboard'](arg1);
 }
 
+export function CopyImageToClipboard(arg1) {
+  return window['go']['main']['App']['CopyImageToClipboard'](arg1);
+}
+
 export function CreateAccount() {
   return window['go']['main']['App']['CreateAccount']();
 }
@@ -48,6 +52,10 @@ export function EditMessage(arg1, arg2) {
 
 export function GetContacts() {
   return window['go']['main']['App']['GetContacts']();
+}
+
+export function GetFileBase64(arg1) {
+  return window['go']['main']['App']['GetFileBase64'](arg1);
 }
 
 export function GetFolders() {
@@ -84,6 +92,22 @@ export function QuitApp() {
 
 export function RemoveChatFromFolder(arg1, arg2) {
   return window['go']['main']['App']['RemoveChatFromFolder'](arg1, arg2);
+}
+
+export function RequestProfileUpdate(arg1) {
+  return window['go']['main']['App']['RequestProfileUpdate'](arg1);
+}
+
+export function SaveTempImage(arg1, arg2) {
+  return window['go']['main']['App']['SaveTempImage'](arg1, arg2);
+}
+
+export function SelectImages() {
+  return window['go']['main']['App']['SelectImages']();
+}
+
+export function SendImageMessage(arg1, arg2, arg3, arg4) {
+  return window['go']['main']['App']['SendImageMessage'](arg1, arg2, arg3, arg4);
 }
 
 export function SendText(arg1, arg2) {

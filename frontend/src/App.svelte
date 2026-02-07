@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { EventsOn } from '../wailsjs/runtime/runtime.js';
   import { 
     Login, 
@@ -23,7 +23,11 @@
     DeleteFolder,
     UpdateFolder,
     AddChatToFolder,
-    RemoveChatFromFolder
+    RemoveChatFromFolder,
+    SelectImages,
+    SendImageMessage,
+    GetFileBase64,
+    CopyImageToClipboard
   } from '../wailsjs/go/main/App.js';
   import logo from './assets/images/logo.png';
 
@@ -40,6 +44,12 @@
   let selectedContact = null;
   let messages = [];
   let newMessage = '';
+  
+  // Вложения
+  let selectedFiles = []; // paths
+  let filePreviews = {}; // path -> base64
+  let isCompressed = true;
+  let isSending = false;
 
   // Context Menu для контактов
   let contextMenu = { show: false, x: 0, y: 0, contact: null };
@@ -88,6 +98,33 @@
   ];
 
   let activeFolderId = 'all';
+
+  // --- UI Imprv Phase 2 ---
+  // Image Preview
+  let previewImage = null; // src if valid
+
+  // Confirmation Modal
+  let showConfirmModal = false;
+  let confirmModalTitle = '';
+  let confirmModalText = '';
+  let confirmModalCallback = null;
+
+  function openConfirmModal(title, text, callback) {
+      confirmModalTitle = title;
+      confirmModalText = text;
+      confirmModalCallback = callback;
+      showConfirmModal = true;
+  }
+
+  function closeConfirmModal() {
+      showConfirmModal = false;
+      confirmModalCallback = null;
+  }
+
+  function handleConfirmAction() {
+      if (confirmModalCallback) confirmModalCallback();
+      closeConfirmModal();
+  }
 
   // Folders Edit State
   let isEditingFolder = false;
@@ -344,17 +381,21 @@
 
   async function deleteContactFromMenu() {
     if (!contextMenu.contact) return;
-    if (confirm(`Удалить контакт ${contextMenu.contact.nickname}?`)) {
-        try {
-            await DeleteContact(contextMenu.contact.id);
-            if (selectedContact?.id === contextMenu.contact.id) {
-                selectedContact = null;
+    openConfirmModal(
+        `Удалить контакт ${contextMenu.contact.nickname}?`,
+        "История переписки будет сохранена, но контакт исчезнет из списка.",
+        async () => {
+             try {
+                await DeleteContact(contextMenu.contact.id);
+                if (selectedContact?.id === contextMenu.contact.id) {
+                    selectedContact = null;
+                }
+                await loadContacts();
+            } catch(e) {
+                showToast('Ошибка удаления: ' + e, 'error');
             }
-            await loadContacts();
-        } catch(e) {
-            showToast('Ошибка удаления: ' + e, 'error');
         }
-    }
+    );
     contextMenu.show = false;
   }
 
@@ -424,25 +465,97 @@
   }
 
   // === Messages ===
+  
+  async function handleSelectImages() {
+    try {
+      const files = await SelectImages();
+      if (files && files.length > 0) {
+        // Limit to 6 total including existing
+        const availableSlots = 6 - selectedFiles.length;
+        if (availableSlots <= 0) {
+            showToast('Максимум 6 вложений', 'error');
+            return;
+        }
+        const newFiles = files.slice(0, availableSlots);
+        selectedFiles = [...selectedFiles, ...newFiles];
+        
+        // Generate previews
+        for (const path of newFiles) {
+            if (!filePreviews[path]) {
+                try {
+                    const b64 = await GetFileBase64(path);
+                    filePreviews[path] = b64;
+                } catch(e) {
+                    console.error('Preview error', e);
+                }
+            }
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function removeFile(index) {
+    selectedFiles = selectedFiles.filter((_, i) => i !== index);
+  }
+
+  // Action for loading images in messages
+  function startLoadingImage(node, path) {
+      GetFileBase64(path).then(b64 => {
+          node.src = "data:image/jpeg;base64," + b64;
+      }).catch(e => {
+          console.error("Failed to load image", path, e);
+      });
+  }
+
   async function sendMessage() {
-    if (!newMessage.trim() || !selectedContact) return;
-    const text = newMessage;
-    newMessage = '';
+    if ((!newMessage.trim() && selectedFiles.length === 0) || !selectedContact) return;
+    if (isSending) return;
     
-    messages = [...messages, {
-      id: Date.now().toString(),
+    isSending = true;
+    const text = newMessage;
+    const files = [...selectedFiles];
+    const compress = isCompressed; // capture state
+    
+    // Optimistic UI update? 
+    // Hard with images because we need to display them immediately.
+    // We can use filePreviews for optimistic rendering.
+    
+    const tempId = Date.now().toString();
+    const optimisticMsg = {
+      id: tempId,
       content: text,
       timestamp: Date.now(),
       isOutgoing: true,
-      status: 'sending'
-    }];
-    scrollToBottom();
+      status: 'sending',
+      attachments: files.map(path => ({
+          local_path: path,
+          // temporary preview logic handled by same action if path is local
+      }))
+    };
 
+    messages = [...messages, optimisticMsg];
+    scrollToBottom();
+    
+    // Clear input immediately
+    newMessage = '';
+    selectedFiles = [];
+    // Keep filePreviews for optimistic render, clear later? 
+    // Actually we can keep them in cache or clear.
+    
     try {
-      await SendText(selectedContact.id, text);
+        if (files.length > 0) {
+            await SendImageMessage(selectedContact.id, text, files, !compress);
+        } else {
+            await SendText(selectedContact.id, text);
+        }
     } catch (e) {
       showToast(e.toString(), 'error');
-      // Mark as failed visually?
+      // Mark failed
+      messages = messages.map(m => m.id === tempId ? {...m, status: 'failed'} : m);
+    } finally {
+        isSending = false;
     }
   }
 
@@ -477,6 +590,16 @@
     });
   }
 
+  async function requestProfileUpdate(contactID) {
+    try {
+      showToast('Запрос обновления профиля отправлен...', 'info');
+      await RequestProfileUpdate(contactID);
+    } catch (err) {
+      console.error('Failed to request profile update:', err);
+      showToast('Ошибка запроса обновления: ' + err, 'error');
+    }
+  }
+
   function formatTime(ts) {
     const d = new Date(ts);
     return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
@@ -495,11 +618,95 @@
   }
 
   // === Message Context Menu ===
-  function showMessageMenu(e, msg) {
+  async function showMessageMenu(e, msg) {
     e.preventDefault();
     e.stopPropagation();
-    messageContextMenu = { show: true, x: e.clientX, y: e.clientY, message: msg };
+    
+    // Prevent overflow
+    let x = e.clientX;
+    let y = e.clientY;
+    const menuWidth = 200; // approx
+    const menuHeight = 150; // approx
+    
+    if (x + menuWidth > window.innerWidth) {
+        x = window.innerWidth - menuWidth - 10;
+    }
+    if (y + menuHeight > window.innerHeight) {
+        y = window.innerHeight - menuHeight - 10;
+    }
+
+    messageContextMenu = { 
+        show: true, 
+        x: x, 
+        y: y, 
+        message: msg,
+        imagePath: (e.target.tagName === 'IMG' && e.target.classList.contains('msg-img')) ? e.target.dataset.path : null
+    };
+
+    // Correct position if overflows
+    await tick();
+    const menuEl = document.querySelector('.context-menu'); // better to use bind:this but this works for now
+    if (menuEl) {
+        const rect = menuEl.getBoundingClientRect();
+        if (rect.bottom > window.innerHeight) {
+             messageContextMenu.y -= (rect.bottom - window.innerHeight + 10);
+        }
+    }
   }
+
+  async function copyImageToClipboard(path) {
+      if (!path) return;
+      try {
+          // Use backend to copy image to clipboard to avoid browser restrictions
+          await CopyImageToClipboard(path);
+          showToast('Картинка скопирована!', 'success');
+          messageContextMenu.show = false;
+      } catch (err) {
+          console.error(err);
+          showToast('Ошибка копирования: ' + err, 'error');
+      }
+  }
+
+  // Handle Clipboard Paste
+  async function handlePaste(e) {
+      console.log('Paste event triggered', e);
+      // Check if we are focusing input or body.
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      console.log('Clipboard items:', items);
+      
+      for (let index in items) {
+          const item = items[index];
+          if (item.kind === 'file' && item.type.indexOf('image/') !== -1) {
+              e.preventDefault(); // Prevent default paste behavior
+              console.log('Found image in clipboard');
+              const blob = item.getAsFile();
+              const reader = new FileReader();
+              reader.onload = async (event) => {
+                  try {
+                      // Save to temp file via backend
+                      const base64 = event.target.result; // data:image/png;base64,...
+                      const path = await SaveTempImage(base64, "pasted_image.png");
+                      
+                      // Add to selection
+                      if (selectedFiles.length < 6) {
+                          selectedFiles = [...selectedFiles, path];
+                          // Extract pure base64 for preview
+                          const previewB64 = base64.split(',')[1];
+                          filePreviews[path] = previewB64;
+                      } else {
+                          showToast('Максимум 6 вложений', 'error');
+                      }
+                  } catch (err) {
+                      console.error("Paste error", err);
+                      showToast('Ошибка вставки изображения', 'error');
+                  }
+              };
+              reader.readAsDataURL(blob);
+              return; // handled
+          }
+      }
+  }
+
 
   function startEditMessage(msg) {
     editingMessageId = msg.id;
@@ -533,20 +740,25 @@
     const confirmText = forAll 
       ? 'Удалить сообщение у всех?' 
       : 'Удалить сообщение у себя?';
-    if (!confirm(confirmText)) return;
     
-    try {
-      if (forAll) {
-        await DeleteMessageForAll(msg.id);
-      } else {
-        await DeleteMessage(msg.id);
-      }
-      messages = messages.filter(m => m.id !== msg.id);
-      messageContextMenu.show = false;
-    } catch (e) {
-      console.error('Delete failed:', e);
-      showToast('Ошибка удаления: ' + e, 'error');
-    }
+    openConfirmModal(
+        confirmText,
+        "Это действие необратимо.",
+        async () => {
+            try {
+              if (forAll) {
+                await DeleteMessageForAll(msg.id);
+              } else {
+                await DeleteMessage(msg.id);
+              }
+              messages = messages.filter(m => m.id !== msg.id);
+              messageContextMenu.show = false;
+            } catch (e) {
+              console.error('Delete failed:', e);
+              showToast('Ошибка удаления: ' + e, 'error');
+            }
+        }
+    );
   }
 
   function copyMessageText(msg) {
@@ -768,8 +980,13 @@
     🗑️ Удалить у себя
   </div>
   <div class="context-item" on:click={() => copyMessageText(messageContextMenu.message)} on:keydown={(e) => e.key === 'Enter' && copyMessageText(messageContextMenu.message)} role="button" tabindex="0">
-    📋 Копировать
+    📋 Копировать текст
   </div>
+  {#if messageContextMenu.imagePath}
+    <div class="context-item" on:click={() => copyImageToClipboard(messageContextMenu.imagePath)} on:keydown={(e) => e.key === 'Enter' && copyImageToClipboard(messageContextMenu.imagePath)} role="button" tabindex="0">
+      🖼️ Копировать изображение
+    </div>
+  {/if}
 </div>
 {/if}
 
@@ -800,7 +1017,7 @@
      </div>
      <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
        <button class="btn-secondary" on:click={() => showContactProfile = false}>Закрыть</button>
-       <button class="btn-primary" on:click={() => { showToast('Запрос обновления профиля отправлен...', 'info'); }}>🔄 Обновить профиль</button>
+       <button class="btn-primary" on:click={() => requestProfileUpdate(profileContact.id)}>🔄 Обновить профиль</button>
      </div>
   </div>
 </div>
@@ -844,7 +1061,10 @@
          <button class="btn-danger" style="margin-right: auto;" on:click={() => { 
            const folder = folders.find(f => f.id === editingFolderId);
            startDeleteFolder(folder);
-         }}>Удалить</button>
+         }}>
+           <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+           <span>Удалить</span>
+         </button>
        {/if}
        <button class="btn-secondary" on:click={() => { showCreateFolder = false; isEditingFolder = false; editingFolderId = null; }}>Отмена</button>
        <button class="btn-primary" on:click={createFolder}>{isEditingFolder ? 'Сохранить' : 'Создать'}</button>
@@ -1203,6 +1423,22 @@
           {#each messages as msg (msg.id)}
             <div class="message animate-message" class:outgoing={msg.isOutgoing}>
               <div class="message-bubble" class:outgoing={msg.isOutgoing} on:contextmenu={(e) => showMessageMenu(e, msg)}>
+                <!-- Image Rendering -->
+                {#if msg.attachments && msg.attachments.length > 0}
+                  <div class="message-images" style="grid-template-columns: {msg.attachments.length === 1 ? '1fr' : 'repeat(2, 1fr)'}">
+                      {#each msg.attachments as att}
+                         <!-- svelte-ignore a11y-click-events-have-key-events -->
+                         <img 
+                             use:startLoadingImage={att.local_path} 
+                             alt="attachment" 
+                             class="msg-img" 
+                             data-path={att.local_path}
+                             style="height: {msg.attachments.length === 1 ? 'auto' : '120px'}" 
+                             on:click={(e) => previewImage = e.currentTarget.src}
+                         />
+                      {/each}
+                  </div>
+                {/if}
                 {#if editingMessageId === msg.id}
                   <div class="message-edit-container" on:click|stopPropagation>
                     <textarea 
@@ -1248,14 +1484,42 @@
         </div>
         
         <div class="input-area">
+          {#if selectedFiles.length > 0}
+            <div class="attachment-preview">
+              {#each selectedFiles as file, i}
+                  <div class="preview-item">
+                     <!-- svelte-ignore a11y-click-events-have-key-events -->
+                     <img 
+                         src="data:image/jpeg;base64,{filePreviews[file]}" 
+                         class="preview-img" 
+                         alt="preview" 
+                         on:click={() => previewImage = "data:image/jpeg;base64," + filePreviews[file]}
+                     />
+                     <button class="btn-remove-att" on:click={() => removeFile(i)}>X</button>
+                  </div>
+              {/each}
+              <div class="compress-opt">
+                  <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                      <input type="checkbox" bind:checked={isCompressed}>
+                      Сжать
+                  </label>
+              </div>
+            </div>
+          {/if}
+          
+          <button class="btn-icon" on:click={handleSelectImages} title="Прикрепить фото">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5a.5.5 0 0 1-1 0V5a1.5 1.5 0 0 0-3 0v12.5c0 1.38 1.12 2.5 2.5 2.5 1.38 0 2.5-1.12 2.5-2.5V6a.5.5 0 0 1 1 0z"/></svg>
+          </button>
+          
           <textarea
             class="message-input"
             placeholder="Сообщение..."
             bind:value={newMessage}
             on:keypress={handleKeyPress}
+            on:paste={handlePaste}
             rows="1"
           ></textarea>
-          <button class="btn-send" on:click={sendMessage} disabled={!newMessage.trim()}>
+          <button class="btn-send" on:click={sendMessage} disabled={!newMessage.trim() && selectedFiles.length === 0}>
             <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
               <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
             </svg>
@@ -1521,6 +1785,17 @@
   .btn-secondary:hover { background: rgba(108, 92, 231, 0.1); }
 
   .btn-danger {
+    padding: 16px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     background: linear-gradient(135deg, #ff4757, #ff6b81);
     color: white;
   }
@@ -1913,6 +2188,11 @@
     word-wrap: break-word; 
     white-space: pre-wrap;
   }
+  
+  /* Images inside bubble */
+  .message-images {
+      margin-bottom: 4px;
+  }
 
   /* Markdown Styles */
   :global(.message-content pre.md-code-block) {
@@ -2031,6 +2311,79 @@
     gap: 14px;
     background: var(--bg-secondary);
     border-top: 1px solid var(--border);
+    position: relative;
+  }
+  
+  .attachment-preview {
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      width: 100%;
+      background: var(--bg-secondary);
+      padding: 10px 20px;
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      border-top: 1px solid var(--border);
+      align-items: center;
+  }
+  
+  .preview-item {
+      position: relative;
+      width: 60px;
+      height: 60px;
+      flex-shrink: 0;
+  }
+  
+  .preview-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+  }
+  
+  .btn-remove-att {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--btn-danger);
+      color: white;
+      border: none;
+      font-size: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+  
+  .compress-opt {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+  }
+
+  .message-images {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 4px;
+      margin-bottom: 6px;
+      border-radius: 8px;
+      overflow: hidden;
+  }
+  
+  .msg-img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      cursor: pointer;
+      background: rgba(0,0,0,0.2);
   }
 
   .message-input {
@@ -2150,4 +2503,75 @@
       opacity: 0;
     }
   }
+
+  /* Fullscreen Preview */
+  .fullscreen-preview {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease;
+  }
+
+  .preview-content {
+      position: relative;
+      max-width: 90%;
+      max-height: 90%;
+  }
+
+  .preview-content img {
+      max-width: 100%;
+      max-height: 90vh;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  }
+
+  .close-preview {
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 32px;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+  }
+
+  .close-preview:hover { opacity: 1; }
 </style>
+
+<svelte:window on:paste={handlePaste} />
+
+<!-- Full Screen Image Preview -->
+{#if previewImage}
+<div class="fullscreen-preview" on:click={() => previewImage = null}>
+    <div class="preview-content" on:click|stopPropagation>
+        <img src={previewImage} alt="Full preview" />
+        <button class="close-preview" on:click={() => previewImage = null}>✕</button>
+    </div>
+</div>
+{/if}
+
+<!-- Custom Confirm Modal -->
+{#if showConfirmModal}
+<div class="modal-backdrop animate-fade-in" on:click|self={closeConfirmModal}>
+    <div class="modal-content animate-slide-down" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3>{confirmModalTitle}</h3>
+        </div>
+        <div class="modal-body">
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">{confirmModalText}</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-small btn-secondary" on:click={closeConfirmModal}>Отмена</button>
+            <button class="btn-small btn-primary" on:click={handleConfirmAction}>OK</button>
+        </div>
+    </div>
+</div>
+{/if}

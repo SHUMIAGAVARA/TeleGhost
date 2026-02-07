@@ -15,6 +15,18 @@
 - **Fast Search**: Find the right chats and messages instantly.
 - **Premium UI**: Modern design with dark mode and smooth animations.
 
+
+## 🚀 Quick Start
+
+### Download
+
+You can download the latest ready-to-use versions of TeleGhost for your system from the [Releases](https://github.com/kiktor12358/TeleGhost/releases/latest) page:
+
+*   **Windows**: Download `TeleGhost.exe`, run it, and the messenger is ready to work (includes embedded i2pd router).
+*   **Linux**: Download `TeleGhost-linux-amd64`, make the file executable (`chmod +x TeleGhost-linux-amd64`), and run it.
+
+---
+
 ## 🗺 Roadmap
 
 ### Phase 1: Rich Media (In Progress)

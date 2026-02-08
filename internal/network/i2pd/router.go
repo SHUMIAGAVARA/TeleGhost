@@ -91,7 +91,7 @@ func DefaultConfig() *Config {
 		DataDir:      ".teleghost/i2pd",
 		SAMEnabled:   true,
 		SAMPort:      7656,
-		TunnelLength: 3,
+		TunnelLength: 1,
 		LogToFile:    false,
 	}
 }

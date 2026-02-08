@@ -164,7 +164,7 @@
   let activeSettingsTab = 'profile';
 
   let routerSettings = {
-    tunnelLength: 3,
+    tunnelLength: 1,
     logToFile: false
   };
 
@@ -1472,9 +1472,9 @@
                     <div class="setting-item" style="margin-bottom: 20px;">
                         <label class="form-label" style="color: var(--text-primary); display: block; margin-bottom: 8px;">Режим анонимности (длина туннелей)</label>
                         <select bind:value={routerSettings.tunnelLength} class="input-field settings-select">
-                            <option value={1}>Fast (1 хоп) - Быстро, низкая анонимность</option>
-                            <option value={3}>Default (3 хопа) - Баланс (Рекомендуется)</option>
-                            <option value={5}>Invisibility (5 хопов) - Максимальная анонимность, медленно</option>
+                            <option value={1}>Fast (1 хоп) - Максимальная скорость, низкая анонимность</option>
+                            <option value={2}>Normal (2 хопа) - Баланс (Рекомендуется)</option>
+                            <option value={4}>Invisible (4 хопа) - Высокая анонимность, медленно</option>
                         </select>
                     </div>
 

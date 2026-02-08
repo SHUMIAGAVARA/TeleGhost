@@ -1221,7 +1221,7 @@ func (a *App) getRouterSettingsPath() string {
 func (a *App) loadRouterSettings() {
 	path := a.getRouterSettingsPath()
 	DEFAULT_SETTINGS := &RouterSettings{
-		TunnelLength: 3,
+		TunnelLength: 1,
 		LogToFile:    false,
 	}
 

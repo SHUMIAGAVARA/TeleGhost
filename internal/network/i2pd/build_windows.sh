@@ -7,15 +7,13 @@ I2PD_DIR="$SCRIPT_DIR/i2pd"
 
 echo "=== TeleGhost i2pd Windows (MSYS2) Build Script ==="
 
-# Clone i2pd if not exists or is incomplete
-if [ ! -d "$I2PD_DIR/.git" ] || [ ! -f "$I2PD_DIR/build/CMakeLists.txt" ]; then
-    echo "i2pd directory is missing, incomplete, or not a git repo. Cleaning and cloning fresh..."
-    rm -rf "$I2PD_DIR"
-    git clone --depth 1 https://github.com/PurpleI2P/i2pd.git "$I2PD_DIR"
-else
-    echo "Repository exists, pulling latest..."
-    cd "$I2PD_DIR" && git pull && cd "$SCRIPT_DIR"
+# i2pd should be vendored in repo
+if [ ! -f "$I2PD_DIR/build/CMakeLists.txt" ]; then
+    echo "ERROR: i2pd source code not found in '$I2PD_DIR'. Please vendor the source code."
+    exit 1
 fi
+
+echo "Using local i2pd source..."
 
 # Build libi2pd static library
 cd "$I2PD_DIR/build"

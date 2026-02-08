@@ -108,23 +108,34 @@ void i2pd_init(const char *datadir, int sam_enabled, int sam_port,
 
   // Logging configuration
   if (log_to_file) {
-      args_storage.push_back("--log");
-      args_storage.push_back("file");
-      args_storage.push_back("--logfile");
-      args_storage.push_back("i2pd.log");
-      args_storage.push_back("--loglevel");
-      args_storage.push_back(debug_mode ? "debug" : "info");
-  } else if (debug_mode) {
     args_storage.push_back("--log");
-    args_storage.push_back("stdout");
+    args_storage.push_back("file");
+    args_storage.push_back("--logfile");
+    args_storage.push_back("i2pd.log");
     args_storage.push_back("--loglevel");
-    args_storage.push_back("debug");
+    args_storage.push_back(debug_mode ? "debug" : "info");
   } else {
-    // Minimal logging in release mode
-    args_storage.push_back("--log");
-    args_storage.push_back("none");
-    args_storage.push_back("--loglevel");
-    args_storage.push_back("error");
+    // If not logging to file, we must explicitly prevent default log file
+    // creation by pointing logfile to /dev/null (Linux) or ensuring 'none'
+    // really works. i2pd might use the app name "TeleGhost" to create
+    // "TeleGhost.log" if no logfile is specified even with log=stdout or
+    // log=none in some versions/contexts.
+
+    if (debug_mode) {
+      args_storage.push_back("--log");
+      args_storage.push_back("stdout");
+      args_storage.push_back("--loglevel");
+      args_storage.push_back("debug");
+    } else {
+      args_storage.push_back("--log");
+      args_storage.push_back("none");
+      args_storage.push_back("--loglevel");
+      args_storage.push_back("error");
+    }
+    // Explicitly set logfile to /dev/null to override any default behavior
+    // based on app name
+    args_storage.push_back("--logfile");
+    args_storage.push_back("/dev/null");
   }
 
   // Create argv pointers

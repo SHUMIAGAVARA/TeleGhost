@@ -15,6 +15,13 @@
 - **Fast Search**: Find the right chats and messages instantly.
 - **Premium UI**: Modern design with dark mode and smooth animations.
 
+## 📸 Screenshots
+
+<p align="center">
+  <img src="assets/login_screen.png" alt="Login Screen" width="45%">
+  &nbsp;
+  <img src="assets/main_screen.png" alt="Main Screen" width="45%">
+</p>
 
 ## 🚀 Quick Start
 

@@ -224,7 +224,13 @@ func (a *App) initUserRepository(userID string) error {
 	}
 
 	dbPath := filepath.Join(userDir, "data.db")
-	repo, err := sqlite.New(dbPath)
+
+	var keys *identity.Keys
+	if a.identity != nil {
+		keys = a.identity.Keys
+	}
+
+	repo, err := sqlite.New(dbPath, keys)
 	if err != nil {
 		return fmt.Errorf("failed to open database: %w", err)
 	}
@@ -372,11 +378,36 @@ func (a *App) connectToI2P() {
 
 	if _, err := os.Stat(keysPath); err == nil {
 		log.Println("[App] Loading existing I2P keys from file...")
-		keys, err := i2pkeys.LoadKeys(keysPath)
+
+		// Читаем файл и дешифруем если нужно
+		data, err := os.ReadFile(keysPath)
 		if err == nil {
-			a.router.SetKeys(keys)
+			if a.identity != nil && a.identity.Keys != nil {
+				decrypted, err := a.identity.Keys.Decrypt(data)
+				if err == nil {
+					// Используем временный файл для загрузки через i2pkeys
+					tmpPath := keysPath + ".tmp"
+					if err := os.WriteFile(tmpPath, decrypted, 0600); err == nil {
+						defer os.Remove(tmpPath)
+						keys, err := i2pkeys.LoadKeys(tmpPath)
+						if err == nil {
+							a.router.SetKeys(keys)
+							log.Println("[App] I2P keys decrypted and loaded successfully")
+						} else {
+							log.Printf("[App] Warning: failed to parse decrypted I2P keys: %v", err)
+						}
+					}
+				} else {
+					log.Printf("[App] I2P keys file is not encrypted or wrong key: %v", err)
+					// Пробуем загрузить как есть (на случай если это старая версия без шифрования)
+					keys, err := i2pkeys.LoadKeys(keysPath)
+					if err == nil {
+						a.router.SetKeys(keys)
+					}
+				}
+			}
 		} else {
-			log.Printf("[App] Warning: failed to load I2P keys: %v", err)
+			log.Printf("[App] Warning: failed to read I2P keys file: %v", err)
 		}
 	}
 
@@ -386,13 +417,30 @@ func (a *App) connectToI2P() {
 		return
 	}
 
-	// Сохраняем I2P ключи в файл
+	// Сохраняем I2P ключи в файл (зашифрованно)
 	destination := a.router.GetDestination()
 	currentKeys := a.router.GetKeys()
-	if err := i2pkeys.StoreKeys(currentKeys, keysPath); err != nil {
-		log.Printf("[App] Warning: failed to save I2P keys: %v", err)
+	tmpPath := keysPath + ".save"
+	if err := i2pkeys.StoreKeys(currentKeys, tmpPath); err == nil {
+		defer os.Remove(tmpPath)
+		data, err := os.ReadFile(tmpPath)
+		if err == nil {
+			// Шифруем
+			if a.identity != nil && a.identity.Keys != nil {
+				encrypted, err := a.identity.Keys.Encrypt(data)
+				if err == nil {
+					data = encrypted
+				}
+			}
+
+			if err := os.WriteFile(keysPath, data, 0600); err != nil {
+				log.Printf("[App] Warning: failed to save encrypted I2P keys: %v", err)
+			} else {
+				log.Printf("[App] I2P keys saved and encrypted to %s", keysPath)
+			}
+		}
 	} else {
-		log.Printf("[App] I2P keys saved to %s", keysPath)
+		log.Printf("[App] Warning: failed to store I2P keys to tmp: %v", err)
 	}
 
 	// Обновляем I2P адрес в профиле

@@ -2579,12 +2579,21 @@
   }
 
   .no-contacts {
-    padding: 60px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
     text-align: center;
     color: var(--text-secondary);
   }
 
-  .no-contacts-icon { font-size: 48px; margin-bottom: 16px; }
+  .no-contacts-icon { 
+    margin-bottom: 16px; 
+    display: flex;
+    justify-content: center;
+  }
   .hint { font-size: 12px; margin-top: 8px; opacity: 0.7; }
 
   .my-destination { padding: 12px; border-top: 1px solid var(--border); }

@@ -34,6 +34,10 @@ export function CreateFolder(arg1, arg2) {
   return window['go']['main']['App']['CreateFolder'](arg1, arg2);
 }
 
+export function CreateProfile(arg1, arg2, arg3) {
+  return window['go']['main']['App']['CreateProfile'](arg1, arg2, arg3);
+}
+
 export function DeclineFileTransfer(arg1) {
   return window['go']['main']['App']['DeclineFileTransfer'](arg1);
 }
@@ -102,6 +106,10 @@ export function GetRouterSettings() {
   return window['go']['main']['App']['GetRouterSettings']();
 }
 
+export function ListProfiles() {
+  return window['go']['main']['App']['ListProfiles']();
+}
+
 export function Login(arg1) {
   return window['go']['main']['App']['Login'](arg1);
 }
@@ -148,6 +156,10 @@ export function ShowInFolder(arg1) {
 
 export function ShowWindow() {
   return window['go']['main']['App']['ShowWindow']();
+}
+
+export function UnlockProfile(arg1, arg2) {
+  return window['go']['main']['App']['UnlockProfile'](arg1, arg2);
 }
 
 export function UpdateFolder(arg1, arg2, arg3) {

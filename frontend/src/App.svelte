@@ -36,6 +36,7 @@
     ShowInFolder
   } from '../wailsjs/go/main/App.js';
   import { writable } from 'svelte/store';
+  import { Icons } from './Icons.js'; 
   import logo from './assets/images/logo.png';
 
   // Состояние
@@ -224,11 +225,11 @@
   });
   
   let settingsCategories = [
-    { id: 'profile', name: 'Аккаунт', icon: '👤' },
-    { id: 'chats', name: 'Настройки чатов', icon: '💬' },
-    { id: 'privacy', name: 'Конфиденциальность', icon: '🔒' },
-    { id: 'network', name: 'Настройки I2P/Сети', icon: '🌐' },
-    { id: 'about', name: 'О программе', icon: 'ℹ️' }
+    { id: 'profile', name: 'Аккаунт', icon: Icons.User },
+    { id: 'chats', name: 'Настройки чатов', icon: Icons.MessageSquare },
+    { id: 'privacy', name: 'Конфиденциальность', icon: Icons.Lock },
+    { id: 'network', name: 'Настройки I2P/Сети', icon: Icons.Globe },
+    { id: 'about', name: 'О программе', icon: Icons.Info }
   ];
   let activeSettingsTab = 'profile';
   let settingsView = 'menu'; // 'menu' | 'details'
@@ -1877,7 +1878,7 @@
       {#if $mobileView !== 'chat'}
       <div class="mobile-header">
           <button class="btn-icon" on:click={toggleSettingsMobile}>
-              <div class="hamburger-icon"><span></span><span></span><span></span></div>
+              <div class="icon-svg">{@html Icons.Menu}</div>
           </button>
           <div class="mobile-title">
               {#if $mobileView === 'settings'}
@@ -1897,7 +1898,7 @@
                       mobileView.set('search');
                   }
               }}>
-                  {#if $mobileView === 'search'}✕{:else}🔍{/if}
+                  {#if $mobileView === 'search'}<div class="icon-svg">{@html Icons.X}</div>{:else}<div class="icon-svg">{@html Icons.Search}</div>{/if}
               </button>
           {/if}
       </div>
@@ -1909,7 +1910,9 @@
           {#each folders.sort((a, b) => a.position - b.position) as folder}
              <div class="mobile-tab" class:active={activeFolderId === folder.id} on:click={() => activeFolderId = folder.id}>{folder.name}</div>
           {/each}
-          <div class="mobile-tab icon-tab" on:click={() => { showCreateFolder = true; isEditingFolder = false; editingFolderId = null; newFolderName = ''; }}>➕</div>
+          <div class="mobile-tab icon-tab" on:click={() => { showCreateFolder = true; isEditingFolder = false; editingFolderId = null; newFolderName = ''; }}>
+              <div class="icon-svg-sm">{@html Icons.Plus}</div>
+          </div>
       </div>
       {/if}
       {/if}
@@ -1937,7 +1940,9 @@
                   {/if}
               </div>
 
-              <button class="fab-btn" on:click={() => showAddContact = true}>✏️</button>
+              <button class="fab-btn" on:click={() => showAddContact = true}>
+                  <div class="icon-svg">{@html Icons.Edit}</div>
+              </button>
               
               {#if showAddContact}
                   <div class="modal-backdrop animate-fade-in" on:click|self={() => showAddContact = false}>
@@ -1957,7 +1962,9 @@
           {:else if $mobileView === 'chat'}
                <div class="mobile-chat-container">
                    <div class="mobile-chat-header">
-                       <button class="btn-icon" on:click={goBack}>⬅️</button>
+                       <button class="btn-icon" on:click={goBack}>
+                           <div class="icon-svg">{@html Icons.ArrowLeft}</div>
+                       </button>
                        <div class="mobile-chat-info" on:click={openContactProfile}>
                            {#if selectedContact}
                                <div class="chat-avatar-small" style="background: linear-gradient(135deg, hsl({selectedContact.id.charCodeAt(0) * 10}, 70%, 50%), hsl({selectedContact.id.charCodeAt(1) * 10}, 70%, 40%))">
@@ -2028,16 +2035,24 @@
                         <div class="attachment-preview">
                            {#each selectedFiles as file, i}
                                <div class="preview-item">
-                                   <div class="file-icon-preview">📄</div>
-                                   <button class="btn-remove-att" on:click={() => removeFile(i)}>X</button>
+                                   <div class="file-icon-preview">
+                                       <div class="icon-svg">{@html Icons.File}</div>
+                                   </div>
+                                   <button class="btn-remove-att" on:click={() => removeFile(i)}>
+                                       <div class="icon-svg-sm">{@html Icons.X}</div>
+                                   </button>
                                </div>
                            {/each}
                         </div>
                        {/if}
                        <div class="input-area">
-                           <button class="btn-icon" on:click={handleSelectFiles}>📎</button>
+                           <button class="btn-icon" on:click={handleSelectFiles} title="Прикрепить файл">
+                               <div class="icon-svg">{@html Icons.Paperclip}</div>
+                           </button>
                            <textarea class="message-input" placeholder="Сообщение" bind:value={newMessage} rows="1" style="max-height: 100px;"></textarea>
-                           <button class="btn-send" on:click={sendMessage}>➤</button>
+                           <button class="btn-send" on:click={sendMessage}>
+                               <div class="icon-svg">{@html Icons.Send}</div>
+                           </button>
                        </div>
                    </div>
                </div>
@@ -2045,20 +2060,24 @@
           {:else if $mobileView === 'settings'}
                <div class="mobile-settings-container">
                    <div class="settings-header">
-                       <button class="btn-icon" on:click={goBack}>⬅️</button>
+                       <button class="btn-icon" on:click={goBack}>
+                           <div class="icon-svg">{@html Icons.ArrowLeft}</div>
+                       </button>
                        <h2>Настройки</h2>
                    </div>
                    {#if settingsView === 'menu'}
                        <div class="settings-menu">
                           {#each settingsCategories as cat}
                             <div class="settings-menu-item" on:click={() => openSettingsCategory(cat.id)} style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px;">
-                               <span>{cat.icon}</span> <span style="flex:1">{cat.name}</span> <span>➜</span>
+                               <span class="icon-svg">{@html cat.icon}</span> <span style="flex:1">{cat.name}</span> <span class="icon-svg">{@html Icons.ChevronRight}</span>
                             </div>
                           {/each}
                        </div>
                    {:else}
                        <div class="settings-details">
-                           <button class="btn-text" on:click={backToSettingsMenu} style="padding: 10px;">⬅️ Назад</button>
+                           <button class="btn-text" on:click={backToSettingsMenu} style="padding: 10px; display:flex; align-items:center; gap:6px;">
+                                <div class="icon-svg-sm">{@html Icons.ArrowLeft}</div> Назад
+                           </button>
                            {#if activeSettingsTab === 'profile'}
                                <div class="settings-section">
                                    <div style="text-align: center; margin: 20px;">
@@ -3170,6 +3189,28 @@
       font-style: italic;
       display: inline-block;
   }
+
+  /* Icons */
+  .icon-svg {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+  .icon-svg :global(svg) {
+      width: 100%;
+      height: 100%;
+  }
+  
+  .icon-svg-sm {
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+  .icon-svg-sm :global(svg) { width: 100%; height: 100%; }
 
   /* === Mobile Layout Styles === */
   .main-screen.mobile-layout {

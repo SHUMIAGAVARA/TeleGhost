@@ -1,5 +1,6 @@
 <script>
   import { onMount, tick } from 'svelte';
+  import { fade, scale, fly } from 'svelte/transition';
   import { EventsOn } from '../wailsjs/runtime/runtime.js';
   import { 
     Login, 
@@ -1365,105 +1366,140 @@
 </div>
 {/if}
 
-<!-- Login/Profile Selection Screen -->
+<!-- Redesigned Login/Profile Selection Screen -->
 {#if screen === 'login'}
-<div class="login-screen">
-  <div class="login-container animate-fade-in" style="max-width: {authScreen === 'profiles' ? '500px' : '420px'};">
-    <div class="login-logo animate-float">
-      <img src={logo} alt="TeleGhost" class="logo-img" />
-    </div>
-    <h1 class="login-title">TeleGhost</h1>
+<div class="login-screen bg-animated" in:fade={{duration: 400}}>
+  <div class="login-container glass-panel animate-fade-in" 
+       in:scale={{duration: 500, start: 0.95}}
+       style="max-width: {authScreen === 'profiles' ? '540px' : '440px'}; padding: 40px; border-radius: 28px;">
     
+    <div class="login-logo animate-float" style="margin-bottom: 32px;">
+      <img src={logo} alt="TeleGhost" style="width: 80px; height: 80px; filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.4));" />
+    </div>
+    
+    <h1 class="login-title" style="font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; background: linear-gradient(to right, #fff, #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">TeleGhost</h1>
+
     {#if !profilesLoaded}
-      <div style="padding: 40px; text-align: center;">
-        <span class="spinner" style="width: 32px; height: 32px; border-width: 3px;"></span>
-        <p style="margin-top: 16px; color: var(--text-secondary); font-size: 14px;">Загрузка профилей...</p>
+      <div style="padding: 60px 0; text-align: center;" out:fade>
+        <div class="spinner" style="width: 40px; height: 40px; border-width: 4px; border-top-color: var(--accent); margin: 0 auto;"></div>
+        <p style="margin-top: 24px; color: var(--text-secondary); font-size: 15px; font-weight: 500; letter-spacing: 0.5px;">Синхронизация профилей...</p>
       </div>
-    {:else if authScreen === 'profiles'}
-      <!-- Profile Selection -->
-      <p class="login-subtitle">Выберите аккаунт</p>
-      <div class="profiles-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; margin-bottom: 24px;">
-        {#each allProfiles as p}
-          <div class="profile-card animate-card" on:click={() => selectProfileForLogin(p)} style="background: var(--bg-tertiary); padding: 20px; border-radius: 16px; cursor: pointer; border: 1px solid var(--border); transition: all 0.2s;">
-            <div class="profile-avatar" style="width: 60px; height: 60px; margin: 0 auto 12px; background: linear-gradient(135deg, hsl({p.id.charCodeAt(0) * 10}, 70%, 50%), hsl({p.id.charCodeAt(1) * 10}, 70%, 40%)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">
-              {getInitials(p.name)}
+    {:else}
+      <div in:fade={{duration: 300, delay: 100}}>
+        {#if authScreen === 'profiles'}
+          <p class="login-subtitle" style="color: var(--text-secondary); margin-bottom: 32px;">Выберите аккаунт для входа</p>
+          
+          <div class="profiles-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px; margin-bottom: 32px;">
+            {#each allProfiles as p}
+              <div class="profile-item animate-card" 
+                   on:click={() => selectProfileForLogin(p)}
+                   style="background: rgba(255,255,255,0.05); padding: 24px 16px; border-radius: 20px; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;">
+                <div class="profile-avatar" style="width: 64px; height: 64px; margin: 0 auto 16px; background: linear-gradient(135deg, hsl({p.id.charCodeAt(0) * 15}, 70%, 60%), hsl({p.id.charCodeAt(1) * 15}, 80%, 40%)); border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transform: rotate(-5deg);">
+                  {getInitials(p.name)}
+                </div>
+                <div class="profile-name" style="font-weight: 600; font-size: 15px; text-align: center; color: #fff;">{p.name}</div>
+                <div class="hover-overlay" style="position: absolute; inset: 0; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.05)); opacity: 0; transition: opacity 0.3s;"></div>
+              </div>
+            {/each}
+            
+            <div class="profile-item add-profile" 
+                 on:click={startCreateProfile}
+                 style="background: rgba(99, 102, 241, 0.1); padding: 24px 16px; border-radius: 20px; cursor: pointer; border: 2px dashed rgba(99, 102, 241, 0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s;">
+              <div style="font-size: 32px; color: var(--accent); margin-bottom: 12px; font-weight: 300;">+</div>
+              <div style="font-size: 13px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 1px;">Создать</div>
             </div>
-            <div class="profile-name" style="font-weight: 600; font-size: 14px; text-align: center; color: white;">{p.name}</div>
           </div>
-        {/each}
-        
-        <!-- Add Profile Button -->
-        <div class="profile-card add-profile-card" on:click={startCreateProfile} style="background: rgba(108, 92, 231, 0.1); padding: 20px; border-radius: 16px; cursor: pointer; border: 2px dashed var(--accent); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.8;">
-          <div style="font-size: 24px; color: var(--accent); margin-bottom: 8px;">+</div>
-          <div style="font-size: 12px; font-weight: 500; color: var(--accent);">Создать</div>
-        </div>
-      </div>
-      
-      <div class="divider" style="margin-bottom: 16px;"><span>или</span></div>
-      <button class="btn-text" on:click={() => authScreen = 'seed'}>Войти по seed-фразе</button>
+          
+          <div class="divider-text" style="display: flex; align-items: center; margin-bottom: 24px; color: rgba(255,255,255,0.2); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">
+            <div style="flex:1; height:1px; background: rgba(255,255,255,0.1);"></div>
+            <span style="padding: 0 16px;">или</span>
+            <div style="flex:1; height:1px; background: rgba(255,255,255,0.1);"></div>
+          </div>
+          
+          <button class="btn-glass" on:click={() => authScreen = 'seed'} style="width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: #fff; padding: 14px; border-radius: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+            Войти по seed-фразе
+          </button>
 
-    {:else if authScreen === 'pin'}
-      <!-- PIN Entry -->
-      <p class="login-subtitle">Введите ПИН для <b>{selectedProfile?.name}</b></p>
-      <div class="login-form">
-        <input 
-          type="password" 
-          class="input-field" 
-          placeholder="ПИН-код" 
-          bind:value={pinInput} 
-          style="text-align: center; font-size: 24px; letter-spacing: 8px;"
-          on:keydown={(e) => e.key === 'Enter' && handleUnlock()}
-          autoFocus 
-        />
-        <button class="btn-primary" on:click={handleUnlock} disabled={isLoading || pinInput.length < 1}>
-          {#if isLoading}<span class="spinner"></span>{:else}Разблокировать {/if}
-        </button>
-        <button class="btn-text" on:click={() => authScreen = 'profiles'}>← Назад к списку</button>
-      </div>
+        {:else if authScreen === 'pin'}
+          <div in:fly={{y: 20, duration: 400}}>
+            <p class="login-subtitle" style="margin-bottom: 24px;">Введите ПИН для <b>{selectedProfile?.name}</b></p>
+            <div class="pin-entry-box">
+              <input 
+                type="password" 
+                class="input-premium" 
+                placeholder="••••" 
+                bind:value={pinInput} 
+                style="text-align: center; font-size: 36px; letter-spacing: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 100%; padding: 20px; border-radius: 18px; margin-bottom: 24px; outline: none;"
+                on:keydown={(e) => e.key === 'Enter' && handleUnlock()}
+                autoFocus 
+              />
+              <button class="btn-primary-premium" on:click={handleUnlock} disabled={isLoading || pinInput.length < 1}
+                      style="width: 100%; padding: 18px; border-radius: 18px; background: var(--accent); color: white; border: none; font-weight: 700; font-size: 16px; cursor: pointer; box-shadow: var(--accent-glow); transition: all 0.3s; margin-bottom: 16px;">
+                {#if isLoading}<span class="spinner"></span>{:else}Разблокировать{/if}
+              </button>
+              <button class="btn-link" on:click={() => authScreen = 'profiles'} style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-weight: 500; font-size: 14px;">
+                ← Назад к списку
+              </button>
+            </div>
+          </div>
 
-    {:else if authScreen === 'create'}
-      <!-- Create Profile -->
-      <p class="login-subtitle">Создание нового профиля</p>
-      <div class="login-form">
-        <input type="text" class="input-field" placeholder="Имя (для списка)" bind:value={newProfileName} maxLength="20" />
-        <input type="password" class="input-field" placeholder="ПИН-код (мин. 6 цифр)" bind:value={newProfilePin} />
-        <button class="btn-primary" on:click={handleFinishCreateProfile} disabled={isLoading}>
-          {#if isLoading}<span class="spinner"></span>{:else}Создать профиль{/if}
-        </button>
-        <button class="btn-text" on:click={() => authScreen = allProfiles.length > 0 ? 'profiles' : 'seed'}>Отмена</button>
-      </div>
+        {:else if authScreen === 'create'}
+          <div in:fly={{y: 20, duration: 400}}>
+            <p class="login-subtitle" style="margin-bottom: 24px;">Новый профиль</p>
+            <div class="create-form" style="display: flex; flex-direction: column; gap: 16px;">
+              <input type="text" class="input-premium-small" placeholder="Имя профиля" bind:value={newProfileName} maxLength="20"
+                     style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px 18px; border-radius: 14px; outline: none;" />
+              <input type="password" class="input-premium-small" placeholder="ПИН-код (цифры)" bind:value={newProfilePin}
+                     style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px 18px; border-radius: 14px; outline: none;" />
+              <p style="font-size: 11px; color: var(--text-secondary); text-align: left; padding: 0 4px;">ПИН-код используется для шифрования данных вашего кошелька локально.</p>
+              
+              <button class="btn-primary-premium" on:click={handleFinishCreateProfile} disabled={isLoading}
+                      style="width: 100%; padding: 16px; border-radius: 16px; background: var(--accent); color: white; border: none; font-weight: 700; cursor: pointer; margin-top: 8px;">
+                {#if isLoading}<span class="spinner"></span>{:else}Создать профиль{/if}
+              </button>
+              <button class="btn-link" on:click={() => authScreen = allProfiles.length > 0 ? 'profiles' : 'seed'}>Отмена</button>
+            </div>
+          </div>
 
-    {:else if authScreen === 'seed'}
-      <!-- Classic Seed Login -->
-      <p class="login-subtitle">Анонимный мессенджер на I2P</p>
-      <div class="login-form">
-        <textarea
-          class="seed-input"
-          placeholder="Введите seed-фразу (12 слов)"
-          bind:value={seedPhrase}
-          rows="3"
-        ></textarea>
-        
-        <button class="btn-primary animate-pulse-hover" on:click={handleLogin} disabled={isLoading}>
-          {#if isLoading}<span class="spinner"></span>{:else}Войти{/if}
-        </button>
-        
-        <div class="divider"><span>или</span></div>
-        
-        <button class="btn-secondary" on:click={startCreateProfile} disabled={isLoading}>
-          Создать новый аккаунт
-        </button>
-        
-        {#if allProfiles.length > 0}
-          <button class="btn-text" style="margin-top: 8px;" on:click={() => authScreen = 'profiles'}>← К списку профилей</button>
+        {:else if authScreen === 'seed'}
+          <div in:fly={{y: 20, duration: 400}}>
+            <p class="login-subtitle" style="margin-bottom: 24px;">Вход по фразе</p>
+            <div class="seed-form" style="display: flex; flex-direction: column; gap: 16px;">
+              <textarea
+                class="seed-input-premium"
+                placeholder="12 слов через пробел..."
+                bind:value={seedPhrase}
+                rows="3"
+                style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 18px; border-radius: 18px; outline: none; resize: none; font-family: monospace; font-size: 14px; line-height: 1.6;"
+              ></textarea>
+              
+              <button class="btn-primary-premium" on:click={handleLogin} disabled={isLoading}
+                      style="width: 100%; padding: 16px; border-radius: 16px; background: var(--accent); color: white; border: none; font-weight: 700;">
+                {#if isLoading}<span class="spinner"></span>{:else}Войти в чат{/if}
+              </button>
+              
+              <div class="divider-text" style="display: flex; align-items: center; margin: 8px 0; color: rgba(255,255,255,0.1); font-size: 10px; font-weight: 800; letter-spacing: 2px;">
+                <div style="flex:1; height:1px; background: rgba(255,255,255,0.05);"></div>
+                <span style="padding: 0 12px;">ИЛИ</span>
+                <div style="flex:1; height:1px; background: rgba(255,255,255,0.05);"></div>
+              </div>
+              
+              <button class="btn-glass" on:click={startCreateProfile} disabled={isLoading} style="width: 100%; padding: 14px; border-radius: 14px; border: 1px solid rgba(99, 102, 241, 0.3); background: transparent; color: var(--accent); font-weight: 600; cursor: pointer;">
+                Создать новый аккаунт
+              </button>
+              
+              {#if allProfiles.length > 0}
+                <button class="btn-link" style="margin-top: 8px;" on:click={() => authScreen = 'profiles'}>← Назад к профилям</button>
+              {/if}
+            </div>
+          </div>
         {/if}
       </div>
     {/if}
 
-    <p class="login-footer">🔒 Все данные хранятся локально в зашифрованных профилях</p>
+    <p class="login-footer" style="margin-top: 40px; font-size: 11px; color: rgba(255,255,255,0.3); font-weight: 500; letter-spacing: 0.5px;">🔒 ВСЕ ДАННЫЕ ЗАШИФРОВАНЫ И ХРАНЯТСЯ ЛОКАЛЬНО</p>
   </div>
 </div>
-
 <!-- Mnemonic Modal -->
 {#if showMnemonicModal}
 <div class="modal-backdrop animate-fade-in">
@@ -2370,34 +2406,26 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, #1a1a2e 100%);
+    overflow: hidden;
+    position: relative;
   }
 
   .login-container {
     width: 100%;
-    max-width: 420px;
-    padding: 48px;
+    margin: 20px;
     text-align: center;
-    background: var(--bg-secondary);
-    border-radius: var(--radius);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    border: 1px solid var(--border);
+    z-index: 10;
   }
 
-  .login-logo { margin-bottom: 24px; }
+  .login-logo { margin-bottom: 32px; }
   .logo-img { width: 100px; height: 100px; border-radius: 50%; }
 
   .login-title {
-    font-size: 36px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 8px;
-    background: linear-gradient(135deg, var(--accent-light), var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-size: 32px;
+    font-weight: 800;
+    color: white;
   }
 
-  .login-subtitle { color: var(--text-secondary); margin-bottom: 32px; }
   .login-form { display: flex; flex-direction: column; gap: 16px; }
 
   .seed-input, .input-field {

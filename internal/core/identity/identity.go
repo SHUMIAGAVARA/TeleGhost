@@ -4,11 +4,13 @@ package identity
 
 import (
 	"crypto/ed25519"
+	"crypto/rand"
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io"
 
 	"github.com/tyler-smith/go-bip39"
 	"golang.org/x/crypto/chacha20poly1305"
@@ -138,6 +140,36 @@ func generateUserID(publicKey ed25519.PublicKey) string {
 	hash := sha256.Sum256(publicKey)
 	// Используем первые 16 байт в base64 = 22 символа
 	return base64.RawURLEncoding.EncodeToString(hash[:16])
+}
+
+// Encrypt шифрует данные используя EncryptionKey (ChaCha20-Poly1305)
+func (k *Keys) Encrypt(plaintext []byte) ([]byte, error) {
+	aead, err := chacha20poly1305.New(k.EncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	nonce := make([]byte, aead.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return nil, err
+	}
+
+	return aead.Seal(nonce, nonce, plaintext, nil), nil
+}
+
+// Decrypt дешифрует данные используя EncryptionKey (ChaCha20-Poly1305)
+func (k *Keys) Decrypt(ciphertext []byte) ([]byte, error) {
+	aead, err := chacha20poly1305.New(k.EncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ciphertext) < aead.NonceSize() {
+		return nil, errors.New("ciphertext too short")
+	}
+
+	nonce, encryptedPayload := ciphertext[:aead.NonceSize()], ciphertext[aead.NonceSize():]
+	return aead.Open(nil, nonce, encryptedPayload, nil)
 }
 
 // SignMessage подписывает сообщение приватным ключом

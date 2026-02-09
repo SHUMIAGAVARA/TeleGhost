@@ -231,3 +231,119 @@
     background: var(--bg-tertiary);
     color: var(--text-primary);
 }
+/* Settings Sidebar */
+.settings-sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.settings-sidebar-header {
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid transparent; /* Potential for divider */
+}
+
+.settings-menu {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    gap: 4px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.settings-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    background: transparent;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.settings-menu-item:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    transform: translateX(4px);
+}
+
+.settings-menu-item.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+}
+
+.settings-menu-item .icon {
+    font-size: 20px;
+    width: 24px;
+    display: flex;
+    justify-content: center;
+}
+
+.settings-menu-item .name {
+    font-size: 15px;
+}
+
+/* Settings Content Area */
+.settings-content-area {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+}
+
+/* Settings Icon Active State in Sidebar */
+.rail-button.active {
+    background: rgba(108, 92, 231, 0.15);
+    color: var(--accent);
+    border: 1px solid rgba(108, 92, 231, 0.3);
+}
+
+.settings-menu-item .arrow {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text-secondary);
+    opacity: 0.5;
+}
+
+/* Hamburger Active State */
+.rail-button.active .hamburger-icon span {
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+}
+
+/* Settings View Transitions */
+.settings-view-menu,
+.settings-view-details {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.settings-view-details {
+    animation: slideInRight 0.2s ease-out;
+}
+
+.settings-view-menu {
+    animation: slideInLeft 0.2s ease-out;
+}

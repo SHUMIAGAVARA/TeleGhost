@@ -166,9 +166,9 @@
 
   // Reactive folders list for UI
   $: uiFolders = [
-    { id: 'all', name: 'Все', icon: '💬' },
+    { id: 'all', name: 'Все', icon: Icons.Chat },
     ...folders.sort((a, b) => a.position - b.position),
-    { id: 'add', name: 'Папка', icon: '➕' }
+    { id: 'add', name: 'Папка', icon: Icons.Plus }
   ];
 
   let activeFolderId = 'all';
@@ -421,7 +421,7 @@
 
       // Обработка входящего запроса дружбы (handshake)
       EventsOn('new_contact', (data) => {
-        showToast(`📩 Новый контакт: ${data.nickname}`, 'success', 5000);
+        showToast(`Новый контакт: ${data.nickname}`, 'success', 5000);
         loadContacts();
       });
 
@@ -1180,57 +1180,6 @@
   {/each}
 </div>
 
-<!-- Context Menu for Contacts -->
-{#if contextMenu.show}
-<div class="context-menu" style="top: {contextMenu.y}px; left: {contextMenu.x}px" on:click|stopPropagation>
-  <!-- Folder actions -->
-  {#if folders.length > 0}
-      <div class="context-header" style="padding: 8px 12px; font-size: 12px; opacity: 0.5;">ПАПКИ</div>
-      {#each folders as folder (folder.id)}
-          {#if folder.chatIds && folder.chatIds.includes(contextMenu.contact.id)}
-              <div class="context-item" on:click={() => { removeChatFromFolder(folder.id, contextMenu.contact.id); contextMenu.show = false; }}>
-                  ❌ Из "{folder.name}"
-              </div>
-          {:else}
-              <div class="context-item" on:click={() => { addChatToFolder(folder.id, contextMenu.contact.id); contextMenu.show = false; }}>
-                  ➕ В "{folder.name}"
-              </div>
-          {/if}
-      {/each}
-      <div class="divider"></div>
-  {/if}
-
-  <div class="context-item" on:click={deleteContactFromMenu} on:keydown={(e) => e.key === 'Enter' && deleteContactFromMenu()} role="button" tabindex="0">
-    🗑️ Удалить контакт
-  </div>
-</div>
-{/if}
-
-<!-- Context Menu for Messages -->
-{#if messageContextMenu.show && messageContextMenu.message}
-<div class="context-menu" style="top: {messageContextMenu.y}px; left: {messageContextMenu.x}px" on:click|stopPropagation>
-  {#if messageContextMenu.message.isOutgoing}
-    <div class="context-item" on:click={() => startEditMessage(messageContextMenu.message)} on:keydown={(e) => e.key === 'Enter' && startEditMessage(messageContextMenu.message)} role="button" tabindex="0">
-      ✏️ Редактировать
-    </div>
-    <div class="context-item" on:click={() => deleteMsg(messageContextMenu.message, true)} on:keydown={(e) => e.key === 'Enter' && deleteMsg(messageContextMenu.message, true)} role="button" tabindex="0">
-      🗑️ Удалить у всех
-    </div>
-  {/if}
-  <div class="context-item" on:click={() => deleteMsg(messageContextMenu.message, false)} on:keydown={(e) => e.key === 'Enter' && deleteMsg(messageContextMenu.message, false)} role="button" tabindex="0">
-    🗑️ Удалить у себя
-  </div>
-  <div class="context-item" on:click={() => copyMessageText(messageContextMenu.message)} on:keydown={(e) => e.key === 'Enter' && copyMessageText(messageContextMenu.message)} role="button" tabindex="0">
-    📋 Копировать текст
-  </div>
-  {#if messageContextMenu.imagePath}
-    <div class="context-item" on:click={() => copyImageToClipboard(messageContextMenu.imagePath)} on:keydown={(e) => e.key === 'Enter' && copyImageToClipboard(messageContextMenu.imagePath)} role="button" tabindex="0">
-      🖼️ Копировать изображение
-    </div>
-  {/if}
-</div>
-{/if}
-
 <!-- Contact Profile Modal -->
 {#if showContactProfile && profileContact}
 <div class="modal-backdrop animate-fade-in" on:click|self={() => showContactProfile = false}>
@@ -1246,19 +1195,19 @@
          
          <div class="settings-section">
             <details class="i2p-address-details">
-              <summary style="color: white !important; cursor: pointer;">🔗 I2P Адрес <span class="hint" style="color: rgba(255,255,255,0.7) !important;">(нажмите чтобы показать)</span></summary>
+              <summary style="color: white !important; cursor: pointer; display:flex; align-items:center; gap:6px;"><span class="icon-svg-sm">{@html Icons.Link}</span> I2P Адрес <span class="hint" style="color: rgba(255,255,255,0.7) !important;">(нажмите чтобы показать)</span></summary>
               <div class="destination-box" style="margin-top: 10px;">
                  <code class="destination-code" style="word-break: break-all; font-size: 10px;">{profileContact.i2pAddress}</code>
               </div>
               <button class="btn-small btn-secondary" style="margin-top: 8px; width: 100%;" on:click={() => { CopyToClipboard(profileContact.i2pAddress); showToast('I2P адрес скопирован!', 'success'); }}>
-                📋 Скопировать адрес
+                <span class="icon-svg-sm" style="margin-right:6px;">{@html Icons.Copy}</span> Скопировать адрес
               </button>
             </details>
          </div>
      </div>
      <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
        <button class="btn-secondary" on:click={() => showContactProfile = false}>Закрыть</button>
-       <button class="btn-primary" on:click={() => requestProfileUpdate(profileContact.id)}>🔄 Обновить профиль</button>
+       <button class="btn-primary" on:click={() => requestProfileUpdate(profileContact.id)}><span class="icon-svg-sm" style="margin-right:6px;">{@html Icons.Refresh}</span> Обновить профиль</button>
      </div>
   </div>
 </div>
@@ -1274,13 +1223,13 @@
      <div class="modal-body">
          <div class="input-wrapper" style="margin-bottom: 20px;">
             <label style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px; display: block;">Название:</label>
-            <input type="text" class="input-field" placeholder="Название папки" bind:value={newFolderName} on:keydown={(e) => e.key === 'Enter' && createFolder()} autofocus />
+            <input type="text" class="input-field" placeholder="Название папки" bind:value={newFolderName} on:keydown={(e) => e.key === 'Enter' && createFolder()} maxlength="12" autofocus />
          </div>
          
          <div class="input-wrapper" style="margin-bottom: 20px;">
             <label style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px; display: block;">Иконка (эмодзи):</label>
             <div style="display: flex; gap: 8px;">
-               <input type="text" class="input-field" placeholder="🛠️" bind:value={newFolderIcon} style="width: 60px; text-align: center; font-size: 20px;" maxlength="2" />
+               <input type="text" class="input-field" placeholder="Icon" bind:value={newFolderIcon} style="width: 60px; text-align: center; font-size: 20px;" maxlength="2" />
                <div style="flex: 1; display: flex; align-items: center; color: var(--text-secondary); font-size: 12px;">Введите любой эмодзи или выберите из списка ниже</div>
             </div>
          </div>
@@ -1379,7 +1328,7 @@
       <h2>🔐 Ваш секретный ключ</h2>
     </div>
     <div class="modal-body">
-      <p class="warning-text">⚠️ Сохраните эти 12 слов. Без них восстановить доступ невозможно!</p>
+      <p class="warning-text" style="display:flex; align-items:center; gap:8px;"><span class="icon-svg-sm">{@html Icons.AlertTriangle}</span> Сохраните эти 12 слов. Без них восстановить доступ невозможно!</p>
       
       <div class="mnemonic-grid">
         {#each newMnemonic.split(' ') as word, i}
@@ -1416,9 +1365,7 @@
 
 
     <div class="rail-button" class:active={showSettings} on:click={toggleSettings}>
-      <div class="hamburger-icon">
-        <span></span><span></span><span></span>
-      </div>
+      <div class="icon-svg">{@html Icons.Menu}</div>
     </div>
 
     <div class="folders-list">
@@ -1446,10 +1393,8 @@
           title={folder.id === 'add' ? 'Создать папку' : folder.name}
           style={folder.id === 'add' ? 'margin-top: 10px; opacity: 0.7;' : ''}
         >
-          <div class="folder-icon">{folder.icon}</div>
-          {#if folder.id === 'all'}
-             <div class="folder-name">Все чаты</div>
-          {/if}
+          <div class="folder-icon">{@html folder.icon}</div>
+          <div class="folder-name">{folder.id === 'all' ? 'Все' : folder.name}</div>
         </div>
       {/each}
     </div>
@@ -1459,14 +1404,14 @@
   <div class="sidebar" style="width: {sidebarWidth}px; min-width: 240px; flex: none; display: flex; flex-direction: column;">
     <div class="sidebar-header" style="padding: 10px; background: var(--bg-secondary);">
       <div class="search-input-wrapper" style="background: var(--bg-input); border-radius: 18px; padding: 8px 12px; display: flex; align-items: center; gap: 8px;">
-        <span class="search-icon" style="opacity: 0.5;">🔍</span>
+        <span class="search-icon" style="opacity: 0.5;"><div class="icon-svg-sm">{@html Icons.Search}</div></span>
         <input type="text" placeholder="Поиск" bind:value={searchQuery} style="background: transparent; border: none; color: white; width: 100%; font-size: 14px; outline: none; font-family: inherit;" />
       </div>
     </div>
     
     <div class="sidebar-actions" style="display: flex; gap: 10px; padding: 0 10px 10px;">
        <button class="btn-primary" on:click={() => showAddContact = !showAddContact} title="Добавить контакт / Новый чат" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px;">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          <div class="icon-svg-sm">{@html Icons.MessageSquarePlus}</div>
           <span style="font-weight: 500;">Новый чат</span>
        </button>
     </div>
@@ -1487,7 +1432,7 @@
         <button class="btn-small btn-primary" on:click={handleAddContactManual}>Добавить</button>
       </div>
       <button class="btn-clipboard" on:click={handleAddContactFromClipboard}>
-        📋 Из буфера обмена
+        <span class="icon-svg-sm" style="margin-right:6px;">{@html Icons.Copy}</span> Из буфера обмена
       </button>
     </div>
     {/if}
@@ -1516,7 +1461,7 @@
       
       {#if contacts.length === 0}
         <div class="no-contacts animate-fade-in">
-          <div class="no-contacts-icon">👻</div>
+          <div class="no-contacts-icon"><div class="icon-svg" style="width:48px;height:48px;">{@html Icons.Ghost}</div></div>
           <p>Нет контактов</p>
           <p class="hint">Нажмите + чтобы добавить</p>
         </div>
@@ -1526,9 +1471,7 @@
     <!-- My Destination -->
     <div class="my-destination">
       <button class="btn-copy" on:click={copyDestination}>
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-          <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
-        </svg>
+        <div class="icon-svg-sm">{@html Icons.Copy}</div>
         <span>Копировать мой I2P адрес</span>
       </button>
     </div>
@@ -1551,7 +1494,7 @@
                   <h2 style="font-size: 28px; font-weight: 700; margin: 0; color: white !important;">Настройки</h2>
                   
                   <button class="btn-icon" on:click={() => showSettings = false} title="Закрыть" style="background: rgba(255,255,255,0.05); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                    <div class="icon-svg">{@html Icons.X}</div>
                   </button>
                </div>
 
@@ -1562,9 +1505,9 @@
                        on:click={() => openSettingsCategory(cat.id)}
                        style="padding: 12px 16px; margin-bottom: 8px; background: var(--bg-secondary); border-radius: 18px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: transform 0.2s, background 0.2s;"
                     >
-                       <span class="icon" style="font-size: 20px;">{cat.icon}</span>
+                       <span class="icon-svg">{@html cat.icon}</span>
                        <span class="name" style="font-weight: 500; font-size: 15px; flex: 1; color: var(--text-primary);">{cat.name}</span>
-                       <span class="arrow" style="opacity: 0.3; font-size: 14px;">➜</span>
+                       <span class="arrow" style="opacity: 0.3; display:flex;">{@html Icons.ChevronRight}</span>
                     </div>
                   {/each}
                </div>
@@ -1575,7 +1518,7 @@
             <div class="settings-view-details" style="width: 100%; height: 100%; display: flex; flex-direction: column; animation: slideInRight 0.3s ease-out;">
                 <div class="settings-header" style="padding: 16px 24px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--border); background: var(--bg-secondary);">
                   <button class="btn-icon" on:click={backToSettingsMenu} title="Назад" style="background: transparent;">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                    <div class="icon-svg">{@html Icons.ArrowLeft}</div>
                   </button>
                   <h2 style="font-size: 20px; font-weight: 600; margin: 0; color: white !important;">
                     {settingsCategories.find(c => c.id === activeSettingsTab)?.name}
@@ -1595,7 +1538,7 @@
                                 {getInitials(profileNickname)}
                               </div>
                             {/if}
-                            <button class="avatar-edit-btn animate-pop" style="position: absolute; bottom: 0; right: 0; background: var(--accent); border: 4px solid var(--bg-primary); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);" on:click={() => avatarFileInput.click()}>📷</button>
+                            <button class="avatar-edit-btn animate-pop" style="position: absolute; bottom: 0; right: 0; background: var(--accent); border: 4px solid var(--bg-primary); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);" on:click={() => avatarFileInput.click()}><div class="icon-svg-sm">{@html Icons.Camera}</div></button>
                             <input type="file" bind:this={avatarFileInput} on:change={handleAvatarChange} accept="image/*" style="display: none;" />
                         </div>
                         
@@ -1706,7 +1649,7 @@
         <div class="messages-container">
           {#each messages as msg (msg.id)}
             <div class="message animate-message" class:outgoing={msg.isOutgoing}>
-              <div class="message-bubble" class:outgoing={msg.isOutgoing} on:contextmenu={(e) => showMessageMenu(e, msg)}>
+              <div class="message-bubble" class:outgoing={msg.isOutgoing} on:contextmenu|preventDefault={(e) => showMessageMenu(e, msg)}>
                 <!-- Image Rendering -->
                 {#if msg.attachments && msg.attachments.length > 0}
                   <div class="message-images" style="grid-template-columns: {msg.attachments.length === 1 ? '1fr' : 'repeat(2, 1fr)'}">
@@ -1725,7 +1668,7 @@
                                  on:click={(e) => previewImage = e.currentTarget.src}
                              />
                          {:else}
-                             <div class="file-attachment-card" on:click={() => openFile(att.local_path)} on:contextmenu|preventDefault={(e) => showMessageMenu(e, msg)} title="Нажмите чтобы открыть файл">
+                             <div class="file-attachment-card" on:click|stopPropagation={() => openFile(att.local_path)} on:contextmenu|preventDefault={(e) => showMessageMenu(e, msg)} title="Нажмите чтобы открыть файл">
                                  <div class="file-icon">📄</div>
                                  <div class="file-details">
                                      <div class="file-name">{att.filename || 'File'}</div>
@@ -1759,7 +1702,7 @@
                 {:else}
                   {#if msg.contentType === 'file_offer'}
                       <div class="file-offer-card">
-                          <div class="file-icon-large">📁</div>
+                          <div class="file-icon-large"><div class="icon-svg" style="width:48px;height:48px;">{@html Icons.Folder}</div></div>
                           <div class="file-info">
                               <div class="file-title">Предложено файлов: {msg.fileCount || (msg.filenames ? msg.filenames.length : '?')}</div>
                               <div class="file-size">Общий размер: {msg.totalSize ? (msg.totalSize / 1024 / 1024).toFixed(2) + ' MB' : 'Неизвестно'}</div>
@@ -1775,8 +1718,8 @@
                           {#if msg.isOutgoing}
                               <div class="status-badge">⏳ Ожидание подтверждения...</div>
                           {:else}
-                              <button class="btn-small btn-success" on:click={() => acceptTransfer(msg)}>✅ Принять</button>
-                              <button class="btn-small btn-danger" on:click={() => declineTransfer(msg)}>❌ Отклонить</button>
+                              <button class="btn-small btn-success" on:click|stopPropagation={() => acceptTransfer(msg)}><span class="icon-svg-sm" style="margin-right:4px;">{@html Icons.Check}</span> Принять</button>
+                              <button class="btn-small btn-danger" on:click={() => declineTransfer(msg)}><span class="icon-svg-sm" style="margin-right:4px;">{@html Icons.X}</span> Отклонить</button>
                           {/if}
                       </div>
                   {:else}
@@ -1789,7 +1732,7 @@
                   {/if}
                   <span class="message-time">{formatTime(msg.timestamp)}</span>
                   {#if msg.isOutgoing}
-                    <span class="message-status">{msg.status === 'sending' ? '🕐' : '✓'}</span>
+                    <span class="message-status">{msg.status === 'sending' ? 'Sending...' : ''} <div class="icon-svg-sm" style="display:inline-block; width:12px; height:12px;">{@html msg.status === 'sending' ? Icons.Clock : Icons.Check}</div></span>
                   {/if}
                 </div>
               </div>
@@ -1798,7 +1741,7 @@
           
           {#if messages.length === 0}
             <div class="no-messages animate-fade-in">
-              <div class="no-messages-icon">💬</div>
+              <div class="no-messages-icon"><div class="icon-svg" style="width:64px;height:64px;">{@html Icons.MessageSquare}</div></div>
               <p>Начните переписку!</p>
             </div>
           {/if}
@@ -1877,8 +1820,12 @@
       <!-- Mobile Header -->
       {#if $mobileView !== 'chat'}
       <div class="mobile-header">
-          <button class="btn-icon" on:click={toggleSettingsMobile}>
-              <div class="icon-svg">{@html Icons.Menu}</div>
+          <button class="btn-icon" on:click={() => $mobileView === 'list' ? toggleSettingsMobile() : goBack()}>
+              {#if $mobileView === 'list'}
+                 <div class="icon-svg">{@html Icons.Menu}</div>
+              {:else}
+                 <div class="icon-svg">{@html Icons.ArrowLeft}</div>
+              {/if}
           </button>
           <div class="mobile-title">
               {#if $mobileView === 'settings'}
@@ -1983,7 +1930,7 @@
                    <div class="messages-container mobile-messages">
                       {#each messages as msg (msg.id)}
                         <div class="message animate-message" class:outgoing={msg.isOutgoing}>
-                          <div class="message-bubble" class:outgoing={msg.isOutgoing} on:contextmenu={(e) => showMessageMenu(e, msg)}>
+                          <div class="message-bubble" class:outgoing={msg.isOutgoing} on:contextmenu|preventDefault={(e) => showMessageMenu(e, msg)} on:click={(e) => showMessageMenu(e, msg)} role="button" tabindex="0">
                             {#if msg.attachments && msg.attachments.length > 0}
                               <div class="message-images" style="grid-template-columns: {msg.attachments.length === 1 ? '1fr' : 'repeat(2, 1fr)'}">
                                   {#each msg.attachments as att}
@@ -1991,9 +1938,9 @@
                                      {@const isImg = ['jpg','jpeg','png','webp','gif','bmp'].includes(ext) || (att.mimeType && att.mimeType.startsWith('image/'))}
                                      {#if isImg}
                                          <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                         <img use:startLoadingImage={att.local_path} alt="att" class="msg-img" data-path={att.local_path} style="height: {msg.attachments.length === 1 ? 'auto' : '120px'}" on:click={(e) => previewImage = e.currentTarget.src} />
+                                         <img use:startLoadingImage={att.local_path} alt="att" class="msg-img" data-path={att.local_path} style="height: {msg.attachments.length === 1 ? 'auto' : '120px'}" on:click|stopPropagation={(e) => previewImage = e.currentTarget.src} />
                                      {:else}
-                                         <div class="file-attachment-card" on:click={() => openFile(att.local_path)} title="Open">
+                                         <div class="file-attachment-card" on:click|stopPropagation={() => openFile(att.local_path)} title="Open">
                                              <div class="file-icon">📄</div>
                                              <div class="file-details"><div class="file-name">{att.filename||'File'}</div></div>
                                          </div>
@@ -2004,7 +1951,7 @@
                             {#if editingMessageId === msg.id}
                                <div class="message-edit-container">
                                  <textarea class="message-edit-input" bind:value={editMessageContent}></textarea>
-                                 <div class="message-edit-actions"><button class="btn-sm btn-primary" on:click={saveEditMessage}>✓</button><button class="btn-sm btn-secondary" on:click={cancelEdit}>✕</button></div>
+                                 <div class="message-edit-actions"><button class="btn-sm btn-primary" on:click|stopPropagation={saveEditMessage}>✓</button><button class="btn-sm btn-secondary" on:click|stopPropagation={cancelEdit}>✕</button></div>
                                </div>
                             {:else}
                                {#if msg.contentType === 'file_offer'}
@@ -2014,7 +1961,7 @@
                                   </div>
                                   <div class="file-actions" style="margin-top: 10px; display: flex; gap: 8px;">
                                       {#if !msg.isOutgoing}
-                                          <button class="btn-small btn-success" on:click={() => acceptTransfer(msg)}>✅</button>
+                                          <button class="btn-small btn-success" on:click|stopPropagation={() => acceptTransfer(msg)}><span class="icon-svg-sm">{@html Icons.Check}</span></button>
                                       {/if}
                                   </div>
                                {:else}
@@ -2023,7 +1970,7 @@
                             {/if}
                             <div class="message-meta">
                               <span class="message-time">{formatTime(msg.timestamp)}</span>
-                              {#if msg.isOutgoing}<span class="message-status">{msg.status === 'sending' ? '🕐' : '✓'}</span>{/if}
+                              {#if msg.isOutgoing}<span class="message-status"><div class="icon-svg-sm" style="display:inline-block; width:12px; height:12px;">{@html msg.status === 'sending' ? Icons.Clock : Icons.Check}</div></span>{/if}
                             </div>
                           </div>
                         </div>
@@ -2059,12 +2006,7 @@
 
           {:else if $mobileView === 'settings'}
                <div class="mobile-settings-container">
-                   <div class="settings-header">
-                       <button class="btn-icon" on:click={goBack}>
-                           <div class="icon-svg">{@html Icons.ArrowLeft}</div>
-                       </button>
-                       <h2>Настройки</h2>
-                   </div>
+
                    {#if settingsView === 'menu'}
                        <div class="settings-menu">
                           {#each settingsCategories as cat}
@@ -2074,32 +2016,109 @@
                           {/each}
                        </div>
                    {:else}
-                       <div class="settings-details">
-                           <button class="btn-text" on:click={backToSettingsMenu} style="padding: 10px; display:flex; align-items:center; gap:6px;">
-                                <div class="icon-svg-sm">{@html Icons.ArrowLeft}</div> Назад
-                           </button>
-                           {#if activeSettingsTab === 'profile'}
-                               <div class="settings-section">
-                                   <div style="text-align: center; margin: 20px;">
-                                       <div class="profile-avatar-large" style="width:100px;height:100px;margin:0 auto;border-radius:50%;background:#ccc;overflow:hidden;">
-                                           {#if profileAvatar}<img src={profileAvatar} alt="av" style="width:100%;height:100%;object-fit:cover;"/>{:else}👤{/if}
-                                       </div>
-                                       <button class="btn-small" on:click={() => avatarFileInput.click()} style="margin-top:10px;">Изменить фото</button>
-                                       <input type="file" bind:this={avatarFileInput} on:change={handleAvatarChange} accept="image/*" style="display: none;" />
+                        <div class="settings-details animate-slide-in-right">
+                            <button class="btn-text" on:click={backToSettingsMenu} style="padding: 10px; display:flex; align-items:center; gap:6px;">
+                                 <div class="icon-svg-sm">{@html Icons.ArrowLeft}</div> Назад
+                            </button>
+                            
+                            <div class="settings-content-area" style="padding: 20px;">
+                                {#if activeSettingsTab === 'profile'}
+                                   <!-- Profile Content -->
+                                   <div class="settings-section">
+                                     <!-- Avatar -->
+                                     <div class="profile-avatar-large" style="width: 120px; height: 120px; position: relative; margin: 0 auto;">
+                                         {#if profileAvatar}
+                                           <img src={profileAvatar} alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; box-shadow: 0 5px 15px rgba(0,0,0,0.3);" />
+                                         {:else}
+                                           <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #6c5ce7, #a29bfe); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 48px; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+                                             {getInitials(profileNickname)}
+                                           </div>
+                                         {/if}
+                                         <button class="avatar-edit-btn animate-pop" style="position: absolute; bottom: 0; right: 0; background: var(--accent); border: 4px solid var(--bg-primary); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);" on:click={() => avatarFileInput.click()}><div class="icon-svg-sm">{@html Icons.Camera}</div></button>
+                                         <input type="file" bind:this={avatarFileInput} on:change={handleAvatarChange} accept="image/*" style="display: none;" />
+                                     </div>
+                                     
+                                     <div class="profile-fields" style="margin-top: 32px; max-width: 500px; margin-left: auto; margin-right: auto;">
+                                       <label class="form-label" style="color: var(--text-primary);">Никнейм
+                                         <input type="text" bind:value={profileNickname} class="input-field" placeholder="Ваш никнейм" />
+                                       </label>
+                                       <label class="form-label" style="margin-top: 24px; color: var(--text-primary);">О себе
+                                         <textarea bind:value={profileBio} class="input-field" rows="3" placeholder="Расскажите о себе..."></textarea>
+                                       </label>
+                                       <button class="btn-primary" style="margin-top: 32px; width: 100%;" on:click={saveProfile}>💾 Сохранить изменения</button>
+                                     </div>
                                    </div>
-                                   <input type="text" class="input-field" bind:value={profileNickname} placeholder="Никнейм" />
-                                   <button class="btn-primary" style="margin-top: 10px;" on:click={saveProfile}>Сохранить</button>
-                               </div>
-                           {:else if activeSettingsTab === 'network'}
-                               <div class="settings-section">
-                                   <p>I2P Destination:</p>
-                                   <code style="word-break:break-all; font-size: 10px;">{myDestination}</code>
-                                   <button class="btn-small" on:click={copyDestination}>Копировать</button>
-                               </div>
-                           {:else}
-                               <div class="settings-section"><p>Раздел в разработке</p></div>
-                           {/if}
-                       </div>
+
+                                {:else if activeSettingsTab === 'chats'}
+                                   <!-- Chats Content -->
+                                   <div class="settings-section">
+                                      <p class="hint" style="color: var(--text-secondary);">Здесь будут настройки темы, шрифта и фона чата.</p>
+                                      <div class="mock-setting" style="margin-top: 20px; opacity: 0.5;">
+                                         <label style="color: var(--text-primary);">Размер шрифта</label>
+                                         <input type="range" min="12" max="20" value="14" disabled />
+                                      </div>
+                                   </div>
+
+                                {:else if activeSettingsTab === 'privacy'}
+                                   <!-- Privacy Content -->
+                                   <div class="settings-section">
+                                      <div class="info-box" style="background: rgba(255, 100, 100, 0.1); padding: 24px; border-radius: 12px; border: 1px solid rgba(255, 100, 100, 0.3);">
+                                         <h4 style="color: #ff6b6b; margin: 0 0 12px; font-size: 18px;">🔐 Секретный ключ (Seed phrase)</h4>
+                                         <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 20px;">Ваш ключ хранится только на этом устройстве. Если вы потеряете его, доступ к аккаунту будет утерян навсегда.</p>
+                                         <button class="btn-secondary" style="width: 100%;" on:click={() => showToast('Функция показа ключа в разработке', 'warning')}>Показать ключ</button>
+                                      </div>
+                                   </div>
+
+                                {:else if activeSettingsTab === 'network'}
+                                   <!-- Network Content -->
+                                   <div class="settings-section">
+                                      <label class="form-label" style="color: var(--text-primary);">Ваш I2P адрес (Destination)</label>
+                                      <div class="destination-box">
+                                        <code class="destination-code">{myDestination ? myDestination.slice(0, 50) + '...' : 'Загрузка...'}</code>
+                                        <button class="btn-icon-small" on:click={copyDestination}>📋</button>
+                                      </div>
+                                      <div class="info-item" style="margin-top: 20px;">
+                                       <span class="info-label" style="color: var(--text-primary);">Статус сети:</span>
+                                       <span class="info-value" style="color: {getStatusColor(networkStatus)}">{getStatusText(networkStatus)}</span>
+                                      </div>
+
+                                      <h4 style="margin-top: 32px; color: var(--text-primary); border-top: 1px solid var(--border); padding-top: 24px; font-size: 18px;">Настройки роутера</h4>
+                                      <div class="settings-section">
+                                         <!-- Tunnel Length -->
+                                         <div class="setting-item" style="margin-bottom: 24px;">
+                                             <label class="form-label" style="color: var(--text-primary); display: block; margin-bottom: 12px;">Режим анонимности (длина туннелей)</label>
+                                             <select bind:value={routerSettings.tunnelLength} class="input-field settings-select">
+                                                 <option value={1}>Fast (1 хоп) - Максимальная скорость, низкая анонимность</option>
+                                                 <option value={2}>Normal (2 хопа) - Баланс (Рекомендуется)</option>
+                                                 <option value={4}>Invisible (4 хопа) - Высокая анонимность, медленно</option>
+                                             </select>
+                                         </div>
+
+                                         <!-- Logging -->
+                                         <div class="setting-item" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); padding: 16px; border-radius: 12px;">
+                                             <div>
+                                                 <span style="color: var(--text-primary); font-weight: 500;">Логирование в файл</span>
+                                                 <p style="margin: 4px 0 0; font-size: 13px; color: var(--text-secondary);">Записывать логи роутера в i2pd.log</p>
+                                             </div>
+                                             <input type="checkbox" bind:checked={routerSettings.logToFile} style="transform: scale(1.5); cursor: pointer;" />
+                                         </div>
+
+                                         <button class="btn-primary" on:click={saveRouterSettings} style="width: 100%;">💾 Сохранить и применить</button>
+                                         <p style="margin-top: 12px; font-size: 13px; color: var(--text-secondary); text-align: center;">Для вступления в силу изменений потребуется перезапуск приложения.</p>
+                                      </div>
+                                   </div>
+
+                                {:else if activeSettingsTab === 'about'}
+                                   <!-- About Content -->
+                                   <h3 style="margin-bottom: 24px; font-size: 24px; color: var(--text-primary);">О программе</h3>
+                                   <div class="info-grid">
+                                     <div class="info-item"><span class="info-label">Версия</span><span class="info-value">1.1.0-beta</span></div>
+                                     <div class="info-item"><span class="info-label">Разработчик</span><span class="info-value">TeleGhost Team</span></div>
+                                     <div class="info-item"><span class="info-label">Лицензия</span><span class="info-value">MIT / Open Source</span></div>
+                                   </div>
+                                {/if}
+                            </div>
+                        </div>
                    {/if}
                </div>
           {/if}
@@ -2162,6 +2181,18 @@
   .animate-slide-down { animation: slideDown 0.3s ease-out; }
   .animate-message { animation: messageIn 0.3s ease-out; }
   .animate-pulse-hover:hover { animation: pulse 1s ease-in-out infinite; }
+  .animate-slide-in-right { animation: slideInRight 0.3s ease-out; }
+  .animate-slide-in-left { animation: slideInLeft 0.3s ease-out; }
+
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  @keyframes slideInLeft {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
 
   /* === Context Menu === */
   .context-menu {
@@ -3221,7 +3252,7 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      height: 100dvh;
       overflow: hidden;
       background: var(--bg-primary);
   }
@@ -3387,6 +3418,43 @@
   }
   .settings-menu-item { background: var(--bg-secondary); margin-bottom: 1px; }
   .settings-details { flex: 1; overflow-y: auto; padding: 10px; }
+
+  /* === UI Fixes CSS === */
+  .folder-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      border-radius: 12px;
+      transition: background 0.2s;
+      gap: 2px;
+  }
+  .folder-item:hover, .folder-item.active {
+      background: rgba(255, 255, 255, 0.1);
+  }
+  .folder-icon {
+      font-size: 24px;
+  }
+  .folder-name {
+      font-size: 10px;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: center;
+      color: var(--text-secondary);
+  }
+  
+  .mobile-input-area {
+      position: sticky;
+      bottom: 0;
+      z-index: 50;
+      background: var(--bg-secondary); /* Ensure visibility */
+  }
 </style>
 
 <svelte:window on:paste={handlePaste} />
@@ -3419,9 +3487,27 @@
 </div>
 {/if}
 
+
 <!-- Context Menu for Contacts -->
 {#if contextMenu.show}
-<div class="context-menu" style="top: {contextMenu.y}px; left: {contextMenu.x}px">
+<div class="context-menu" style="top: {contextMenu.y}px; left: {contextMenu.x}px" on:click|stopPropagation>
+    <!-- Folder actions -->
+    {#if folders.length > 0}
+        <div class="context-header" style="padding: 8px 12px; font-size: 12px; opacity: 0.5;">ПАПКИ</div>
+        {#each folders as folder (folder.id)}
+            {#if folder.chatIds && folder.chatIds.includes(contextMenu.contact.id)}
+                <div class="context-item" on:click={() => { removeChatFromFolder(folder.id, contextMenu.contact.id); contextMenu.show = false; }}>
+                    <span class="icon-svg-sm" style="display:inline-block; vertical-align:middle; margin-right:4px;">{@html Icons.X}</span> Из "{folder.name}"
+                </div>
+            {:else}
+                <div class="context-item" on:click={() => { addChatToFolder(folder.id, contextMenu.contact.id); contextMenu.show = false; }}>
+                    <span class="icon-svg-sm" style="display:inline-block; vertical-align:middle; margin-right:4px;">{@html Icons.Plus}</span> В "{folder.name}"
+                </div>
+            {/if}
+        {/each}
+        <div class="divider" style="height: 1px; background: var(--border); margin: 4px 0;"></div>
+    {/if}
+
     <div class="context-item" on:click={copyAddressFromMenu}>Скопировать адрес</div>
     <div class="context-item" style="color: #ff6b6b;" on:click={deleteContactFromMenu}>Удалить контакт</div>
 </div>
@@ -3429,7 +3515,7 @@
 
 <!-- Context Menu for Messages/Files -->
 {#if messageContextMenu.show}
-<div class="context-menu" style="top: {messageContextMenu.y}px; left: {messageContextMenu.x}px">
+<div class="context-menu" style="top: {messageContextMenu.y}px; left: {messageContextMenu.x}px" on:click|stopPropagation>
     {#if messageContextMenu.imagePath}
         <div class="context-item" on:click={() => copyImageToClipboard(messageContextMenu.imagePath)}>Скопировать картинку</div>
         <div class="context-item" on:click={() => showInFolder(messageContextMenu.imagePath)}>Показать в папке</div>

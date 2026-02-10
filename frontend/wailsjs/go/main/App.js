@@ -74,12 +74,12 @@ export function GetAppAboutInfo() {
   return window['go']['main']['App']['GetAppAboutInfo']();
 }
 
-export function GetCurrentProfile() {
-  return window['go']['main']['App']['GetCurrentProfile']();
-}
-
 export function GetContacts() {
   return window['go']['main']['App']['GetContacts']();
+}
+
+export function GetCurrentProfile() {
+  return window['go']['main']['App']['GetCurrentProfile']();
 }
 
 export function GetFileBase64(arg1) {

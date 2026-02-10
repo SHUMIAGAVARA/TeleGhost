@@ -42,6 +42,8 @@ export function GetAppAboutInfo():Promise<main.AppAboutInfo>;
 
 export function GetContacts():Promise<Array<main.ContactInfo>>;
 
+export function GetCurrentProfile():Promise<Record<string, any>>;
+
 export function GetFileBase64(arg1:string):Promise<string>;
 
 export function GetFolders():Promise<Array<main.FolderInfo>>;

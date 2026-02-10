@@ -24,6 +24,7 @@
     export let onSelectFolder;
     export let onEditFolder;
     export let onCreateFolder;
+    export let onFolderContextMenu;
 
     let longPressTimer;
 
@@ -33,7 +34,7 @@
         // Фильтрация по папкам
         if (activeFolderId !== 'all') {
             const folder = (folders || []).find(f => f.ID === activeFolderId);
-            if (folder && folder.ChatIDs && !folder.ChatIDs.includes(c.ChatID)) {
+            if (folder && folder.ChatIDs && !folder.ChatIDs.includes(c.ID)) {
                 return false;
             }
         }
@@ -96,7 +97,7 @@
                     tabindex="0"
                     on:click={() => handleFolderClick(folder)}
                     on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && handleFolderClick(folder)}
-                    on:contextmenu|preventDefault={(e) => folder.ID !== 'all' && folder.ID !== 'add' && onEditFolder(folder)}
+                    on:contextmenu|preventDefault={(e) => folder.ID !== 'all' && folder.ID !== 'add' && onFolderContextMenu(e, folder)}
                     on:touchstart={(e) => folder.ID !== 'all' && folder.ID !== 'add' && handleTouchStart(folder, 'folder', e)}
                     on:touchend={handleTouchEnd}
                     on:touchmove={handleTouchEnd}

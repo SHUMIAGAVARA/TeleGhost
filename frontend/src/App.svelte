@@ -79,6 +79,7 @@
   // Context Menus
   let contextMenu = { show: false, x: 0, y: 0, contact: null };
   let messageContextMenu = { show: false, x: 0, y: 0, message: null };
+  let folderContextMenu = { show: false, x: 0, y: 0, folder: null };
 
   // Mobile View
   const mobileView = writable('list'); // 'list', 'chat', 'settings', 'search'
@@ -376,6 +377,9 @@
           isEditingFolder = false;
           currentFolderData = { ID: '', Name: '', Icon: '📁' };
           showFolderModal = true;
+      },
+      onFolderContextMenu: (e, folder) => {
+          folderContextMenu = { show: true, x: e.clientX, y: e.clientY, folder: folder };
       }
   };
 
@@ -560,6 +564,21 @@
           showFolderModal = false;
           loadContacts();
       },
+      onDeleteFolder: async () => {
+          const folder = folderContextMenu.folder || (isEditingFolder ? currentFolderData : null);
+          if (!folder || !folder.ID) return;
+          
+          showConfirmModal = true;
+          confirmModalTitle = "Удалить папку";
+          confirmModalText = `Вы уверены, что хотите удалить папку "${folder.Name}"? Сами чаты останутся в общем списке.`;
+          confirmAction = async () => {
+              await AppActions.DeleteFolder(folder.ID);
+              showFolderModal = false;
+              folderContextMenu.show = false;
+              loadContacts();
+              showToast("Папка удалена", "success");
+          };
+      },
       onCancelFolder: () => { showFolderModal = false; },
       onCloseContactProfile: () => { showContactProfile = false; },
       onAddContact: async () => {
@@ -600,11 +619,12 @@
 </script>
 
 <svelte:window 
-    on:click={() => { contextMenu.show = false; messageContextMenu.show = false; }} 
+    on:click={() => { contextMenu.show = false; messageContextMenu.show = false; folderContextMenu.show = false; }} 
     on:keydown={(e) => {
         if (e.key === 'Escape') {
             messageContextMenu.show = false;
             contextMenu.show = false;
+            folderContextMenu.show = false;
             if (editingMessageId) { editingMessageId = null; editMessageContent = ''; }
             if (previewImage) { previewImage = null; }
             if (showSettings && isMobile) { showSettings = false; mobileView.set('list'); }
@@ -738,6 +758,18 @@
         </div>
     {/if}
 
+    {#if folderContextMenu.show}
+        <div class="context-menu" style="top: {folderContextMenu.y}px; left: {folderContextMenu.x}px">
+            <div class="context-item" on:click={() => { 
+                sidebarHandlers.onEditFolder(folderContextMenu.folder);
+                folderContextMenu.show = false;
+            }}>Редактировать</div>
+            <div class="context-item danger" on:click={() => {
+                modalHandlers.onDeleteFolder();
+            }}>Удалить папку</div>
+        </div>
+    {/if}
+
     {#if messageContextMenu.show}
         <div class="context-menu" style="top: {messageContextMenu.y}px; left: {messageContextMenu.x}px">
             {#if messageContextMenu.message?.Content}
@@ -793,6 +825,17 @@
     .context-item { padding: 10px 16px; cursor: pointer; border-radius: 4px; font-size: 14px; }
     .context-item:hover { background: rgba(255,255,255,0.1); }
     .context-item.danger { color: #ff6b6b; }
+
+    .btn-danger {
+        background: #ff4757;
+        color: white;
+        border: none;
+    }
+    .btn-danger:hover {
+        background: #ff6b81;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+    }
 
     .fullscreen-preview {
         position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 20000; display: flex; align-items: center; justify-content: center;

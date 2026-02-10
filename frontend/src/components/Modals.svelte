@@ -16,6 +16,7 @@
     export let folderIcon = '📁';
     export let onSaveFolder;
     export let onCancelFolder;
+    export let onDeleteFolder;
 
     // Contact Profile Modal
     export let showContactProfile = false;
@@ -120,6 +121,9 @@
             </div>
         </div>
         <div class="modal-footer">
+            {#if isEditingFolder}
+                <button class="btn-small btn-danger" on:click={onDeleteFolder} style="margin-right: auto;">Удалить</button>
+            {/if}
             <button class="btn-small btn-glass" on:click={onCancelFolder}>Отмена</button>
             <button class="btn-small btn-primary" on:click={onSaveFolder}>Сохранить</button>
         </div>

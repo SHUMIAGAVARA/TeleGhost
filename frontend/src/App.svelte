@@ -106,10 +106,12 @@
         loadContacts(); // Update last message
     });
 
-    EventsOn("contact_updated", () => loadContacts());
 
-    // Periodically update contacts for online status
-    setInterval(loadContacts, 30000);
+
+    EventsOn("contact_updated", () => {
+        console.log("[App] Received contact_updated event, reloading contacts...");
+        loadContacts();
+    });
   });
 
   async function loadMyInfo() {
@@ -144,8 +146,8 @@
 
   async function onLoginSuccess() {
       console.log("[App] onLoginSuccess started");
-      if (isInitializing && screen === 'main') {
-          console.log("[App] onLoginSuccess: already initialized and on main screen, skipping redundant call");
+      if (isInitializing) {
+          console.log("[App] onLoginSuccess: already initializing, skipping redundant call");
           return;
       }
       
@@ -163,6 +165,11 @@
           
           console.log("[App] onLoginSuccess: loading AboutInfo...");
           await loadAboutInfo();
+          
+          // Start background polling only after successful login
+          console.log("[App] Starting background contact polling...");
+          setInterval(loadContacts, 300 * 1000); // Poll every 5 minutes (reduced from 30s to save battery/i2p)
+          
           console.log("[App] onLoginSuccess: everything done!");
       } catch (err) {
           console.error("[App] onLoginSuccess failed:", err);

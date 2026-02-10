@@ -9,6 +9,7 @@
         CreateProfile, 
         ListProfiles, 
         UnlockProfile,
+        DeleteProfile,
         GetFileBase64,
         CopyToClipboard
     } from '../../wailsjs/go/main/App.js';
@@ -34,6 +35,11 @@
     let profileAvatars = {};
     let showMnemonicModal = false;
     let newMnemonic = '';
+
+    // Context menu and deletion
+    let profileContextMenu = { show: false, x: 0, y: 0, profile: null };
+    let showDeleteConfirm = false;
+    let profileToDelete = null;
 
     onMount(async () => {
         await loadProfiles();
@@ -184,9 +190,45 @@
         newProfileAvatarPreview = '';
         handleLoginAction(newMnemonic);
     }
+
+    function handleProfileContextMenu(e, p) {
+        e.preventDefault();
+        profileContextMenu = {
+            show: true,
+            x: e.clientX,
+            y: e.clientY,
+            profile: p
+        };
+    }
+
+    function hideContextMenu() {
+        profileContextMenu.show = false;
+    }
+
+    function confirmDeleteProfile(p) {
+        profileToDelete = p;
+        showDeleteConfirm = true;
+        hideContextMenu();
+    }
+
+    async function handleDeleteProfile() {
+        if (!profileToDelete) return;
+        isLoading = true;
+        try {
+            await DeleteProfile(profileToDelete.id);
+            showToast('Профиль удален');
+            showDeleteConfirm = false;
+            profileToDelete = null;
+            await loadProfiles();
+        } catch (err) {
+            showToast(err, 'error');
+        } finally {
+            isLoading = false;
+        }
+    }
 </script>
 
-<div class="login-screen bg-animated" in:fade={{duration: 400}}>
+<div class="login-screen bg-animated" in:fade={{duration: 400}} on:click={hideContextMenu}>
   <div class="login-container glass-panel animate-fade-in" 
        in:scale={{duration: 500, start: 0.95}}
        style="max-width: {authScreen === 'profiles' ? '540px' : '440px'}; padding: 40px; border-radius: 28px;">
@@ -215,6 +257,7 @@
                 tabindex="0"
                 on:click={() => selectProfileForLogin(p)}
                 on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && selectProfileForLogin(p)}
+                on:contextmenu={(e) => handleProfileContextMenu(e, p)}
               >
                 <div class="profile-avatar" style="background: rgba(255,255,255,0.05);">
                   {#if p.id && profileAvatars[p.id]}
@@ -384,6 +427,42 @@
       </button>
     </div>
   </div>
+</div>
+{/if}
+
+{#if profileContextMenu.show}
+<div 
+    class="context-menu" 
+    style="top: {profileContextMenu.y}px; left: {profileContextMenu.x}px;"
+    on:click|stopPropagation
+>
+    <button class="context-item delete" on:click={() => confirmDeleteProfile(profileContextMenu.profile)}>
+        <span class="icon-svg-sm">{@html Icons.Trash}</span>
+        Удалить аккаунт
+    </button>
+</div>
+{/if}
+
+{#if showDeleteConfirm}
+<div class="modal-backdrop animate-fade-in" style="z-index: 20000;">
+    <div class="modal-content animate-slide-down" style="max-width: 400px;">
+        <div class="modal-header">
+            <h2 style="color: #ff6b6b;">Удаление аккаунта</h2>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom: 20px;">Вы действительно хотите удалить профиль <b>{profileToDelete?.display_name}</b>?</p>
+            <p class="warning-text" style="font-size: 12px;">
+                <span class="icon-svg-sm">{@html Icons.AlertTriangle}</span>
+                Это действие удалит ВСЕ локальные данные, включая чаты и файлы. Это невозможно отменить.
+            </p>
+        </div>
+        <div class="modal-footer" style="display: flex; gap: 12px;">
+            <button class="btn-glass full-width" on:click={() => showDeleteConfirm = false} disabled={isLoading}>Отмена</button>
+            <button class="btn-primary-premium full-width" style="background: #ff6b6b;" on:click={handleDeleteProfile} disabled={isLoading}>
+                {#if isLoading}<span class="spinner"></span>{:else}Удалить{/if}
+            </button>
+        </div>
+    </div>
 </div>
 {/if}
 
@@ -567,4 +646,38 @@
   .clickable-btn { cursor: pointer !important; position: relative; z-index: 10002; }
   .clickable-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
   .clickable-btn:active { transform: translateY(0); }
+
+  .context-menu {
+      position: fixed;
+      background: #1e1e2e;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      z-index: 10005;
+      min-width: 180px;
+      padding: 4px;
+      overflow: hidden;
+      animation: menuFade 0.2s ease;
+  }
+  @keyframes menuFade {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+  }
+  .context-item {
+      width: 100%;
+      padding: 10px 14px;
+      background: transparent;
+      border: none;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 8px;
+      transition: background 0.2s;
+  }
+  .context-item:hover { background: rgba(255,255,255,0.05); }
+  .context-item.delete { color: #ff6b6b; }
+  .context-item.delete:hover { background: rgba(255, 107, 107, 0.1); }
 </style>

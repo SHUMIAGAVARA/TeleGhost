@@ -345,3 +345,21 @@ func (pm *ProfileManager) UnlockProfile(profileID string, pin string) (string, e
 
 	return string(plaintext), nil
 }
+
+// DeleteProfile удаляет профиль и его файлы
+func (pm *ProfileManager) DeleteProfile(profileID string) error {
+	filePath := filepath.Join(pm.storageDir, profileID+".json")
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return fmt.Errorf("профиль не найден")
+	}
+
+	var vault Vault
+	if err := json.Unmarshal(data, &vault); err == nil {
+		if vault.AvatarPath != "" {
+			os.Remove(filepath.Join(pm.storageDir, vault.AvatarPath))
+		}
+	}
+
+	return os.Remove(filePath)
+}

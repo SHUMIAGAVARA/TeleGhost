@@ -7904,3 +7904,717 @@
 18:27:44@881/info - SSU2: Our external address is 109.194.162.67:16749
 18:27:44@881/info - SSU2: Our external address is 109.194.162.67:16749
 18:27:45@310/info - Router: Publishing our RouterInfo to SDxy. reply token=3219482235
+18:29:38@886/info - API: Starting NetDB
+18:29:38@886/warn - Family: Can't load family certificates from /family
+18:29:38@886/info - NetDb: 1290 routers loaded (615 floodfils)
+18:29:38@886/info - API: Starting Transports
+18:29:38@886/info - NTCP2: Proxy is not used
+18:29:38@886/info - NTCP2: Start listening v4 TCP port 23325
+18:29:38@886/info - SSU2: Socket receive buffer size: 131072
+18:29:38@886/info - SSU2: Socket send buffer size: 131072
+18:29:38@886/info - SSU2: Start listening on 0.0.0.0:23325
+18:29:38@886/info - Transports: Started peer test IPv4
+18:29:38@886/info - API: Starting Tunnels
+18:29:38@886/info - API: Starting Router context
+18:29:38@886/info - Destination: Parameters for tunnel set to: 3 inbound (3 hops), 3 outbound (3 hops), 40 tags
+18:29:38@886/info - Addressbook: Using index file /home/nethunter/.teleghost/i2pd/addressbook/addresses.csv
+18:29:38@886/info - Addressbook: 81 addresses loaded from storage
+18:29:38@886/info - Addressbook: Loading subscriptions from config
+18:29:38@886/info - Addressbook: 1 subscriptions urls loaded
+18:29:38@886/info - Clients: 0 I2P client tunnels created
+18:29:38@886/info - Clients: 0 I2P server tunnels created
+18:29:38@886/info - Clients: Starting SAM bridge at 0.0.0.0:[7656|0]
+18:29:38@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:38@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:38@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:38@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:38@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:38@694/info - NetDb: RouterInfo updated: 6AaWTCPhA-Q2G5W2BqmlnhsH~OIzSkYRG~W~KwBJvZc=
+18:29:38@694/info - NetDb: RouterInfo updated: flo1G4zQWbh3uj3qJeisLAKwIY5FhTQsP876CfpWFSQ=
+18:29:38@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:38@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:38@742/info - Router: network status v4 changed Unknown -> Firewalled
+18:29:38@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:38@694/info - NetDb: RouterInfo updated: EFTOlmPnKFE-L8SEF5FcLZ6vRvOPpwGyXluVMspsoAE=
+18:29:38@742/warn - Profiling: No profile yet for 41be6PcGAO3CFN38BekKgo1PKsGhvrtJHhtdvAFH33I=
+18:29:38@742/info - NetDb: RouterInfo added: 41be6PcGAO3CFN38BekKgo1PKsGhvrtJHhtdvAFH33I=
+18:29:38@694/info - NetDb: RouterInfo updated: u6yHZa5jb5ibt3RTMcrT~KjYoYDwd2KGWkmzSfDoS1I=
+18:29:39@742/warn - Profiling: No profile yet for g8a4O09jciCTM-7LT3cx2Lt07SQb4NGZavdi6H-zsgA=
+18:29:39@742/info - NetDb: RouterInfo added: g8a4O09jciCTM-7LT3cx2Lt07SQb4NGZavdi6H-zsgA=
+18:29:39@742/info - NetDb: RouterInfo added: W5ElfPMnS0YjJKd5vXHr0EE47oE2fCIdDFQo~303uB4=
+18:29:39@493/error - SAM: Read error: End of file
+18:29:40@236/info - Tunnels: Can't select first hop for a tunnel. Trying already connected
+18:29:40@236/info - Tunnels: Can't select first hop for a tunnel. Trying already connected
+18:29:40@236/info - Tunnels: Can't select first hop for a tunnel. Trying already connected
+18:29:40@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:40@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:40@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:40@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:40@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:40@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:40@694/info - NetDb: RouterInfo updated: S3jh77XHiI55nCnVPLvU8vQbTUzcF8w0Gt7-SuPVBUI=
+18:29:40@772/warn - Profiling: No profile yet for 6AaWTCPhA-Q2G5W2BqmlnhsH~OIzSkYRG~W~KwBJvZc=
+18:29:41@694/info - NetDb: RouterInfo updated: WMUnOqmqYAowez7ZKZ-eK3gMYiwPPPsRJoZYkJZaj3o=
+18:29:41@694/info - NetDb: RouterInfo updated: o~XhUYyr2AsRYAutyWCuPl5iCgW65zMsoKiiAoyY7nM=
+18:29:41@236/info - Tunnel: Outbound tunnel 1469024924 has been declined
+18:29:42@236/info - Tunnel: Inbound tunnel 694314480 has been created
+18:29:43@742/warn - SSU2: Session with 131.100.163.237:17362 was not established after 5 seconds
+18:29:43@493/error - SAM: Handshake read error: End of file
+18:29:43@493/info - Destination: Parameters for tunnel set to: 2 inbound (1 hops), 2 outbound (1 hops), 40 tags
+18:29:43@493/info - Destination: Local address f7jcer6gyqaesypydya7qhp4dfswmmc2gsryn5exc2cux2qp26na created
+18:29:45@742/warn - SSU2: Session with 142.179.16.98:23154 was not established after 5 seconds
+18:29:48@694/info - NetDb: RouterInfo updated: l-wVVygHISrp64dBznWwe0X1swfI-~Qv-wG14wUeChk=
+18:29:48@236/info - Tunnel: Inbound tunnel 1260127872 has been declined
+18:29:48@226/info - Router: Publishing our RouterInfo to TDQO. reply token=454171084
+18:29:48@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:48@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:50@226/info - Router: Publishing our RouterInfo to Thta. reply token=1150203154
+18:29:50@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:50@694/info - NetDb: RouterInfo updated: jtxp~ND~wjfcMZ3zBTmZZolVf3zLWaVnHm31q7JZmXE=
+18:29:50@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:50@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:50@694/info - NetDb: RouterInfo updated: BpATV4o2-r6~pbHjtleL5Qgo7Wn-5f1N6oGROvxyiEg=
+18:29:50@236/info - Tunnel: Outbound tunnel 49386988 has been declined
+18:29:50@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:50@730/warn - NTCP2: SessionCreated read error: Соединение разорвано другой стороной
+18:29:50@694/info - NetDb: RouterInfo updated: j8cWM1l8FxSnOJZrC~OzgQsMRD4zZboDCQ9UtEkC9YE=
+18:29:51@226/info - Router: Publishing confirmed. reply token=1150203154
+18:29:51@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:51@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:51@868/warn - Profiling: No profile yet for bgsmwZEQfVu2d2wcekdRfU-WJ1g3PDHtLQnBhl9NEyo=
+18:29:51@694/info - NetDb: RouterInfo updated: bgsmwZEQfVu2d2wcekdRfU-WJ1g3PDHtLQnBhl9NEyo=
+18:29:55@742/warn - SSU2: Session with 187.204.94.20:10171 was not established after 5 seconds
+18:29:55@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:55@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:55@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:55@236/info - Tunnel: Inbound tunnel 3740844847 has been created
+18:29:55@236/info - Tunnel: Inbound tunnel 451340432 has been declined
+18:29:55@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:55@236/info - Tunnel: Inbound tunnel 3683758521 has been declined
+18:29:55@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:55@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:55@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:55@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:55@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:55@694/info - NetDb: RouterInfo updated: 7XNd92J0OFxgg62gOFrHK9CovuZaM2jXZb6wtViFolc=
+18:29:55@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:56@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:56@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:29:56@694/info - NetDb: RouterInfo updated: yXOEdPjC7IBk5Yuc56OOA6rT1mEUYbOe2oQ~z-w~OME=
+18:29:56@694/info - NetDb: RouterInfo updated: DPXMTKtX5bAH~ubuaPJKUIbFL22d7mR-UAeLxGZl7~I=
+18:29:56@694/info - NetDb: RouterInfo updated: VkdNwnfZO--fFnjHKhDGeJZgpu5E1wSB8~raOYaQON0=
+18:29:56@694/info - NetDb: RouterInfo updated: l0Jp6NARevFQsI9DuYTQbVUZWj2w3mJ9ruaIRKigHts=
+18:29:56@694/info - NetDb: RouterInfo updated: 1n3GNmxqhx~Sq708IcZ-qwBbPqH1LgfVVg3PffwFH4w=
+18:29:56@236/info - Tunnel: Outbound tunnel 2274197831 has been declined
+18:29:56@236/info - Tunnel: Outbound tunnel 4015771239 has been declined
+18:29:56@694/info - NetDb: RouterInfo updated: LLxLA4FvvVuis~Eo4AHodRBOYSbxdWY0GNLb89aEB90=
+18:30:05@868/warn - Profiling: No profile yet for E40sAt~85pL34DBji532Z70fRD3vW4IBPEcyhDfbeJw=
+18:30:05@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:05@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:05@730/info - NTCP2: Not connected in 25 seconds
+18:30:05@730/info - NTCP2: Connect error Операция отменена
+18:30:05@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:05@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:05@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:05@868/warn - Profiling: No profile yet for rt0Js1j6G8uUKYkQnGrDoMaBB00IpLKhhaj9stfkn0Q=
+18:30:05@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:05@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:05@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:05@694/info - NetDb: RouterInfo updated: 8Nz3Hhm3K~315H6WJVJGQi2k-LdUuqHhBlgkiwQLrO4=
+18:30:05@694/info - NetDb: RouterInfo updated: Bx-db0sPKAbGfgl86YezlK7QzH1nTtHK0LwTQKSh3dQ=
+18:30:05@694/info - NetDb: RouterInfo updated: Vpw-SOmhUtGY2XG6AZgXOppkLDAt-WUFr-NjIuCWMs8=
+18:30:05@694/info - NetDb: RouterInfo updated: 9ifpj1fX5SB11~fk~LsdoXr7Byg4sdyyGq-tZEudeOQ=
+18:30:05@694/info - NetDb: RouterInfo updated: rt0Js1j6G8uUKYkQnGrDoMaBB00IpLKhhaj9stfkn0Q=
+18:30:05@694/info - NetDb: RouterInfo updated: tv2RvsLJDhBd1ckJPZc4XqRykaSIK-8VXInXMsQ87EA=
+18:30:05@236/info - Tunnel: Outbound tunnel 1651821711 has been created
+18:30:05@236/info - Tunnel: Inbound tunnel 3988881183 has been declined
+18:30:05@236/info - Tunnel: Inbound tunnel 1625286134 has been declined
+18:30:05@694/info - NetDb: RouterInfo updated: EUyWCDtW9wEiGGuLCSDNGULp46n-a~vj0DKbjI9YvcI=
+18:30:10@730/info - NTCP2: Not connected in 25 seconds
+18:30:10@730/info - NTCP2: Connect error Операция отменена
+18:30:10@868/info - Transports: No compatible addresses available
+18:30:10@868/info - I2NP: Tunnel 996903968 request was not sent
+18:30:11@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:11@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:11@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:11@694/info - NetDb: RouterInfo updated: GCG37PDOH5AWWeIyK4fc3Dp2Ad0T94KTwE9iiw~4PHc=
+18:30:11@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:11@236/info - Tunnel: Inbound tunnel 2929536304 has been declined
+18:30:11@694/info - NetDb: RouterInfo updated: hLIKdWqJiQY-cAMQOHZmSgVevlzBqlpgKUXoYABljVA=
+18:30:11@694/info - NetDb: RouterInfo updated: LyhZJS5HTwUrip8xanQu0U5uoJzaodWbzyICOvPYnX8=
+18:30:11@236/info - Tunnel: Outbound tunnel 1011929468 has been declined
+18:30:11@236/info - Tunnel: Outbound tunnel 489259233 has been declined
+18:30:11@236/info - Tunnel: Outbound tunnel 3012258050 has been declined
+18:30:11@236/info - Tunnel: Inbound tunnel 1225025141 has been declined
+18:30:11@694/info - NetDb: RouterInfo updated: zPtB4Xjs7zj93Ig1qP9MJzDX4QKl8WEtD7-KdFqXUQY=
+18:30:11@694/info - NetDb: RouterInfo updated: LyWiOfDFDu7eJb6aS6fBgJ7~BO177NA-yVTaGlvex0M=
+18:30:11@694/info - NetDb: RouterInfo updated: RHStH8DHQx~EVXZ89~Q5CjTl9vKvk8UXL22flpYOKpM=
+18:30:15@742/info - SSU2: Packet was not Acked after 6 attempts. Terminate session
+18:30:20@730/info - NTCP2: Not connected in 25 seconds
+18:30:20@730/info - NTCP2: Connect error Операция отменена
+18:30:20@868/info - Transports: No compatible addresses available
+18:30:20@868/info - I2NP: Tunnel 1400032390 request was not sent
+18:30:20@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:20@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:20@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:20@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:20@694/info - NetDb: RouterInfo updated: 7kkcWTDuNICC2HFEoeFEKnt~CaG3R~8qSy04kWXX34s=
+18:30:20@742/warn - I2NP: 1 tunnel build messages dropped
+18:30:20@236/info - Tunnel: Inbound tunnel 2926627090 has been declined
+18:30:21@742/info - NetDb: RouterInfo updated: Qreu1MJcSK1FVC9A6JyCLk8xU0-5AKXPC9ciawtSEko=
+18:30:21@694/info - NetDb: RouterInfo updated: T58MA6S2KlCjpq5Gujzt5CZ1k-MB2-of-sD0Tm8AoSQ=
+18:30:21@236/info - Tunnel: Inbound tunnel 2634512023 has been declined
+18:30:21@694/info - NetDb: RouterInfo updated: Lc4u5pPcCH2ay8r1V5y00dhwZQCCe37VONhTIoKV53s=
+18:30:25@742/warn - SSU2: Outgoing messages queue to BpAT is semi-full (size = 1, lag = 4918, rtt = 91)
+18:30:25@742/info - I2NP: Tunnel 3019763570 request was not sent
+18:30:25@742/warn - SSU2: Outgoing messages queue to BpAT is semi-full (size = 1, lag = 4919, rtt = 91)
+18:30:25@742/info - I2NP: Tunnel 53984596 request was not sent
+18:30:25@742/warn - SSU2: Outgoing messages queue to BpAT is semi-full (size = 1, lag = 4919, rtt = 91)
+18:30:25@742/info - I2NP: Tunnel 230628012 request was not sent
+18:30:25@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:25@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:25@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:25@236/info - Tunnel: Inbound tunnel 2520580015 has been declined
+18:30:25@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:25@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:25@694/info - NetDb: RouterInfo updated: MppI-y4zgNQ4a-yO54EFfdJd46~OXR6SUOz7qVCRwUs=
+18:30:25@694/info - NetDb: RouterInfo updated: j4oDy6OtBCMEcnGVw15c-Xs6LKenHAdHBpS9NRzDN7k=
+18:30:25@694/info - NetDb: RouterInfo updated: JZMM-W-AVBIlxjkT1sLLOPSI6sA98WQRhtKpXRLWoxU=
+18:30:25@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:25@694/info - NetDb: RouterInfo updated: FMViRkzQdtardlXCJEsiTuzTrf7Ejs6PyMphpNGdlDI=
+18:30:26@694/info - NetDb: RouterInfo updated: IAO-ZtlfIt3TIyk~UcTW0Z4-CwOeNBqWTuMzmc6e8L4=
+18:30:27@772/warn - Profiling: No profile yet for A1-4~n8FRNcSKcC2CKW4Q6gIL7domKC9C13h8lr8gmo=
+18:30:27@772/warn - Profiling: No profile yet for bbPIEYUffIulEhXJ-4UeY5czCiGvEXXF7HjX76yH0s8=
+18:30:30@730/info - NTCP2: Not connected in 25 seconds
+18:30:30@868/info - Transports: No compatible addresses available
+18:30:30@868/info - I2NP: Tunnel 1015882499 request was not sent
+18:30:30@730/info - NTCP2: Connect error Операция отменена
+18:30:31@742/info - I2NP: Tunnel 2397939916 request was not sent
+18:30:33@813/info - NetDbReq: Exploring new 1 routers ...
+18:30:33@813/warn - Profiling: No profile yet for nkoAqkfn0TNTBzqhFROTAWKbr2S-5Imuk4Kl0QrG1a8=
+18:30:35@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:35@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:35@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:35@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:35@694/info - NetDb: RouterInfo updated: c8j4FZyGEW4uu0RRWSc-VRhdSXCZqcfsy0iHhE5juys=
+18:30:35@694/info - NetDb: RouterInfo updated: Nb5yRRFiycdpkFfWi0HxkjWgkWE6C~3EG8ylH8jE3ns=
+18:30:36@236/info - Tunnel: Outbound tunnel 1932374736 has been declined
+18:30:36@236/info - Tunnel: Outbound tunnel 3033183661 has been declined
+18:30:36@236/info - Tunnel: Inbound tunnel 1907940428 has been declined
+18:30:38@694/info - NetDb: Saved 46 new/updated routers
+18:30:38@694/info - NetDb: Deleting 3 unreachable routers
+18:30:38@586/warn - Profiling: No profile yet for dQm86gdMDNbbGVNC7GqJcZeVEqdo~EahWfFngOleBMk=
+18:30:40@236/info - Tunnel: Inbound tunnel 50637465 has been declined
+18:30:40@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:40@742/warn - SSU2: Session with 82.165.77.33:22078 was not established after 5 seconds
+18:30:40@694/info - NetDb: RouterInfo updated: x52uvelTKF7WvuqwQhXlPF~krKj9skCjCWrTdWPmNcA=
+18:30:40@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:40@236/info - Tunnel: Inbound tunnel 401457540 has been declined
+18:30:40@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:40@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:40@694/info - NetDb: RouterInfo updated: yIQ0Jm7Zl1xK7mHNF2R--UsPDH3GO-kVtwXSATb22-s=
+18:30:40@694/info - NetDb: RouterInfo updated: hmK1uipOZSFLUCBfdGcGT5Gnw~g9vg4eRQ~vQDSpoBs=
+18:30:41@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:41@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:41@236/info - Tunnel: Inbound tunnel 541991380 has been declined
+18:30:41@694/info - NetDb: RouterInfo updated: 5n54Z~WgZOfTFZkGBQx3VDqZG4Yeh61qtxOLU3tLg~4=
+18:30:41@694/info - NetDb: RouterInfo updated: 4XvzXgGOSi9~TV06vWjYIv1wgyIK3t2QPkirWc5OTeY=
+18:30:41@586/warn - Profiling: No profile yet for iqMYzuPMEm6wAAf-vQYZnJXm-~TYug8~BWrdxITrgWw=
+18:30:41@586/warn - Profiling: No profile yet for akYjO49xS8e9050za0CEbEydX6C9yHgc85YBhCBvc6o=
+18:30:50@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:50@730/info - NTCP2: Not connected in 25 seconds
+18:30:50@730/info - NTCP2: Connect error Операция отменена
+18:30:50@236/info - Tunnel: Inbound tunnel 2967123014 has been declined
+18:30:50@236/info - Tunnel: Inbound tunnel 3810510594 has been declined
+18:30:50@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:50@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:50@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:50@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:50@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:50@694/info - NetDb: RouterInfo updated: H1srT~4WZasBsn1k2joLj~5rt7N7hvu~pUBhw-thBeA=
+18:30:50@236/info - Tunnel: Inbound tunnel 4190908723 has been created
+18:30:50@694/info - NetDb: RouterInfo updated: gkZCuA64UHcXl~N24~QBUwE1O1NsVQVFDrhr3zKwbbQ=
+18:30:50@236/info - Tunnel: Outbound tunnel 152179126 has been declined
+18:30:53@868/warn - Transports: Session to peer nkoAqkfn0TNTBzqhFROTAWKbr2S-5Imuk4Kl0QrG1a8= has not been created in 15 seconds
+18:30:53@868/warn - Transports: Session to peer k3dYopJjslZ-hIrENkbr-89PNKhng4Did0sxyR032sE= has not been created in 15 seconds
+18:30:53@868/warn - Transports: Session to peer HMnQ7peeJ4yIgx2NTwBd2dXUwJTpzVYSLxbbwrdUXUQ= has not been created in 15 seconds
+18:30:53@868/warn - Transports: Session to peer uoZGFEZTb2Ejff3Aou0QvdHAGMWswATjLTbKqlo4ndY= has not been created in 15 seconds
+18:30:53@730/info - NTCP2: Connect error Нет маршрута до узла
+18:30:55@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:55@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:55@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:56@730/info - NTCP2: Connect error В соединении отказано
+18:30:56@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:56@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:56@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:56@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:56@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:56@236/info - Tunnel: Inbound tunnel 1654612215 has been declined
+18:30:56@694/info - NetDb: RouterInfo updated: uVCDXu3LTLPQQlpAzGKiftnO2~BNpXim5LaqHHCXqLc=
+18:30:56@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:56@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:56@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:56@236/info - Tunnel: Outbound tunnel 2059867479 has been declined
+18:30:56@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:30:56@694/info - NetDb: RouterInfo updated: ns8xVGGXfivDX5gv~RJtbgrHZl~OvhnTTfLAKyJuztg=
+18:30:56@742/info - NetDb: RouterInfo updated: KofAkVTV87nB13945ARW~G~qOrV~7LCHJxsh5sQO2so=
+18:30:56@694/info - NetDb: RouterInfo updated: JJsgMrIspHXX~uYvstG37dIVL2nhXqO71~b1~2rdbzc=
+18:30:56@694/info - NetDb: RouterInfo updated: Cp4Idc-fKAaoP878xnGCUHgRr3bs21m1PgASSwxv3bw=
+18:30:56@694/info - NetDb: RouterInfo updated: wsMrnh7mIGL4UOnN3hhZNP9tBfHWNPQT91ZHgjJ44mw=
+18:30:56@236/info - Tunnel: Inbound tunnel 204905662 has been declined
+18:30:56@868/warn - Profiling: No profile yet for vy1ihO-v8IDBluXolLRLLZPdz4Ap4dY1qs5FgpgvxTU=
+18:30:56@236/info - Tunnel: Outbound tunnel 3993465088 has been declined
+18:30:56@236/info - Tunnel: Outbound tunnel 776738085 has been declined
+18:30:58@730/info - NTCP2: Not connected in 25 seconds
+18:30:58@730/info - NTCP2: Connect error Операция отменена
+18:30:58@742/warn - SSU2: Session with 38.85.142.126:25551 was not established after 5 seconds
+18:30:58@868/info - Transports: No compatible addresses available
+18:30:58@868/warn - Profiling: No profile yet for E7sll0ZyCPlL5m989yYYmEB-YweIB-DCOi9DgXneJro=
+18:30:58@868/info - I2NP: Tunnel 1898049195 request was not sent
+18:30:58@586/warn - Profiling: No profile yet for cWJ1liDaa~CaAhsgNiMB7nid0-0YTNrTRKrrCEhXSnE=
+18:31:02@813/info - NetDbReq: Exploring new 1 routers ...
+18:31:05@730/info - NTCP2: Not connected in 25 seconds
+18:31:05@730/info - NTCP2: Connect error Операция отменена
+18:31:05@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:05@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:05@694/info - NetDb: RouterInfo updated: VQ0pJc5iLTOsFk3MDVIhi8mRbQROL2p85htCI~2ynMc=
+18:31:05@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:05@236/info - Tunnel: Inbound tunnel 1610026517 has been declined
+18:31:05@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:06@236/info - Tunnel: Inbound tunnel 8585210 has been created
+18:31:06@694/info - NetDb: RouterInfo updated: e3GajlsSbt0kg5zaL8ZESSUIPOr0TRKseKVyHePg8eo=
+18:31:06@236/info - Tunnel: Outbound tunnel 3063644406 has been declined
+18:31:06@730/warn - NTCP2: SessionCreated read error: Операция отменена
+18:31:10@868/warn - Profiling: No profile yet for ardFQ5XolhmIvi41JUizdqEVdzp~RQAHlGSRfk11P14=
+18:31:10@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:10@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:10@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:10@236/info - Tunnel: Inbound tunnel 3477901895 has been declined
+18:31:10@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:10@694/info - NetDb: RouterInfo updated: 1hWwNtvf0dHaPdeEzWMb9gjvcKi-3mRWjFN8DFCWIk4=
+18:31:10@694/info - NetDb: RouterInfo updated: T9PA6psDCVdzKQoZnjaPJI83VOptTHzn6rp6tQndgsQ=
+18:31:10@236/info - Tunnel: Outbound tunnel 1173172575 has been declined
+18:31:10@694/info - NetDb: RouterInfo updated: i2piDexvc6l1w8I1qNmmTYQs04q68lPTI7K-gZySYO8=
+18:31:11@236/info - Tunnel: Outbound tunnel 714028628 has been declined
+18:31:12@586/warn - Profiling: No profile yet for agfbApwpmDfFni~v1oS5LxOdK1S8DnGuTmOKzi-1H7s=
+18:31:15@742/warn - SSU2: Session with 92.130.216.47:26179 was not established after 5 seconds
+18:31:20@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:20@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:21@694/info - NetDb: RouterInfo updated: OSKPio~ksdoofmFSxZtnvu3QIyDHgvrDhqb8wFXLP84=
+18:31:24@730/warn - NTCP2: SessionCreated read error: Соединение разорвано другой стороной
+18:31:25@236/info - Tunnel: Inbound tunnel 2913421656 has been declined
+18:31:25@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:25@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:25@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:25@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:25@694/info - NetDb: RouterInfo updated: EFofIjCHtzWyMVZyzb1f-6JAnQESapgeG7ilQwbzHOI=
+18:31:25@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:25@694/info - NetDb: RouterInfo updated: kRwKpXjVB7Pzohg5~XeyuXqWGfGeB~lV~WKWS0xVOJ0=
+18:31:25@236/info - Tunnel: Inbound tunnel 3753085899 has been created
+18:31:25@493/info - Destination: Can't publish LeasetSet because destination is not ready. Try publishing again after 1800 milliseconds
+18:31:25@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:25@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:25@694/info - NetDb: RouterInfo updated: lLWnO~Pa9sy9nzhBOZ7MFGeHzFz8Ermrc4S0hY~PCcM=
+18:31:25@236/info - Tunnel: Inbound tunnel 1099839410 has been declined
+18:31:25@694/info - NetDb: RouterInfo updated: U2Z91vRjcVzEqtf7w~W~C5yrD0qfQYVT7kIgTQXUxSc=
+18:31:25@742/info - SSU2: Our external address is 109.194.162.67:23325
+18:31:26@694/info - NetDb: RouterInfo updated: tZ7T2ubpDZLikZf5ARhqCd9CgfeMljbBfgQRnC83kq8=
+18:31:27@493/warn - Destination: Publish confirmation was not received in 1800 milliseconds or failed. will try again
+18:31:27@493/info - Destination: Can't publish LeasetSet because destination is not ready. Try publishing again after 1800 milliseconds
+18:31:41@856/info - API: Starting NetDB
+18:31:41@856/warn - Family: Can't load family certificates from /family
+18:31:41@856/info - NetDb: 1290 routers loaded (616 floodfils)
+18:31:41@856/info - API: Starting Transports
+18:31:41@856/info - NTCP2: Proxy is not used
+18:31:41@856/info - NTCP2: Start listening v4 TCP port 29798
+18:31:41@856/info - SSU2: Socket receive buffer size: 131072
+18:31:41@856/info - SSU2: Socket send buffer size: 131072
+18:31:41@856/info - SSU2: Start listening on 0.0.0.0:29798
+18:31:41@856/info - Transports: Started peer test IPv4
+18:31:41@856/info - API: Starting Tunnels
+18:31:41@856/info - API: Starting Router context
+18:31:41@856/info - Destination: Parameters for tunnel set to: 3 inbound (3 hops), 3 outbound (3 hops), 40 tags
+18:31:41@856/info - Addressbook: Using index file /home/nethunter/.teleghost/i2pd/addressbook/addresses.csv
+18:31:41@856/info - Addressbook: 81 addresses loaded from storage
+18:31:41@856/info - Addressbook: Loading subscriptions from config
+18:31:41@856/info - Addressbook: 1 subscriptions urls loaded
+18:31:41@856/info - Clients: 0 I2P client tunnels created
+18:31:41@856/info - Clients: 0 I2P server tunnels created
+18:31:41@856/info - Clients: Starting SAM bridge at 0.0.0.0:[7656|0]
+18:31:41@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:41@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:41@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:41@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:41@747/info - NetDb: RouterInfo updated: tDP8MbIfTB8JiCaRdxea3iw7JhpVazcAf6J5oyQasz0=
+18:31:41@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:42@144/warn - Profiling: No profile yet for 8BtWM1W5mjwyXdWSwihSAQMOBBiYHD9OHXXY28IjxkM=
+18:31:42@144/info - NetDb: RouterInfo added: 8BtWM1W5mjwyXdWSwihSAQMOBBiYHD9OHXXY28IjxkM=
+18:31:42@144/info - Router: network status v4 changed Unknown -> Firewalled
+18:31:42@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:42@747/info - NetDb: RouterInfo updated: u5d7XT9edivFe-f2UjCMXOVd~5hlwGHAUdGZFU1d9pk=
+18:31:42@454/error - SAM: Read error: End of file
+18:31:42@144/warn - Profiling: No profile yet for LTOLxFUvZyOVRWo~pFfxpVvRcFHmHbaiQAT1zp~XQsk=
+18:31:42@144/info - NetDb: RouterInfo added: LTOLxFUvZyOVRWo~pFfxpVvRcFHmHbaiQAT1zp~XQsk=
+18:31:42@144/warn - Profiling: No profile yet for K-eovzVjc5SK7LUveffUcCU-XOS1C6SHDPBMtYgGbA0=
+18:31:42@144/info - NetDb: RouterInfo added: K-eovzVjc5SK7LUveffUcCU-XOS1C6SHDPBMtYgGbA0=
+18:31:43@747/info - NetDb: RouterInfo updated: -kg~YCNtnHI50UzHatfg4qPQSUjgBGLfGFkwLb9eMFs=
+18:31:43@108/warn - Profiling: No profile yet for u5d7XT9edivFe-f2UjCMXOVd~5hlwGHAUdGZFU1d9pk=
+18:31:43@108/warn - Profiling: No profile yet for tvct~9MZ3D~DTLhUZmABvMDuGueMAzA4W3XFm~aoDM0=
+18:31:43@805/info - Tunnel: Outbound tunnel 3144091523 has been declined
+18:31:46@144/warn - SSU2: Session with 186.220.10.114:20232 was not established after 5 seconds
+18:31:46@144/warn - SSU2: Session with 70.23.132.179:12297 was not established after 5 seconds
+18:31:48@805/info - Tunnels: Can't select first hop for a tunnel. Trying already connected
+18:31:48@805/info - Tunnels: Can't select first hop for a tunnel. Trying already connected
+18:31:48@805/info - Tunnels: Can't select first hop for a tunnel. Trying already connected
+18:31:48@805/error - Tunnels: Can't select next hop for 8O3Cjr89JSGC8JtRVDqApM5fFEphBNzYbQ-ifDhaJ8I=
+18:31:48@805/error - Tunnels: Can't create inbound tunnel, no peers available
+18:31:49@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:49@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:49@784/info - NTCP2: Connect error В соединении отказано
+18:31:49@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:49@747/info - NetDb: RouterInfo updated: CZdBZtsQh2TSKtMt96mnq50Xob9FOW1XGiEkOc72Yq8=
+18:31:49@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:49@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:49@144/info - NetDb: RouterInfo updated: Bg-Dh1-4RNwJE0kPjUUXfcptd8CfAdv80EoLCSB0I8E=
+18:31:49@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:49@747/info - NetDb: RouterInfo updated: enxADVxVw1sku4DbYEN6lneGoV2BRmglp9nMCmypI4Y=
+18:31:49@747/info - NetDb: RouterInfo updated: h6jrKDe1OGcppkp0E1ds16ksCqzilMP9JmiTamuUNmE=
+18:31:49@747/info - NetDb: RouterInfo updated: 8p54Hx2IQkiytzYIiw4KrYi2oE6bUebJrD6U1HOE6os=
+18:31:49@805/info - Tunnel: Inbound tunnel 571331595 has been declined
+18:31:49@454/error - SAM: Handshake read error: End of file
+18:31:49@454/info - Destination: Parameters for tunnel set to: 2 inbound (1 hops), 2 outbound (1 hops), 40 tags
+18:31:49@454/info - Destination: Local address f7jcer6gyqaesypydya7qhp4dfswmmc2gsryn5exc2cux2qp26na created
+18:31:50@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:50@805/info - Tunnel: Inbound tunnel 119370729 has been created
+18:31:50@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:51@425/info - Router: Publishing our RouterInfo to TDQO. reply token=1984046905
+18:31:53@425/info - Router: Publishing our RouterInfo to Thta. reply token=3403165821
+18:31:53@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:53@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:53@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:53@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:53@747/info - NetDb: RouterInfo updated: mLoW1Z8YTYHS4vE5SmpuMYNOpvWffs-tf1byKrGozqQ=
+18:31:53@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:53@747/info - NetDb: RouterInfo updated: D~D5J6i5BZIV-ByPQ33Rb2TCWzqfI8bWwMLXhAaRP~E=
+18:31:53@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:53@126/warn - Profiling: No profile yet for N5uUU04HCYIKs5RxrqEd7k78~UoA06R1ueNirs7fqAs=
+18:31:53@805/info - Tunnel: Inbound tunnel 1438772131 has been declined
+18:31:53@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:53@747/info - NetDb: RouterInfo updated: Xglinpodel4xQX7IaDHP-jfIWSfJnf0lnXRpQ8Si~2A=
+18:31:53@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:54@805/info - Tunnel: Outbound tunnel 1896522757 has been created
+18:31:54@747/info - NetDb: RouterInfo updated: 95VlxLpqvG5o2NJI~UlSqPZP5K3GJ5PY3XYEx0VB-HE=
+18:31:54@747/info - NetDb: RouterInfo updated: rnG9pI93VOhnQdK~6pwAB2hbgnHVX6e36LgWiR7dNr0=
+18:31:54@805/info - Tunnel: Outbound tunnel 1100667667 has been declined
+18:31:54@425/info - Router: Publishing our RouterInfo to SDxy. reply token=4212070797
+18:31:55@747/info - NetDb: RouterInfo updated: DcX4~io5HXf9gr0JitTGE2foBTxRQjFZhXs35q5aZ2M=
+18:31:56@425/info - Router: Publishing our RouterInfo to S3jh. reply token=4075907841
+18:31:56@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:56@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:57@425/warn - Profiling: No profile yet for SwKQopiknU4kt3XBjQp~LWMTpja0hw7BYwZ--FKgBzM=
+18:31:57@425/info - Router: Publishing our RouterInfo to SwKQ. reply token=3305832562
+18:31:58@144/warn - SSU2: Session with 92.60.38.166:9200 was not established after 5 seconds
+18:31:58@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:58@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:31:58@747/info - NetDb: RouterInfo updated: JJsgMrIspHXX~uYvstG37dIVL2nhXqO71~b1~2rdbzc=
+18:31:58@805/info - Tunnel: Inbound tunnel 2031272661 has been declined
+18:31:58@747/info - NetDb: RouterInfo updated: Bv1nkT667qcCDbS6e4fg7NeTw0A69fwmUqYVgNiKhcc=
+18:31:59@805/info - Tunnel: Outbound tunnel 1557317321 has been declined
+18:31:59@425/info - Router: Publishing our RouterInfo to Sxtj. reply token=2933303702
+18:31:59@144/warn - SSU2: Session with 152.53.252.155:18367 was not established after 5 seconds
+18:32:00@747/info - NetDb: RouterInfo updated: Sxtj~udUVaEL7VoB64jnkKvfGNM3V9A~oVfrh0sMaVg=
+18:32:00@425/info - Router: Publishing confirmed. reply token=2933303702
+18:32:03@805/info - Tunnel: Inbound tunnel 1550251678 has been declined
+18:32:03@126/warn - Profiling: No profile yet for dQm86gdMDNbbGVNC7GqJcZeVEqdo~EahWfFngOleBMk=
+18:32:03@108/warn - Profiling: No profile yet for Yy3~XoJbZ8Ht9BBvZj9ClOzSUwXqBWJyN7nGtzknodY=
+18:32:03@747/info - NetDb: RouterInfo updated: dQm86gdMDNbbGVNC7GqJcZeVEqdo~EahWfFngOleBMk=
+18:32:05@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:07@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:08@144/warn - SSU2: Session with 103.138.13.5:10374 was not established after 5 seconds
+18:32:08@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:08@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:08@144/warn - SSU2: Unexpected message type 172 from 103.138.13.5:10374 of 71 bytes
+18:32:08@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:08@805/info - Tunnel: Inbound tunnel 3002100402 has been created
+18:32:08@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:08@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:08@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:08@747/info - NetDb: RouterInfo updated: u9vb89D1DLB26X9-1mjdGBsiXe7X-9TjYo-P8vLz00E=
+18:32:08@805/info - Tunnel: Inbound tunnel 2520410766 has been declined
+18:32:08@805/info - Tunnel: Inbound tunnel 4275798274 has been declined
+18:32:08@747/info - NetDb: RouterInfo updated: 2-S3DUaHGLdGT6pq2XwyYx1e6rxNSd1NiEUNH6n1dzc=
+18:32:09@784/info - NetDb: RouterInfo updated: tZ7T2ubpDZLikZf5ARhqCd9CgfeMljbBfgQRnC83kq8=
+18:32:10@805/info - Tunnel: Outbound tunnel 2324958249 has been declined
+18:32:13@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:13@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:13@747/info - NetDb: RouterInfo updated: is-qd0K3w5gmhhVXaSkS0Ent74N712jlFWIE90uHIuk=
+18:32:18@784/info - NTCP2: Not connected in 25 seconds
+18:32:18@784/info - NTCP2: Connect error Операция отменена
+18:32:18@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:18@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:18@126/warn - Profiling: No profile yet for Yq74PwlPvDqI6602ASg3kzI4t5J9IQKSCVXJIl3XSQE=
+18:32:18@747/info - NetDb: RouterInfo updated: Hc1vnCgf7UPpOrwCoCT-hL--uM5z22jUW~W8KVBCTFs=
+18:32:18@805/info - Tunnel: Inbound tunnel 2991132484 has been declined
+18:32:18@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:18@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:18@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:18@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:18@784/warn - NTCP2: SessionCreated read error: Соединение разорвано другой стороной
+18:32:18@126/info - Transports: No compatible addresses available
+18:32:18@126/info - I2NP: Tunnel 212295052 request was not sent
+18:32:18@747/info - NetDb: RouterInfo updated: CP07QL92~HJJKLjiNt-VtYe7H-Yw5whQurSGTZBxhf8=
+18:32:19@805/info - Tunnel: Outbound tunnel 1100491350 has been declined
+18:32:19@805/info - Tunnel: Outbound tunnel 2801804326 has been declined
+18:32:20@108/warn - Profiling: No profile yet for rt0Js1j6G8uUKYkQnGrDoMaBB00IpLKhhaj9stfkn0Q=
+18:32:23@126/warn - Profiling: No profile yet for NXkZi2TgoFF5ZhFjsQs1eDXYMVTszvj0mstEU4L50o4=
+18:32:23@126/warn - Profiling: No profile yet for bbPIEYUffIulEhXJ-4UeY5czCiGvEXXF7HjX76yH0s8=
+18:32:23@784/warn - NTCP2: SessionCreated read error: End of file
+18:32:23@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:23@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:23@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:23@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:23@747/info - NetDb: RouterInfo updated: U6BPHY9AR4nJX2W~tbJCG-gbu6ey~nUyKu9iCPZV73M=
+18:32:23@747/info - NetDb: RouterInfo updated: dMfKQyRdQ079xfcL9bjwHAWVfPG59Ax8IcDgqJuO68I=
+18:32:23@747/info - NetDb: RouterInfo updated: 5cZB2~mVEkllOTZYDykzWAbBiOonRo06vj1qQinB9iA=
+18:32:23@805/info - Tunnel: Outbound tunnel 3435943098 has been created
+18:32:23@747/info - NetDb: RouterInfo updated: bbPIEYUffIulEhXJ-4UeY5czCiGvEXXF7HjX76yH0s8=
+18:32:23@747/info - NetDb: RouterInfo updated: NXkZi2TgoFF5ZhFjsQs1eDXYMVTszvj0mstEU4L50o4=
+18:32:25@805/info - Tunnel: Outbound tunnel 2076871600 has been declined
+18:32:28@108/warn - Profiling: No profile yet for PXYSdNzq-3q4zGPU8DXIbkwj1alsgqjvc~rjQfk2m7k=
+18:32:28@108/warn - Profiling: No profile yet for XoBcO3EEYe52RZBdSzaR97tcCK2tbm5wPsS0zRD05NU=
+18:32:33@126/warn - Profiling: No profile yet for yJWpIe2mPDv3iFwsk2Kcf1MBSpsPv4OcewTquwtybdA=
+18:32:33@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:33@784/info - NTCP2: Not connected in 25 seconds
+18:32:33@784/info - NTCP2: Connect error Операция отменена
+18:32:33@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:33@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:33@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:33@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:33@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:33@144/warn - SSU2: Unexpected message type 224 from 5.189.153.50:26508 of 81 bytes
+18:32:33@805/info - Tunnel: Outbound tunnel 1959150567 has been declined
+18:32:33@805/info - Tunnel: Outbound tunnel 3103899566 has been declined
+18:32:34@747/info - NetDb: RouterInfo updated: 0KiiVCXCj8JK0nofxrH3UVXhLOdsMCEmQkazoPYs9uw=
+18:32:34@747/info - NetDb: RouterInfo updated: ZrhfjcNKuRMqLjYk~0vgfAn0ZujZKrjvnjmGitzA4-U=
+18:32:34@805/info - Tunnel: Inbound tunnel 3770923383 has been declined
+18:32:35@108/warn - Profiling: No profile yet for O~vXjJCUFUu6ye8o7r5DTVUdqz-7JgKUzBo8eTHkKtk=
+18:32:36@842/info - NetDbReq: Exploring new 1 routers ...
+18:32:38@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:38@805/info - Tunnel: Inbound tunnel 726255636 has been created
+18:32:38@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:38@126/warn - Profiling: No profile yet for YbM9GYRm8RSsE6W9aeFR6yj4pw9yYJ311eL05mrWFjE=
+18:32:38@747/info - NetDb: RouterInfo updated: YbM9GYRm8RSsE6W9aeFR6yj4pw9yYJ311eL05mrWFjE=
+18:32:38@784/info - NetDb: RouterInfo updated: nhb3tiMmzjAByCjXAC1DIeotWVfovgO1AtM-Gmd7OLM=
+18:32:42@454/info - Destination: Found new floodfill, request it
+18:32:42@454/info - Destination: Found new floodfill, request it
+18:32:42@454/info - Destination: Found new floodfill, request it
+18:32:42@454/info - Destination: Requesting 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= at GNF4gwzFSpwGkeiTRMSmbzxobFnASf6mFZkqzivzoRI=
+18:32:42@842/warn - Profiling: No profile yet for rJyx9QXAazqbpfsRRc9~xor9sgDItOsAF2Oz7iDatFA=
+18:32:42@842/warn - NetDbReq: No outbound tunnels
+18:32:42@842/warn - NetDbReq: No outbound tunnels
+18:32:42@842/warn - Profiling: No profile yet for CMu2hxRpRj~jz~SVHKGBkOlaadU0Hf3hrAPl52~vLBk=
+18:32:42@842/warn - NetDbReq: No outbound tunnels
+18:32:42@454/info - Destination: Found new floodfill, request it
+18:32:42@454/info - Destination: Found new floodfill, request it
+18:32:42@454/info - Destination: Found new floodfill, request it
+18:32:42@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:32:42@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:32:42@454/info - Destination: Requesting 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= at GNvQdGFBvB1W5fFw0XzdBt8I-md08gJBJtPLtswRo~s=
+18:32:42@842/warn - NetDbReq: No outbound tunnels
+18:32:42@454/info - Destination: Found new floodfill, request it
+18:32:42@454/info - Destination: Found new floodfill, request it
+18:32:42@454/info - Destination: Found new floodfill, request it
+18:32:42@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:32:42@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:32:42@842/warn - NetDbReq: Destination Gv-g1w6sF68cDlF3qialdvMPM7vz6hnLFWAfEOVC~5w= is requested already or cached
+18:32:42@454/info - Destination: Requesting 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= at GGHnDgaoZq5UQ1rxuxuEMeFaotNjbok3NylifBZpdxw=
+18:32:42@747/info - NetDb: Saved 36 new/updated routers
+18:32:42@747/info - NetDb: Deleting 1 unreachable routers
+18:32:42@454/info - Destination: Found new floodfill, request it
+18:32:42@454/info - Destination: Found new floodfill, request it
+18:32:42@454/info - Destination: Found new floodfill, request it
+18:32:42@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:32:42@842/warn - NetDbReq: Destination Gv-g1w6sF68cDlF3qialdvMPM7vz6hnLFWAfEOVC~5w= is requested already or cached
+18:32:42@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:32:42@454/info - Destination: Requesting 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= at GbEil~kS9ZE3MzTK1x0cieYkx8S4YDHUtrwZSA~EPck=
+18:32:43@784/info - NTCP2: Not connected in 25 seconds
+18:32:43@784/info - NTCP2: Connect error Операция отменена
+18:32:43@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:43@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:43@747/info - NetDb: RouterInfo updated: vYC8yhMZgY9s9vxssjS5wW2fkFE1USYY71f1cgnkUf0=
+18:32:43@747/info - NetDb: RouterInfo updated: kYW2MIOZoJjh-hYceJF9jYT2uIWeG23n64qCB-4KEOM=
+18:32:46@217/warn - Profiling: No profile yet for bqcJmNiEgpFsUjaaVcBbjA1L2F1mIFrzcFrwmq4vVz4=
+18:32:49@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:49@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:49@747/info - NetDb: RouterInfo updated: opNwEkTXf4S4ZCcOecHOhEsV43bGtoRdfqJJboT7KWA=
+18:32:49@747/info - NetDb: RouterInfo updated: wEYEhtwUnju6OohECMyQkRs0zpQj11EkD85P7oqoPKA=
+18:32:49@805/info - Tunnel: Outbound tunnel 3334728606 has been declined
+18:32:49@805/info - Tunnel: Outbound tunnel 69048838 has been declined
+18:32:49@454/info - Destination: Found new floodfill, request it
+18:32:49@454/info - Destination: Found new floodfill, request it
+18:32:49@454/info - Destination: Found new floodfill, request it
+18:32:49@454/info - Destination: 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= was not found on 7 floodfills
+18:32:49@454/error - SAM: Destination to connect not found
+18:32:49@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:32:49@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:32:49@842/warn - NetDbReq: Destination Gv6jCflhZjYnWrmOsFfd~yKBk9NEBJbGwskjxCzLA1c= is requested already or cached
+18:32:50@454/info - Destination: Found new floodfill, request it
+18:32:50@454/info - Destination: Found new floodfill, request it
+18:32:50@454/info - Destination: Found new floodfill, request it
+18:32:50@454/info - Destination: Requesting 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= at GNF4gwzFSpwGkeiTRMSmbzxobFnASf6mFZkqzivzoRI=
+18:32:50@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:32:50@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:32:50@842/warn - NetDbReq: Destination Gv-g1w6sF68cDlF3qialdvMPM7vz6hnLFWAfEOVC~5w= is requested already or cached
+18:32:50@454/info - Destination: Found new floodfill, request it
+18:32:50@454/info - Destination: Found new floodfill, request it
+18:32:50@454/info - Destination: Found new floodfill, request it
+18:32:50@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:32:50@454/info - Destination: Requesting 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= at GNvQdGFBvB1W5fFw0XzdBt8I-md08gJBJtPLtswRo~s=
+18:32:50@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:32:50@842/warn - NetDbReq: Destination Gv6jCflhZjYnWrmOsFfd~yKBk9NEBJbGwskjxCzLA1c= is requested already or cached
+18:32:51@454/info - Destination: Found new floodfill, request it
+18:32:51@454/info - Destination: Found new floodfill, request it
+18:32:51@454/info - Destination: Found new floodfill, request it
+18:32:51@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:32:51@454/info - Destination: Requesting 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= at GGHnDgaoZq5UQ1rxuxuEMeFaotNjbok3NylifBZpdxw=
+18:32:51@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:32:51@842/warn - NetDbReq: Destination Gv-g1w6sF68cDlF3qialdvMPM7vz6hnLFWAfEOVC~5w= is requested already or cached
+18:32:51@747/info - NetDb: RouterInfo updated: TDQO~djJ4hRVb26rrKpTzqNnGmlyZyvbEKxxEFfY8UQ=
+18:32:51@454/info - Destination: Found new floodfill, request it
+18:32:51@454/info - Destination: Found new floodfill, request it
+18:32:51@454/info - Destination: Found new floodfill, request it
+18:32:51@454/info - Destination: Requesting 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= at GbEil~kS9ZE3MzTK1x0cieYkx8S4YDHUtrwZSA~EPck=
+18:32:51@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:32:51@842/warn - NetDbReq: Destination Gv-g1w6sF68cDlF3qialdvMPM7vz6hnLFWAfEOVC~5w= is requested already or cached
+18:32:51@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:32:53@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:53@784/warn - NTCP2: SessionCreated read error: Соединение разорвано другой стороной
+18:32:53@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:53@144/warn - SSU2: Retry token is zero
+18:32:53@126/info - Transports: No compatible addresses available
+18:32:53@126/warn - Profiling: No profile yet for O4hw8jSVLdmhbXb9hk-6xWvgL610wgi11o6kve9nLK4=
+18:32:53@126/info - I2NP: Tunnel 365107674 request was not sent
+18:32:53@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:32:54@747/info - NetDb: RouterInfo updated: xJSNRDbO0zCnkW5LXs-nCG7EZ1tWopjQoHq-8bo1SDQ=
+18:32:54@805/info - Tunnel: Inbound tunnel 2491458871 has been declined
+18:32:56@126/warn - Transports: Session to peer yJWpIe2mPDv3iFwsk2Kcf1MBSpsPv4OcewTquwtybdA= has not been created in 15 seconds
+18:32:56@126/warn - Transports: Session to peer SDxy36lAjJS8daFyufRjsWGEi41vkBlzXM71p46QoXI= has not been created in 15 seconds
+18:32:56@126/warn - Transports: Session to peer SwKQopiknU4kt3XBjQp~LWMTpja0hw7BYwZ--FKgBzM= has not been created in 15 seconds
+18:32:56@126/warn - Transports: Session to peer KfcoS-M-zAOujsgKD7JARFDvfbZ0k0tOi0yIioxrsIg= has not been created in 15 seconds
+18:32:58@454/info - Destination: Found new floodfill, request it
+18:32:58@454/info - Destination: Found new floodfill, request it
+18:32:58@454/info - Destination: Found new floodfill, request it
+18:32:58@454/info - Destination: 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= was not found on 7 floodfills
+18:32:58@454/error - SAM: Destination to connect not found
+18:32:58@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:32:58@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:32:58@842/warn - NetDbReq: Destination Gv6jCflhZjYnWrmOsFfd~yKBk9NEBJbGwskjxCzLA1c= is requested already or cached
+18:32:58@784/info - NTCP2: Not connected in 25 seconds
+18:32:58@784/info - NTCP2: Connect error Операция отменена
+18:32:58@454/info - Destination: Found new floodfill, request it
+18:32:58@454/info - Destination: Found new floodfill, request it
+18:32:58@454/info - Destination: Found new floodfill, request it
+18:32:58@454/info - Destination: Requesting 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= at GNF4gwzFSpwGkeiTRMSmbzxobFnASf6mFZkqzivzoRI=
+18:32:58@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:32:58@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:32:58@842/warn - NetDbReq: Destination Gv-g1w6sF68cDlF3qialdvMPM7vz6hnLFWAfEOVC~5w= is requested already or cached
+18:32:58@454/info - Destination: Found new floodfill, request it
+18:32:58@454/info - Destination: Found new floodfill, request it
+18:32:58@454/info - Destination: Found new floodfill, request it
+18:32:58@454/info - Destination: Requesting 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= at GNvQdGFBvB1W5fFw0XzdBt8I-md08gJBJtPLtswRo~s=
+18:32:58@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:32:58@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:32:58@842/warn - NetDbReq: Destination Gv6jCflhZjYnWrmOsFfd~yKBk9NEBJbGwskjxCzLA1c= is requested already or cached
+18:32:58@454/info - Destination: Found new floodfill, request it
+18:32:58@454/info - Destination: Found new floodfill, request it
+18:32:58@454/info - Destination: Found new floodfill, request it
+18:32:58@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:32:58@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:32:58@842/warn - NetDbReq: Destination Gv-g1w6sF68cDlF3qialdvMPM7vz6hnLFWAfEOVC~5w= is requested already or cached
+18:32:58@454/info - Destination: Requesting 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= at GGHnDgaoZq5UQ1rxuxuEMeFaotNjbok3NylifBZpdxw=
+18:32:59@454/info - Destination: Found new floodfill, request it
+18:32:59@454/info - Destination: Found new floodfill, request it
+18:32:59@454/info - Destination: Found new floodfill, request it
+18:32:59@454/info - Destination: Requesting 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= at GbEil~kS9ZE3MzTK1x0cieYkx8S4YDHUtrwZSA~EPck=
+18:32:59@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:32:59@842/warn - NetDbReq: Destination Gv-g1w6sF68cDlF3qialdvMPM7vz6hnLFWAfEOVC~5w= is requested already or cached
+18:32:59@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:33:01@217/warn - Profiling: No profile yet for Udz2MlcVm-jLGf5EgTyd~~1iTmNP4OY58xqD0fxul2o=
+18:33:01@217/warn - Profiling: No profile yet for NcLIPlCawWtIUdRYAo15u9o6IrGbWyMu9KXpzMNRlQE=
+18:33:01@217/warn - Profiling: No profile yet for ENaKF6kSsXPysM7aU3EDIBcYjozutdVx696dLT-f~d0=
+18:33:03@805/info - Tunnel: Inbound tunnel 3853179823 has been declined
+18:33:03@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:33:03@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:33:06@454/info - Destination: Found new floodfill, request it
+18:33:06@454/info - Destination: Found new floodfill, request it
+18:33:06@454/info - Destination: Found new floodfill, request it
+18:33:06@454/info - Destination: 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= was not found on 7 floodfills
+18:33:06@454/error - SAM: Destination to connect not found
+18:33:06@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:33:06@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:33:06@842/warn - NetDbReq: Destination Gv6jCflhZjYnWrmOsFfd~yKBk9NEBJbGwskjxCzLA1c= is requested already or cached
+18:33:06@454/info - Destination: Found new floodfill, request it
+18:33:06@454/info - Destination: Found new floodfill, request it
+18:33:06@454/info - Destination: Found new floodfill, request it
+18:33:06@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:33:06@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:33:06@842/warn - NetDbReq: Destination Gv-g1w6sF68cDlF3qialdvMPM7vz6hnLFWAfEOVC~5w= is requested already or cached
+18:33:06@454/info - Destination: Requesting 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= at GNF4gwzFSpwGkeiTRMSmbzxobFnASf6mFZkqzivzoRI=
+18:33:06@784/warn - NTCP2: SessionCreated read error: Операция отменена
+18:33:06@784/warn - NTCP2: SessionCreated read error: Операция отменена
+18:33:06@784/warn - NTCP2: SessionCreated read error: Операция отменена
+18:33:07@454/info - Destination: Found new floodfill, request it
+18:33:07@454/info - Destination: Found new floodfill, request it
+18:33:07@454/info - Destination: Found new floodfill, request it
+18:33:07@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:33:07@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:33:07@842/warn - NetDbReq: Destination Gv6jCflhZjYnWrmOsFfd~yKBk9NEBJbGwskjxCzLA1c= is requested already or cached
+18:33:07@454/info - Destination: Requesting 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= at GNvQdGFBvB1W5fFw0XzdBt8I-md08gJBJtPLtswRo~s=
+18:33:07@454/info - Destination: Found new floodfill, request it
+18:33:07@454/info - Destination: Found new floodfill, request it
+18:33:07@454/info - Destination: Found new floodfill, request it
+18:33:07@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:33:07@454/info - Destination: Requesting 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= at GGHnDgaoZq5UQ1rxuxuEMeFaotNjbok3NylifBZpdxw=
+18:33:07@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:33:07@842/warn - NetDbReq: Destination Gv-g1w6sF68cDlF3qialdvMPM7vz6hnLFWAfEOVC~5w= is requested already or cached
+18:33:07@454/info - Destination: Found new floodfill, request it
+18:33:07@454/info - Destination: Found new floodfill, request it
+18:33:07@454/info - Destination: Found new floodfill, request it
+18:33:07@842/warn - NetDbReq: Destination GupRgq0GEWGWIsPk6-1KrSVbSXJtTjKxyeF5UCW~1ds= is requested already or cached
+18:33:07@454/info - Destination: Requesting 4IB7niCyy2gH6K5bNfpA0ZPiQ~QvybM5DNwKFub~AGM= at GbEil~kS9ZE3MzTK1x0cieYkx8S4YDHUtrwZSA~EPck=
+18:33:07@842/warn - NetDbReq: Destination Gv-g1w6sF68cDlF3qialdvMPM7vz6hnLFWAfEOVC~5w= is requested already or cached
+18:33:07@842/warn - NetDbReq: Destination GvPbKTtM5lKuYaczauccOCc~NBRd~MK~6IQ3HtMQ77o= is requested already or cached
+18:33:08@144/warn - SSU2: Session with 92.118.170.104:23257 was not established after 5 seconds
+18:33:08@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:33:08@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:33:08@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:33:08@805/info - Tunnel: Inbound tunnel 117054089 has been declined
+18:33:09@144/info - SSU2: Our external address is 109.194.162.67:29798
+18:33:09@747/info - NetDb: RouterInfo updated: 85ZTaqjhH6brK9wu8cS4~7OK4x7jAOrDhHKvXXnrT3Y=
+18:33:09@454/error - SAM: Read error: End of file
+18:33:09@454/warn - SAM: I2P acceptor has been reset
+18:33:09@454/error - SAM: Read error: Операция отменена
+18:33:09@37/info - Clients: Stopping SAM bridge
+18:33:09@37/error - SAM: Destination to connect not found
+18:33:09@37/info - Clients: Stopping AddressBook
+18:33:09@37/info - Addressbook: 81 addresses saved
+18:33:09@37/info - Clients: Stopping UDP Tunnels
+18:33:09@37/info - Clients: Stopping UDP Tunnels timers
+18:33:09@37/info - Clients: Stopping Destinations
+18:33:09@37/info - Clients: Stopping Destinations - Clear
+18:33:09@37/info - Clients: Stopping SharedLocalDestination
+18:33:09@37/info - API: Shutting down
+18:33:09@37/info - API: Stopping Router context
+18:33:09@37/info - API: Stopping Tunnels
+18:33:09@37/info - API: Stopping Transports
+18:33:09@784/info - NTCP2: Connect error Операция отменена
+18:33:09@126/info - Transports: No compatible addresses available
+18:33:09@784/info - NTCP2: Connect error Операция отменена
+18:33:09@784/info - NTCP2: Connect error Операция отменена
+18:33:09@784/info - NTCP2: Connect error Операция отменена
+18:33:09@126/info - I2NP: Tunnel 857105795 request was not sent
+18:33:09@126/info - Transports: No compatible addresses available
+18:33:09@784/info - NTCP2: Connect error Операция отменена
+18:33:09@784/warn - NTCP2: SessionCreated read error: Операция отменена
+18:33:09@126/info - I2NP: Tunnel 2968099185 request was not sent
+18:33:09@37/info - API: Stopping NetDB

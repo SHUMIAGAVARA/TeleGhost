@@ -62,6 +62,10 @@ export function DeleteMessageForAll(arg1) {
   return window['go']['main']['App']['DeleteMessageForAll'](arg1);
 }
 
+export function DeleteProfile(arg1) {
+  return window['go']['main']['App']['DeleteProfile'](arg1);
+}
+
 export function EditMessage(arg1, arg2) {
   return window['go']['main']['App']['EditMessage'](arg1, arg2);
 }

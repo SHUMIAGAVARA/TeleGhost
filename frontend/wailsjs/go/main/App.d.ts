@@ -34,6 +34,8 @@ export function DeleteMessage(arg1:string):Promise<void>;
 
 export function DeleteMessageForAll(arg1:string):Promise<void>;
 
+export function DeleteProfile(arg1:string):Promise<void>;
+
 export function EditMessage(arg1:string,arg2:string):Promise<void>;
 
 export function GetAppAboutInfo():Promise<main.AppAboutInfo>;

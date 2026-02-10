@@ -98,6 +98,37 @@ func (a *App) UnlockProfile(profileID string, pin string) (string, error) {
 	return a.profileManager.UnlockProfile(profileID, pin)
 }
 
+// DeleteProfile удаляет профиль и все связанные данные
+func (a *App) DeleteProfile(profileID string) error {
+	if a.profileManager == nil {
+		return fmt.Errorf("profile manager not initialized")
+	}
+
+	// Получаем метаданные для удаления папки пользователя
+	profiles, _ := a.profileManager.ListProfiles()
+	var userID string
+	for _, p := range profiles {
+		if p.ID == profileID {
+			userID = p.UserID
+			break
+		}
+	}
+
+	// Удаляем JSON профиля
+	if err := a.profileManager.DeleteProfile(profileID); err != nil {
+		return err
+	}
+
+	// Удаляем папку данных пользователя если нашли UserID
+	if userID != "" {
+		userDataDir := filepath.Join(a.dataDir, "users", userID)
+		log.Printf("[App] Deleting user data directory: %s", userDataDir)
+		os.RemoveAll(userDataDir)
+	}
+
+	return nil
+}
+
 // Login авторизация по seed-фразе
 func (a *App) Login(seedPhrase string) error {
 	log.Printf("[DEBUG] Login called")

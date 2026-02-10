@@ -64,8 +64,8 @@ func (m *MediaCrypt) NewMediaHandler(storageDir string) http.Handler {
 		relPath := strings.TrimPrefix(r.URL.Path, "/secure/")
 		fullPath := filepath.Join(storageDir, relPath)
 
-		// Читаем зашифрованный файл
-		encryptedData, err := os.ReadFile(fullPath)
+		// Читаем файл
+		data, err := os.ReadFile(fullPath)
 		if err != nil {
 			http.NotFound(w, r)
 			return
@@ -78,20 +78,15 @@ func (m *MediaCrypt) NewMediaHandler(storageDir string) http.Handler {
 		}
 
 		nonceSize := aead.NonceSize()
-		if len(encryptedData) < nonceSize {
-			http.Error(w, "Invalid media format", http.StatusForbidden)
-			return
-		}
+		plaintext := data
 
-		// Разделяем nonce и зашифрованные данные
-		nonce, ciphertext := encryptedData[:nonceSize], encryptedData[nonceSize:]
-
-		// Расшифровываем в памяти
-		plaintext, err := aead.Open(nil, nonce, ciphertext, nil)
-		if err != nil {
-			logError(fmt.Sprintf("Decryption failed for %s: %v", fullPath, err))
-			http.Error(w, "Forbidden: Decryption failed", http.StatusForbidden)
-			return
+		// Проверяем, зашифрован ли файл
+		if len(data) >= nonceSize {
+			nonce, ciphertext := data[:nonceSize], data[nonceSize:]
+			decrypted, err := aead.Open(nil, nonce, ciphertext, nil)
+			if err == nil {
+				plaintext = decrypted
+			}
 		}
 
 		// Определяем Content-Type по расширению оригинального файла
@@ -117,7 +112,7 @@ func (m *MediaCrypt) MigrateDirectory(dir string) error {
 		// Читаем файл
 		data, err := os.ReadFile(path)
 		if err != nil {
-			return nil // Пропускаем проблемные файлы
+			return nil
 		}
 
 		aead, err := chacha20poly1305.NewX(m.key)
@@ -138,8 +133,40 @@ func (m *MediaCrypt) MigrateDirectory(dir string) error {
 		}
 
 		if !isEncrypted {
-			fmt.Printf("[MediaCrypt] Migrating to encrypted: %s\n", path)
+			fmt.Printf("[MediaCrypt] Encrypting: %s\n", path)
 			return m.SaveEncrypted(path, data)
+		}
+
+		return nil
+	})
+}
+
+// DecryptDirectory сканирует директорию и расшифровывает все файлы
+func (m *MediaCrypt) DecryptDirectory(dir string) error {
+	return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil || info.IsDir() {
+			return err
+		}
+
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil
+		}
+
+		aead, err := chacha20poly1305.NewX(m.key)
+		if err != nil {
+			return err
+		}
+
+		nonceSize := aead.NonceSize()
+		if len(data) >= nonceSize {
+			nonce := data[:nonceSize]
+			ciphertext := data[nonceSize:]
+			plaintext, errDec := aead.Open(nil, nonce, ciphertext, nil)
+			if errDec == nil {
+				fmt.Printf("[MediaCrypt] Decrypting: %s\n", path)
+				return os.WriteFile(path, plaintext, 0600)
+			}
 		}
 
 		return nil

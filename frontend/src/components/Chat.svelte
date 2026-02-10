@@ -25,6 +25,7 @@
     export let onSaveEditMessage;
     export let onCancelEdit;
     export let onOpenFile;
+    export let onSaveFile;
     export let onPreviewImage;
 
     let textarea;
@@ -88,18 +89,23 @@
                                         on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onPreviewImage(att.LocalPath)}
                                     />
                                 {:else}
-                                    <div 
-                                        class="file-attachment-card" 
-                                        role="button"
-                                        tabindex="0"
-                                        on:click|stopPropagation={() => onOpenFile(att.LocalPath)}
-                                        on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onOpenFile(att.LocalPath)}
-                                    >
-                                        <div class="file-icon">📄</div>
-                                        <div class="file-info">
-                                            <div class="file-name">{att.Filename || 'File'}</div>
-                                            <div class="file-size">{att.Size ? (att.Size / 1024).toFixed(1) + ' KB' : ''}</div>
+                                    <div class="file-attachment-container">
+                                        <div 
+                                            class="file-attachment-card" 
+                                            role="button"
+                                            tabindex="0"
+                                            on:click|stopPropagation={() => onOpenFile(att.LocalPath)}
+                                            on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onOpenFile(att.LocalPath)}
+                                        >
+                                            <div class="file-icon">📄</div>
+                                            <div class="file-info">
+                                                <div class="file-name">{att.Filename || 'File'}</div>
+                                                <div class="file-size">{att.Size ? (att.Size / 1024).toFixed(1) + ' KB' : ''}</div>
+                                            </div>
                                         </div>
+                                        <button class="btn-file-save" on:click|stopPropagation={() => onSaveFile(att.LocalPath, att.Filename)} title="Сохранить в другое место">
+                                            <div class="icon-svg-xs">{@html Icons.Download || '⬇️'}</div>
+                                        </button>
                                     </div>
                                 {/if}
                             {/each}
@@ -224,6 +230,12 @@
     .preview-item { position: relative; width: 60px; height: 60px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: rgba(0,0,0,0.2); }
     .preview-item img { width: 100%; height: 100%; object-fit: cover; }
     .btn-remove-att { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; }
+
+    .file-attachment-container { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.1); border-radius: 12px; padding: 4px; }
+    .btn-file-save { background: transparent; border: none; color: white; opacity: 0.6; cursor: pointer; padding: 8px; border-radius: 50%; transition: opacity 0.2s, background 0.2s; }
+    .btn-file-save:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+    .icon-svg-xs { width: 14px; height: 14px; }
+    .icon-svg-xs :global(svg) { width: 100%; height: 100%; }
 
     .icon-svg { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
     .icon-svg :global(svg) { width: 100%; height: 100%; }

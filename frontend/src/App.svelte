@@ -355,6 +355,14 @@
       },
       onCancelEdit: () => { editingMessageId = null; },
       onOpenFile: (path) => AppActions.OpenFile(path),
+      onSaveFile: async (path, filename) => {
+          try {
+              await AppActions.SaveFileToLocation(path, filename);
+              showToast("Файл сохранен", "success");
+          } catch (e) {
+              if (e) showToast(e, "error");
+          }
+      },
       onPreviewImage: async (path) => {
           const base64 = await AppActions.GetFileBase64(path);
           previewImage = "data:image/jpeg;base64," + base64;

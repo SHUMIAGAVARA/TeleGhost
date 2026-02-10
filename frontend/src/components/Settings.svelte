@@ -50,10 +50,10 @@
     {:else}
         <div class="settings-view-details">
             <div class="settings-header">
+                <h2>{settingsCategories.find(c => c.id === activeSettingsTab)?.name}</h2>
                 <button class="btn-icon" on:click={onBackToMenu}>
                     <div class="icon-svg">{@html Icons.ArrowLeft}</div>
                 </button>
-                <h2>{settingsCategories.find(c => c.id === activeSettingsTab)?.name}</h2>
             </div>
 
             <div class="settings-content-area">
@@ -185,7 +185,7 @@
                             <div class="update-action-row" on:click={onCheckUpdates}>
                                 <div class="info-icon accent">{@html Icons.Refresh}</div>
                                 <div class="info-content">
-                                    <span class="info-value-fancy accent">Проверить обновления</span>
+                                    <span class="info-value-fancy accent">Обновить приложение</span>
                                 </div>
                                 <div class="chevron">{@html Icons.ChevronRight}</div>
                             </div>
@@ -208,6 +208,10 @@
     
     .btn-icon { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; border-radius: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; padding: 0; }
     .btn-icon:hover { background: rgba(255,255,255,0.1); transform: scale(1.05); }
+    .settings-header .btn-icon { order: -1; } /* For details view to keep back button left if needed, but wait user wants X right? No, ArrowLeft usually left. */
+    
+    .settings-view-menu .settings-header .btn-icon { order: 1; } /* X on the right */
+    .settings-view-details .settings-header .btn-icon { order: -1; } /* Arrow on the left */
     
     .settings-view-menu { width: 100%; max-width: 600px; margin: 0 auto; flex: 1; display: flex; flex-direction: column; }
     .settings-menu { padding: 20px; }

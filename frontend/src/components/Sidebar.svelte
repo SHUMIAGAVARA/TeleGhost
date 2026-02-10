@@ -29,6 +29,15 @@
 
     $: filteredContacts = (contacts || []).filter(c => {
         if (!c || !c.nickname) return false;
+        
+        // Фильтрация по папкам
+        if (activeFolderId !== 'all') {
+            const folder = folders.find(f => f.id === activeFolderId);
+            if (folder && folder.ChatIDs && !folder.ChatIDs.includes(c.ChatID)) {
+                return false;
+            }
+        }
+
         const query = (searchQuery || "").toLowerCase();
         const nickname = (c.nickname || "").toLowerCase();
         const lastMsg = (c.lastMessage || "").toLowerCase();
@@ -37,7 +46,7 @@
 
     $: uiFolders = [
         { id: 'all', name: 'Все', icon: Icons.Chat },
-        ...(folders || []).sort((a, b) => (a?.position || 0) - (b?.position || 0)),
+        ...([...(folders || [])].sort((a, b) => (a?.position || 0) - (b?.position || 0))),
         { id: 'add', name: 'Создать', icon: Icons.Plus }
     ];
 

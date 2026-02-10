@@ -174,12 +174,14 @@
           // Load the rest in the background
           console.log("[App] onLoginSuccess: loading Contacts and Folders in background...");
           loadContacts().then(() => {
-              console.log("[App] onLoginSuccess: background data loaded");
+              console.log("[App] onLoginSuccess: initial background data load finished");
               loadAboutInfo();
               
               // Start background polling
               console.log("[App] Starting background contact polling...");
               setInterval(loadContacts, 300 * 1000);
+          }).finally(() => {
+              isInitializing = false; // Ensure overlay is removed even if loadContacts fails partially
           });
           
           console.log("[App] onLoginSuccess: transition complete!");
@@ -195,11 +197,17 @@
   }
 
   async function handleLogout() {
+      console.log("[App] Logging out, resetting all states...");
       await AppActions.Logout();
       screen = 'login';
       identity = null;
       selectedContact = null;
       showSettings = false;
+      contacts = [];
+      folders = [];
+      activeFolderId = 'all';
+      searchQuery = '';
+      currentUserInfo = null;
   }
 
   function selectContact(contact) {

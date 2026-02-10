@@ -845,12 +845,15 @@ func (r *Repository) enrichMessagesWithAttachments(ctx context.Context, messages
 // GetChatHistory возвращает историю сообщений чата с пагинацией
 func (r *Repository) GetChatHistory(ctx context.Context, chatID string, limit, offset int) ([]*core.Message, error) {
 	query := `
-		SELECT id, chat_id, sender_id, content, content_type, status,
-		       is_outgoing, reply_to_id, timestamp, created_at, updated_at
-		FROM messages
-		WHERE chat_id = ?
-		ORDER BY timestamp DESC
-		LIMIT ? OFFSET ?
+		SELECT * FROM (
+			SELECT id, chat_id, sender_id, content, content_type, status,
+			       is_outgoing, reply_to_id, timestamp, created_at, updated_at
+			FROM messages
+			WHERE chat_id = ?
+			ORDER BY timestamp DESC
+			LIMIT ? OFFSET ?
+		) AS m
+		ORDER BY timestamp ASC
 	`
 
 	rows, err := r.db.QueryContext(ctx, query, chatID, limit, offset)

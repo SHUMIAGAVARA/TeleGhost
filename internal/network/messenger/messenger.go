@@ -165,8 +165,10 @@ func (s *Service) SendMessage(destination string, packet *pb.Packet) error {
 	}
 
 	// Получаем или создаём соединение
+	log.Printf("[Messenger] Getting connection for %s...", destination[:16])
 	conn, err := s.getOrCreateConnection(destination)
 	if err != nil {
+		log.Printf("[Messenger] ERROR: connection failed for %s: %v", destination[:16], err)
 		return fmt.Errorf("connection failed: %w", err)
 	}
 
@@ -176,17 +178,16 @@ func (s *Service) SendMessage(destination string, packet *pb.Packet) error {
 		return fmt.Errorf("marshal failed: %w", err)
 	}
 
-	if len(data) > MaxPacketSize {
-		return fmt.Errorf("packet too large: %d > %d", len(data), MaxPacketSize)
-	}
-
+	log.Printf("[Messenger] Sending packet type %v (%d bytes) to %s...", packet.Type, len(data), destination[:16])
 	// Отправляем: 4 байта размер + данные
 	if err := s.writePacket(conn, data); err != nil {
+		log.Printf("[Messenger] ERROR: write failed for %s: %v", destination[:16], err)
 		// При ошибке удаляем соединение из пула
 		s.removeConnection(destination)
 		return fmt.Errorf("send failed: %w", err)
 	}
 
+	log.Printf("[Messenger] Packet sent successfully to %s", destination[:16])
 	return nil
 }
 

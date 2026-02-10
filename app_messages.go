@@ -48,6 +48,15 @@ func (a *App) SendFileMessage(chatID, text string, files []string, isRaw bool) e
 		}
 	}
 
+	// Отправляем handshake синхронно, если нет публичного ключа,
+	// чтобы получатель мог создать контакт до сообщения.
+	if contact.PublicKey == "" {
+		log.Printf("[App] No public key for %s, sending handshake first...", contact.Nickname)
+		if err := a.messenger.SendHandshake(contact.I2PAddress); err != nil {
+			log.Printf("[App] Handshake failed: %v", err)
+		}
+	}
+
 	if !isRaw && allImages {
 		// Прямая отправка сжатых изображений
 		attachments := make([]*pb.Attachment, 0, len(files))
@@ -229,12 +238,28 @@ func (a *App) onMessageReceived(msg *core.Message, senderPubKey, senderAddr stri
 
 	contact, _ := a.repo.GetContactByPublicKey(a.ctx, senderPubKey)
 	if contact == nil {
+		log.Printf("[App] Message from unknown sender %s (%s)", senderPubKey[:16], senderAddr[:16])
 		contact, _ = a.repo.GetContactByAddress(a.ctx, senderAddr)
 		if contact != nil {
+			log.Printf("[App] Found contact by address, updating pubkey")
 			contact.PublicKey = senderPubKey
 			newChatID := identity.CalculateChatID(a.identity.Keys.PublicKeyBase64, senderPubKey)
 			contact.ChatID = newChatID
 			a.repo.SaveContact(a.ctx, contact)
+		} else {
+			log.Printf("[App] Creating NEW contact for unknown sender")
+			newChatID := identity.CalculateChatID(a.identity.Keys.PublicKeyBase64, senderPubKey)
+			contact = &core.Contact{
+				ID:         uuid.New().String(),
+				PublicKey:  senderPubKey,
+				Nickname:   "Unknown " + senderPubKey[:8],
+				I2PAddress: senderAddr,
+				ChatID:     newChatID,
+				AddedAt:    time.Now(),
+				UpdatedAt:  time.Now(),
+			}
+			a.repo.SaveContact(a.ctx, contact)
+			runtime.EventsEmit(a.ctx, "contact_updated")
 		}
 	}
 
@@ -275,13 +300,17 @@ func (a *App) SendText(contactID, text string) error {
 
 	log.Printf("[App] Sending message to %s (ChatID: %s)", contact.Nickname, contact.ChatID)
 
-	// Отправляем handshake в фоне, если нет публичного ключа
+	// Отправляем handshake синхронно, если нет публичного ключа,
+	// чтобы получатель мог создать контакт до сообщения.
 	if contact.PublicKey == "" {
-		go a.messenger.SendHandshake(contact.I2PAddress)
+		log.Printf("[App] No public key for %s, sending handshake first...", contact.Nickname)
+		if err := a.messenger.SendHandshake(contact.I2PAddress); err != nil {
+			log.Printf("[App] Handshake failed: %v", err)
+		}
 	}
 
 	if err := a.messenger.SendTextMessage(contact.I2PAddress, contact.ChatID, text); err != nil {
-		log.Printf("[App] SendText error: %v", err)
+		log.Printf("[App] SendTextMessage error to %s: %v", contact.Nickname, err)
 		return fmt.Errorf("send failed: %w", err)
 	}
 

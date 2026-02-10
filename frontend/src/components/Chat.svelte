@@ -150,25 +150,29 @@
     </div>
 
     <div class="input-area-wrapper">
-        {#if selectedFiles.length > 0}
-            <div class="attachment-preview">
-                {#each selectedFiles as file, i}
-                    <div class="preview-item">
-                        {#if filePreviews[file]}
-                            <img src={`data:image/png;base64,${filePreviews[file]}`} alt="preview" />
-                        {:else}
-                            <div class="file-icon-preview">📄</div>
-                        {/if}
-                        <button class="btn-remove-att" on:click={() => onRemoveFile(i)}>X</button>
-                    </div>
-                {/each}
+        <div class="attachment-preview-wrapper" style="display: {selectedFiles.length > 0 ? 'block' : 'none'}">
+            <div class="attachment-preview-container">
+                <div class="attachment-preview">
+                    {#each selectedFiles as file, i}
+                        <div class="preview-item">
+                            {#if filePreviews[file]}
+                                <img src={`data:image/png;base64,${filePreviews[file]}`} alt="preview" />
+                            {:else}
+                                <div class="file-icon-preview">📄</div>
+                            {/if}
+                            <button class="btn-remove-att" on:click={() => onRemoveFile(i)}>X</button>
+                        </div>
+                    {/each}
+                </div>
+                <div class="preview-actions">
+                    <button class="btn-toggle-comp {isCompressed ? 'active' : ''}" on:click={() => isCompressed = !isCompressed} title={isCompressed ? 'Сжимать изображения (быстро)' : 'Отправлять оригинал (требует принятия)'}>
+                        <div class="icon-svg" style="opacity: {isCompressed ? 1 : 0.5}">{@html isCompressed ? Icons.Image : Icons.File}</div>
+                    </button>
+                </div>
             </div>
-        {/if}
+        </div>
         
         <div class="input-area">
-            <button class="btn-icon {isCompressed ? 'active' : ''}" on:click={() => isCompressed = !isCompressed} title={isCompressed ? 'Сжимать изображения (быстро)' : 'Отправлять оригинал (требует принятия)'}>
-                <div class="icon-svg" style="opacity: {isCompressed ? 1 : 0.5}">{@html isCompressed ? Icons.Image : Icons.File}</div>
-            </button>
             <button class="btn-icon" on:click={onSelectFiles} title="Прикрепить файл">
                 <div class="icon-svg">{@html Icons.Paperclip}</div>
             </button>
@@ -230,10 +234,16 @@
     .btn-send:hover { transform: scale(1.05); }
     .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    .attachment-preview { display: flex; gap: 10px; padding: 10px; overflow-x: auto; background: var(--bg-secondary); border-radius: 12px; margin-bottom: 10px; }
+    .attachment-preview-container { display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border-radius: 12px; margin-bottom: 10px; padding: 10px; }
+    .attachment-preview { display: flex; gap: 10px; overflow-x: auto; }
     .preview-item { position: relative; width: 60px; height: 60px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: rgba(0,0,0,0.2); }
     .preview-item img { width: 100%; height: 100%; object-fit: cover; }
     .btn-remove-att { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; }
+    
+    .preview-actions { padding-left: 10px; border-left: 1px solid var(--border); }
+    .btn-toggle-comp { background: transparent; border: none; color: var(--text-secondary); cursor: pointer; padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .btn-toggle-comp.active { color: var(--accent); background: rgba(99, 102, 241, 0.1); }
+    .btn-toggle-comp:hover { background: rgba(255,255,255,0.1); }
 
     .file-attachment-container { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.1); border-radius: 12px; padding: 4px; }
     .btn-file-save { background: transparent; border: none; color: white; opacity: 0.6; cursor: pointer; padding: 8px; border-radius: 50%; transition: opacity 0.2s, background 0.2s; }

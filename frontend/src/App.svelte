@@ -240,7 +240,7 @@
           newMessage = '';
           selectedFiles = [];
           filePreviews = {};
-          loadMessages(selectedContact.ID);
+          await loadMessages(selectedContact.ID);
       } catch (err) {
           showToast(err, 'error');
       }

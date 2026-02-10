@@ -203,7 +203,11 @@
           window.addEventListener('mousemove', handleMove);
           window.addEventListener('mouseup', handleUp);
       },
-      onOpenAddContact: () => { showAddContact = true; },
+      onOpenAddContact: () => { 
+          showAddContact = true;
+          addContactName = '';
+          addContactAddress = '';
+      },
       onAddContactFromClipboard: async () => {
           try {
               await AppActions.AddContactFromClipboard();
@@ -339,18 +343,25 @@
       onCancelFolder: () => { showFolderModal = false; },
       onCloseContactProfile: () => { showContactProfile = false; },
       onAddContact: async () => {
-          if (!addContactName || !addContactAddress) {
+          console.log("Adding contact:", { name: addContactName, address: addContactAddress });
+          const trimmedName = addContactName?.trim();
+          const trimmedAddress = addContactAddress?.trim();
+
+          if (!trimmedName || !trimmedAddress) {
               showToast("Заполните все поля", "error");
               return;
           }
           try {
-              await AppActions.AddContact(addContactName, addContactAddress);
+              await AppActions.AddContact(trimmedName, trimmedAddress);
               showAddContact = false;
               addContactName = '';
               addContactAddress = '';
               loadContacts();
               showToast("Контакт добавлен", "success");
-          } catch (e) { showToast(e, "error"); }
+          } catch (e) { 
+              console.error("Failed to add contact:", e);
+              showToast(e, "error"); 
+          }
       },
       onCancelAddContact: () => { 
           showAddContact = false;

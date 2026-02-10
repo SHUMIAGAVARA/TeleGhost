@@ -227,14 +227,14 @@
       
       try {
           if (selectedFiles.length > 0) {
-              await AppActions.SendFileMessage(selectedContact.id, newMessage, selectedFiles, !isCompressed);
+              await AppActions.SendFileMessage(selectedContact.ID, newMessage, selectedFiles, !isCompressed);
           } else {
-              await AppActions.SendText(selectedContact.id, newMessage);
+              await AppActions.SendText(selectedContact.ID, newMessage);
           }
           newMessage = '';
           selectedFiles = [];
           filePreviews = {};
-          loadMessages(selectedContact.id);
+          loadMessages(selectedContact.ID);
       } catch (err) {
           showToast(err, 'error');
       }
@@ -588,10 +588,12 @@
             <div class="context-item" on:click={() => {
                 editingMessageId = messageContextMenu.message.ID;
                 editMessageContent = messageContextMenu.message.Content;
+                messageContextMenu.show = false;
             }}>Редактировать</div>
             <div class="context-item danger" on:click={() => {
                 AppActions.DeleteMessage(messageContextMenu.message.ID);
                 loadMessages(selectedContact.ID);
+                messageContextMenu.show = false;
             }}>Удалить</div>
         </div>
     {/if}

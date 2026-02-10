@@ -97,8 +97,8 @@
                                     >
                                         <div class="file-icon">📄</div>
                                         <div class="file-info">
-                                            <div class="file-name">{att.filename || 'File'}</div>
-                                            <div class="file-size">{att.size ? (att.size / 1024).toFixed(1) + ' KB' : ''}</div>
+                                            <div class="file-name">{att.Filename || 'File'}</div>
+                                            <div class="file-size">{att.Size ? (att.Size / 1024).toFixed(1) + ' KB' : ''}</div>
                                         </div>
                                     </div>
                                 {/if}
@@ -118,8 +118,8 @@
                         <div class="file-offer-card">
                             <div class="file-icon-large">📁</div>
                             <div class="file-info">
-                                <div class="file-title">Файлов: {msg.fileCount}</div>
-                                <div class="file-size">{(msg.totalSize / (1024*1024)).toFixed(2)} MB</div>
+                                <div class="file-title">Файлов: {msg.FileCount}</div>
+                                <div class="file-size">{(msg.TotalSize / (1024*1024)).toFixed(2)} MB</div>
                             </div>
                         </div>
                         <div class="file-actions">

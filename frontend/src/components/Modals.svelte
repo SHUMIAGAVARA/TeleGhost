@@ -113,18 +113,18 @@
         </div>
         <div class="modal-body" style="text-align: center; padding: 20px 0;">
             <div class="profile-avatar-large" style="width: 100px; height: 100px; margin: 0 auto 20px; background: var(--accent); border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 40px; color: white;">
-                {#if contact.avatar}<img src={contact.avatar} alt="av" style="width:100%;height:100%;object-fit:cover;"/>{:else}{getInitials(contact.nickname)}{/if}
+                {#if contact.Avatar}<img src={contact.Avatar} alt="av" style="width:100%;height:100%;object-fit:cover;"/>{:else}{getInitials(contact.Nickname)}{/if}
             </div>
-            <h2 style="margin-bottom: 4px;">{contact.nickname}</h2>
-            <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">{contact.isOnline ? 'В сети' : 'Оффлайн'}</p>
+            <h2 style="margin-bottom: 4px;">{contact.Nickname}</h2>
+            <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">{contact.IsOnline ? 'В сети' : 'Оффлайн'}</p>
             
             <div style="text-align: left; background: var(--bg-input); padding: 16px; border-radius: 16px;">
                 <span style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 4px;">I2P Адрес</span>
-                <code style="font-size: 11px; word-break: break-all; opacity: 0.8;">{contact.i2pAddress}</code>
+                <code style="font-size: 11px; word-break: break-all; opacity: 0.8;">{contact.I2PAddress}</code>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-primary full-width clickable-btn" on:click={() => { navigator.clipboard.writeText(contact.i2pAddress); }}>Скопировать адрес</button>
+            <button class="btn-primary full-width clickable-btn" on:click={() => { navigator.clipboard.writeText(contact.I2PAddress); }}>Скопировать адрес</button>
         </div>
     </div>
 </div>

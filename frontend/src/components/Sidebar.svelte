@@ -47,7 +47,7 @@
     $: uiFolders = [
         { ID: 'all', Name: 'Все', Icon: Icons.Chat },
         ...([...(folders || [])].sort((a, b) => (a?.position || 0) - (b?.position || 0))),
-        { id: 'add', name: 'Создать', icon: Icons.Plus }
+        { ID: 'add', Name: 'Создать', Icon: Icons.Plus }
     ];
 
     function handleTouchStart(item, type, e) {

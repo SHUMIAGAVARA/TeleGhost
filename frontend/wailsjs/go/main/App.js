@@ -74,6 +74,10 @@ export function GetAppAboutInfo() {
   return window['go']['main']['App']['GetAppAboutInfo']();
 }
 
+export function GetCurrentProfile() {
+  return window['go']['main']['App']['GetCurrentProfile']();
+}
+
 export function GetContacts() {
   return window['go']['main']['App']['GetContacts']();
 }

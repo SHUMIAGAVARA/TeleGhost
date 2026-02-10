@@ -22,6 +22,7 @@
   let screen = 'login'; // login | main
   let identity = null;
   let isLoading = false;
+  let isSending = false;
   let networkStatus = 'offline';
   let myDestination = '';
   let currentUserInfo = null;
@@ -90,6 +91,20 @@
     updateIsMobile();
     window.addEventListener('resize', updateIsMobile);
     
+    // Back button support for mobile
+    window.addEventListener('popstate', (e) => {
+        if (isMobile) {
+            if (showSettings) {
+                showSettings = false;
+                mobileView.set('list');
+            } else if (selectedContact) {
+                selectedContact = null;
+                messages = [];
+                mobileView.set('list');
+            }
+        }
+    });
+    
     // Check network status
     networkStatus = await AppActions.GetNetworkStatus();
     
@@ -101,13 +116,27 @@
     EventsOn("new_message", (msg) => {
         if (!msg) return;
         if (selectedContact && msg.ChatID === selectedContact.ChatID) {
-            messages = [...(messages || []), msg];
+            // Check if optimistic message exists and replace it
+            const existingIdx = (messages || []).findIndex(m => m.ID === msg.ID);
+            if (existingIdx !== -1) {
+                const updated = [...messages];
+                updated[existingIdx] = msg;
+                messages = updated;
+            } else {
+                // Remove optimistic messages that match (by tempId prefix)
+                messages = [...(messages || []).filter(m => !m._optimistic), msg];
+            }
             scrollToBottom();
         }
         loadContacts(); // Update last message
     });
 
-
+    EventsOn("new_contact", (data) => {
+        if (data && data.nickname) {
+            showToast(`Новый контакт: ${data.nickname}`, 'success', 5000);
+        }
+        loadContacts();
+    });
 
     EventsOn("contact_updated", () => {
         console.log("[App] Received contact_updated event, reloading contacts...");
@@ -230,19 +259,54 @@
 
   async function sendMessage() {
       if (!selectedContact || (!newMessage.trim() && selectedFiles.length === 0)) return;
+      if (isSending) return;
+      
+      // Client-side length check
+      if (newMessage.length > 4096) {
+          showToast(`Сообщение слишком длинное (${newMessage.length}/4096)`, 'error');
+          return;
+      }
+      
+      isSending = true;
+      const text = newMessage;
+      const files = [...selectedFiles];
+      const compress = isCompressed;
+      
+      // Optimistic UI — мгновенно показываем сообщение
+      const tempId = '_opt_' + Date.now().toString();
+      const optimisticMsg = {
+          ID: tempId,
+          Content: text,
+          Timestamp: Date.now(),
+          IsOutgoing: true,
+          Status: 'sending',
+          ContentType: files.length > 0 ? 'mixed' : 'text',
+          _optimistic: true
+      };
+      
+      messages = [...(messages || []), optimisticMsg];
+      scrollToBottom();
+      
+      // Очищаем инпут мгновенно
+      newMessage = '';
+      selectedFiles = [];
+      filePreviews = {};
       
       try {
-          if (selectedFiles.length > 0) {
-              await AppActions.SendFileMessage(selectedContact.ID, newMessage, selectedFiles, !isCompressed);
+          if (files.length > 0) {
+              await AppActions.SendFileMessage(selectedContact.ID, text, files, !compress);
           } else {
-              await AppActions.SendText(selectedContact.ID, newMessage);
+              await AppActions.SendText(selectedContact.ID, text);
           }
-          newMessage = '';
-          selectedFiles = [];
-          filePreviews = {};
+          // Убираем оптимистичное сообщение (реальное придёт через событие)
+          messages = (messages || []).filter(m => m.ID !== tempId);
           await loadMessages(selectedContact.ID);
       } catch (err) {
           showToast(err, 'error');
+          // Помечаем как ошибку
+          messages = (messages || []).map(m => m.ID === tempId ? {...m, Status: 'failed', _optimistic: false} : m);
+      } finally {
+          isSending = false;
       }
   }
 
@@ -314,10 +378,33 @@
       onSendMessage: sendMessage,
       onKeyPress: (e) => e.key === 'Enter' && !e.shiftKey && sendMessage(),
       onPaste: async (e) => {
-          const items = e.clipboardData.items;
-          for (const item of items) {
-              if (item.type.indexOf('image') !== -1) {
-                  // Handle image paste
+          const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
+          if (!items) return;
+          for (let i = 0; i < items.length; i++) {
+              const item = items[i];
+              if (item.kind === 'file' && item.type.indexOf('image/') !== -1) {
+                  e.preventDefault();
+                  const blob = item.getAsFile();
+                  const reader = new FileReader();
+                  reader.onload = async (event) => {
+                      try {
+                          const base64 = event.target.result;
+                          const path = await AppActions.SaveTempImage(base64, 'pasted_image.png');
+                          if (selectedFiles.length < 6) {
+                              selectedFiles = [...selectedFiles, path];
+                              const previewB64 = base64.split(',')[1];
+                              filePreviews[path] = previewB64;
+                              filePreviews = filePreviews;
+                          } else {
+                              showToast('Максимум 6 вложений', 'error');
+                          }
+                      } catch (err) {
+                          console.error('Paste error', err);
+                          showToast('Ошибка вставки изображения', 'error');
+                      }
+                  };
+                  reader.readAsDataURL(blob);
+                  return;
               }
           }
       },
@@ -338,20 +425,27 @@
           selectedFiles = [...selectedFiles];
       },
       onShowMessageMenu: (e, msg) => {
-          messageContextMenu = { show: true, x: e.clientX || (e.touches ? e.touches[0].clientX : 0), y: e.clientY || (e.touches ? e.touches[0].clientY : 0), message: msg };
+          let x = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+          let y = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+          // Prevent overflow
+          const menuWidth = 200;
+          const menuHeight = 180;
+          if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
+          if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
+          messageContextMenu = { show: true, x, y, message: msg };
       },
       onAcceptTransfer: async (msg) => {
-          await AppActions.AcceptFileTransfer(msg.id);
+          await AppActions.AcceptFileTransfer(msg.ID);
           showToast("Передача начата", "info");
       },
       onDeclineTransfer: async (msg) => {
-          await AppActions.DeclineFileTransfer(msg.id);
+          await AppActions.DeclineFileTransfer(msg.ID);
       },
       onOpenContactProfile: () => { showContactProfile = true; },
       onSaveEditMessage: async () => {
           await AppActions.EditMessage(editingMessageId, editMessageContent);
           editingMessageId = null;
-          loadMessages(selectedContact.id);
+          loadMessages(selectedContact.ID);
       },
       onCancelEdit: () => { editingMessageId = null; },
       onOpenFile: (path) => AppActions.OpenFile(path),
@@ -473,7 +567,20 @@
   };
 </script>
 
-<svelte:window on:click={() => { contextMenu.show = false; messageContextMenu.show = false; }} />
+<svelte:window 
+    on:click={() => { contextMenu.show = false; messageContextMenu.show = false; }} 
+    on:keydown={(e) => {
+        if (e.key === 'Escape') {
+            messageContextMenu.show = false;
+            contextMenu.show = false;
+            if (editingMessageId) { editingMessageId = null; editMessageContent = ''; }
+            if (previewImage) { previewImage = null; }
+            if (showSettings && isMobile) { showSettings = false; mobileView.set('list'); }
+            if (showAddContact) { showAddContact = false; }
+            if (showContactProfile) { showContactProfile = false; }
+        }
+    }}
+/>
 
 <main>
     <Toasts />
@@ -599,11 +706,20 @@
 
     {#if messageContextMenu.show}
         <div class="context-menu" style="top: {messageContextMenu.y}px; left: {messageContextMenu.x}px">
-            <div class="context-item" on:click={() => {
-                editingMessageId = messageContextMenu.message.ID;
-                editMessageContent = messageContextMenu.message.Content;
-                messageContextMenu.show = false;
-            }}>Редактировать</div>
+            {#if messageContextMenu.message?.Content}
+                <div class="context-item" on:click={() => {
+                    AppActions.CopyToClipboard(messageContextMenu.message.Content);
+                    showToast('Текст скопирован', 'success');
+                    messageContextMenu.show = false;
+                }}>Копировать текст</div>
+            {/if}
+            {#if messageContextMenu.message?.IsOutgoing}
+                <div class="context-item" on:click={() => {
+                    editingMessageId = messageContextMenu.message.ID;
+                    editMessageContent = messageContextMenu.message.Content;
+                    messageContextMenu.show = false;
+                }}>Редактировать</div>
+            {/if}
             <div class="context-item danger" on:click={() => {
                 AppActions.DeleteMessage(messageContextMenu.message.ID);
                 loadMessages(selectedContact.ID);

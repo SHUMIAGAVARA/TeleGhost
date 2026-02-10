@@ -437,7 +437,7 @@
     <Modals {showConfirmModal} {confirmModalTitle} {confirmModalText} 
             {showFolderModal} {isEditingFolder} folderName={currentFolderData.name} folderIcon={currentFolderData.icon}
             showContactProfile={showContactProfile} contact={selectedContact}
-            {showAddContact} {addContactName} {addContactAddress}
+            {showAddContact} bind:addContactName bind:addContactAddress
             {showSeedModal} mnemonic={currentUserInfo?.Mnemonic || ''}
             {...modalHandlers} />
 

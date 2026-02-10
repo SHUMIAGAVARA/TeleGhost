@@ -100,13 +100,13 @@
             <h2 style="margin-bottom: 4px;">{contact.nickname}</h2>
             <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">{contact.isOnline ? 'В сети' : 'Оффлайн'}</p>
             
-            <div style="text-align: left; background: var(--bg-input); padding: 16px; border-radius: 12px;">
+            <div style="text-align: left; background: var(--bg-input); padding: 16px; border-radius: 16px;">
                 <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 4px;">I2P Адрес</label>
                 <code style="font-size: 11px; word-break: break-all; opacity: 0.8;">{contact.i2pAddress}</code>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-primary full-width" on:click={() => { navigator.clipboard.writeText(contact.i2pAddress); }}>Скопировать адрес</button>
+            <button class="btn-primary full-width clickable-btn" on:click={() => { navigator.clipboard.writeText(contact.i2pAddress); }}>Скопировать адрес</button>
         </div>
     </div>
 </div>
@@ -134,7 +134,7 @@
         </div>
         <div class="modal-footer">
             <button class="btn-small btn-glass" on:click={onCancelAddContact}>Отмена</button>
-            <button class="btn-small btn-primary" on:click={handleAddContact}>Добавить</button>
+            <button class="btn-small btn-primary clickable-btn" on:click={handleAddContact}>Добавить</button>
         </div>
     </div>
 </div>
@@ -149,20 +149,20 @@
             <button class="btn-icon" on:click={onCloseSeed}><div class="icon-svg">{@html Icons.X}</div></button>
         </div>
         <div class="modal-body">
-            <p class="warning-text" style="color: #ff6b6b; font-size: 13px; margin-bottom: 20px; background: rgba(255,100,100,0.1); padding: 12px; border-radius: 8px;">
+            <p class="warning-text" style="color: #ff6b6b; font-size: 13px; margin-bottom: 20px; background: rgba(255,100,100,0.1); padding: 12px; border-radius: 12px;">
                 ⚠️ Никогда не передавайте эти слова третьим лицам! Тот, у кого есть фраза, имеет ПОЛНЫЙ доступ к вашему аккаунту.
             </p>
             
             <div class="mnemonic-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px;">
                 {#each mnemonic.split(' ') as word, i}
-                    <div class="mnemonic-word" style="background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div class="mnemonic-word" style="background: rgba(0,0,0,0.2); padding: 8px; border-radius: 10px; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.05);">
                         <span class="word-index" style="font-size: 10px; opacity: 0.5;">{i+1}</span>
                         <span class="word-text" style="font-size: 13px; font-weight: 500;">{word}</span>
                     </div>
                 {/each}
             </div>
             
-            <button class="btn-glass full-width" on:click={() => { navigator.clipboard.writeText(mnemonic); }} style="padding: 12px;">
+            <button class="btn-glass full-width clickable-btn" on:click={() => { navigator.clipboard.writeText(mnemonic); }} style="padding: 12px; border-radius: 16px;">
                 📋 Скопировать всё
             </button>
         </div>
@@ -174,26 +174,30 @@
 {/if}
 
 <style>
-    .modal-backdrop { position: fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; z-index: 1000; }
-    .modal-content { background: var(--bg-secondary); border-radius: 16px; padding: 24px; width: 90%; max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); border: 1px solid var(--border); }
+    .modal-backdrop { position: fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; z-index: 1000; }
+    .modal-content { background: var(--bg-secondary); border-radius: 24px; padding: 24px; width: 90%; max-width: 500px; box-shadow: 0 30px 60px rgba(0,0,0,0.6); border: 1px solid var(--border); overflow: hidden; }
     .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-    .modal-header h3 { margin: 0; font-size: 20px; color: white; }
+    .modal-header h3 { margin: 0; font-size: 20px; color: white; font-weight: 700; }
     
-    .form-label { display: block; font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; }
-    .input-field { width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px; color: white; outline: none; }
+    .form-label { display: block; font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 500; }
+    .input-field { width: 100%; padding: 14px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 14px; color: white; outline: none; transition: all 0.2s; }
+    .input-field:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(99, 102, 241, 0.2); }
     
     .modal-footer { display: flex; gap: 12px; margin-top: 24px; }
-    .btn-small { padding: 10px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
-    .btn-small:hover { opacity: 0.9; transform: translateY(-1px); }
-    .btn-primary { background: var(--accent); color: white; flex: 1; border: none; }
+    .btn-small { padding: 12px 24px; border-radius: 16px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; font-size: 14px; }
+    .btn-small:hover { opacity: 0.9; transform: translateY(-2px); }
+    
+    .btn-primary { background: var(--accent); color: white; flex: 1; border: none; border-radius: 16px; font-weight: 600; transition: all 0.2s; }
     .accent-btn { background: #6366f1 !important; }
-    .btn-glass { background: rgba(255,255,255,0.05); color: #a0a0ba; border: 1px solid rgba(255,255,255,0.1); }
+    .btn-glass { background: rgba(255,255,255,0.05); color: #a0a0ba; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; }
     .btn-glass:hover { background: rgba(255,255,255,0.1); color: white; }
     
-    .full-width { width: 100%; }
+    .full-width { width: 100%; padding: 14px; }
     .icon-svg { width: 24px; height: 24px; }
-    .btn-icon { border: none; color: white; cursor: pointer; background: rgba(255,255,255,0.05); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; padding: 0;}
-    .btn-icon:hover { background: rgba(255,255,255,0.1); }
+    .btn-icon { border: none; color: white; cursor: pointer; background: rgba(255,255,255,0.05); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; padding: 0;}
+    .btn-icon:hover { background: rgba(255,255,255,0.1); transform: rotate(90deg); }
+    
     .clickable-btn { cursor: pointer !important; position: relative; z-index: 10002; transition: all 0.2s; }
-    .clickable-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .clickable-btn:hover { filter: brightness(1.2); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+    .clickable-btn:active { transform: translateY(0); }
 </style>

@@ -355,13 +355,13 @@
       </div>
 
       <div class="mnemonic-actions">
-         <button class="btn-text" on:click={() => { CopyToClipboard(newMnemonic); showToast('Скопировано в буфер обмена', 'success'); }}>
+         <button class="btn-glass clickable-btn" on:click={() => { CopyToClipboard(newMnemonic); showToast('Скопировано в буфер обмена', 'success'); }} style="padding: 12px 24px; border-radius: 16px;">
            📋 Скопировать всё
          </button>
       </div>
     </div>
     <div class="modal-footer" style="position: relative; z-index: 10001;">
-      <button class="btn-primary full-width accent-btn clickable-btn" on:click|preventDefault|stopPropagation={confirmMnemonicSaved} style="height: 52px; font-size: 16px;">
+      <button class="btn-primary-premium full-width accent-btn clickable-btn" on:click|preventDefault|stopPropagation={confirmMnemonicSaved} style="height: 52px; font-size: 16px; border-radius: 16px;">
         Я сохранил(а) seed-фразу
       </button>
     </div>
@@ -404,7 +404,7 @@
   .profile-item {
     background: rgba(255,255,255,0.05);
     padding: 24px 16px;
-    border-radius: 20px;
+    border-radius: 24px;
     cursor: pointer;
     border: 1px solid rgba(255,255,255,0.05);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -485,7 +485,7 @@
   .login-footer { margin-top: 40px; font-size: 11px; color: rgba(255,255,255,0.3); font-weight: 500; letter-spacing: 0.5px; }
 
   .btn-glass {
-    border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: #fff; padding: 14px; border-radius: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: #fff; padding: 14px; border-radius: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s;
   }
   .accent-text { color: var(--accent, #6366f1); border-color: rgba(99, 102, 241, 0.3); }
 
@@ -511,13 +511,14 @@
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px;
   }
   .mnemonic-word {
-    background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px;
+    background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px;
     display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.05);
   }
   .word-index { font-size: 10px; color: rgba(255,255,255,0.3); font-weight: 700; width: 14px; }
   .word-text { font-size: 13px; color: #fff; font-weight: 500; }
   .mnemonic-actions { text-align: center; margin-bottom: 24px; }
-  .btn-text { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 14px; font-weight: 600; }
+  .btn-text { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
+  .btn-text:hover { filter: brightness(1.2); }
 
   .btn-link { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 14px; margin-top: 10px; transition: color 0.2s; }
   .btn-link:hover { color: #fff; }

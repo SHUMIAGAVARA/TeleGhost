@@ -206,8 +206,8 @@
     .settings-header { padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); height: 80px; }
     .settings-header h2 { font-size: 24px; font-weight: 700; margin: 0; color: white; display: flex; align-items: center; }
     
-    .btn-icon { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; border-radius: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; padding: 0; }
-    .btn-icon:hover { background: rgba(255,255,255,0.1); transform: scale(1.05); }
+    .btn-icon { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; border-radius: 14px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; padding: 0; }
+    .btn-icon:hover { background: rgba(255,255,255,0.1); transform: rotate(90deg) scale(1.05); }
     .settings-header .btn-icon { order: -1; } /* For details view to keep back button left if needed, but wait user wants X right? No, ArrowLeft usually left. */
     
     .settings-view-menu .settings-header .btn-icon { order: 1; } /* X on the right */
@@ -254,10 +254,10 @@
     }
     select.input-field option { background: #1a1a2e; color: white; padding: 10px; }
     
-    .btn-primary { background: var(--accent); color: white; padding: 14px 24px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-    .btn-secondary { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); color: #fff; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn-secondary:hover { background: rgba(99, 102, 241, 0.2); border-color: var(--accent); }
+    .btn-primary { background: var(--accent); color: white; padding: 14px 24px; border: none; border-radius: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+    .btn-secondary { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); color: #fff; padding: 12px 20px; border-radius: 14px; cursor: pointer; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-secondary:hover { background: rgba(99, 102, 241, 0.2); border-color: var(--accent); transform: translateY(-1px); }
     
     .show-key-btn { 
         cursor: pointer; 

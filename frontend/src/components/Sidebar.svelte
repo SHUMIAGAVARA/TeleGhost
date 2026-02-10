@@ -217,8 +217,9 @@
     
     .sidebar-actions { padding: 0 10px 10px; }
     .btn-primary { 
-        width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px; background: var(--accent, #6366f1); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;
+        width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; background: var(--accent, #6366f1); color: white; border: none; border-radius: 14px; cursor: pointer; font-weight: 600; transition: all 0.2s;
     }
+    .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.1); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
 
     .network-status {
         padding: 10px 16px; display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-primary); margin: 0 10px 10px; border-radius: 8px;

@@ -23,7 +23,7 @@ type Repository struct {
 
 // New создаёт новый SQLite репозиторий
 func New(dbPath string, keys *identity.Keys) (*Repository, error) {
-	db, err := sql.Open("sqlite3", dbPath+"?_journal_mode=WAL&_foreign_keys=on")
+	db, err := sql.Open("sqlite3", dbPath+"?_journal_mode=WAL&_foreign_keys=on&_busy_timeout=5000")
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
@@ -194,7 +194,7 @@ func (r *Repository) Migrate(ctx context.Context) error {
 					added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 					updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 				);
-				INSERT INTO contacts_new (id, public_key, nickname, bio, avatar, i2p_address, chat_id, is_blocked, is_verified, last_seen, added_at, updated_at) 
+				INSERT INTO contacts_new (id, public_key, nickname, bio, avatar, i2p_address, chat_id, is_blocked, is_verified, last_seen, added_at, updated_at)
 				SELECT id, public_key, nickname, bio, avatar, i2p_address, chat_id, is_blocked, is_verified, last_seen, added_at, updated_at FROM contacts;
 				DROP TABLE contacts;
 				ALTER TABLE contacts_new RENAME TO contacts;
@@ -204,8 +204,7 @@ func (r *Repository) Migrate(ctx context.Context) error {
 			_, err = r.db.ExecContext(ctx, migrationQuery)
 			if err != nil {
 				log.Printf("[Repo] Contacts migration failed: %v", err)
-				// В случае неудачи откатываемся
-				r.db.ExecContext(ctx, "ROLLBACK;")
+				_, _ = r.db.ExecContext(ctx, "ROLLBACK;")
 			} else {
 				log.Println("[Repo] Contacts table migrated successfully.")
 			}
@@ -269,32 +268,38 @@ func (r *Repository) MigrateEncryption(ctx context.Context) error {
 	err = r.db.QueryRowContext(ctx, "SELECT id, content FROM messages ORDER BY timestamp DESC LIMIT 1").Scan(&lastMsgID, &rawContent)
 	if err == nil && rawContent != "" {
 		if r.decryptString(rawContent) == rawContent {
-			// Не зашифровано. Мигрируем ВСЕ сообщения
-			log.Println("[Repo] Migrating ALL messages to encrypted format. This may take a while...")
-
-			// Сначала собираем все ID, чтобы не держать соединение открытым во время сохранения
-			var msgIDs []string
-			rows, err := r.db.QueryContext(ctx, "SELECT id FROM messages")
-			if err == nil {
+			log.Println("[Repo] Migrating messages to encrypted format in batches...")
+			lastID := ""
+			for {
+				var msgIDs []string
+				rows, err := r.db.QueryContext(ctx, "SELECT id FROM messages WHERE id > ? ORDER BY id LIMIT 100", lastID)
+				if err != nil {
+					log.Printf("[Repo] Failed to query messages for migration: %v", err)
+					break
+				}
 				for rows.Next() {
 					var id string
-					if err := rows.Scan(&id); err == nil {
-						msgIDs = append(msgIDs, id)
+					if err := rows.Scan(&id); err != nil {
+						log.Printf("[Repo] Failed to scan message ID during migration: %v", err)
+						// We break to avoid infinite loop if Scan fails
+						break
 					}
+					msgIDs = append(msgIDs, id)
+					lastID = id
 				}
 				rows.Close()
 
-				log.Printf("[Repo] Found %d messages to migrate", len(msgIDs))
-				for i, id := range msgIDs {
+				if len(msgIDs) == 0 {
+					break
+				}
+
+				for _, id := range msgIDs {
 					msg, err := r.GetMessage(ctx, id)
 					if err == nil && msg != nil {
-						// GetMessage уже дешифрует, а SaveMessage зашифрует заново
 						_ = r.SaveMessage(ctx, msg)
 					}
-					if i > 0 && i%100 == 0 {
-						log.Printf("[Repo] Migrated %d/%d messages...", i, len(msgIDs))
-					}
 				}
+				log.Printf("[Repo] Migrated batch of %d messages...", len(msgIDs))
 			}
 		}
 	}
@@ -577,13 +582,9 @@ func (r *Repository) ListContactsWithLastMessage(ctx context.Context) ([]*core.C
 	query := `
 		SELECT c.id, c.public_key, c.nickname, c.bio, c.avatar, c.i2p_address, c.chat_id,
 		       c.is_blocked, c.is_verified, c.last_seen, c.added_at, c.updated_at,
-		       m.content as last_msg_content, m.timestamp as last_msg_time
+		       (SELECT content FROM messages WHERE chat_id = c.chat_id ORDER BY timestamp DESC LIMIT 1) as last_msg_content,
+		       (SELECT timestamp FROM messages WHERE chat_id = c.chat_id ORDER BY timestamp DESC LIMIT 1) as last_msg_time
 		FROM contacts c
-		LEFT JOIN (
-			SELECT chat_id, content, timestamp,
-			       ROW_NUMBER() OVER (PARTITION BY chat_id ORDER BY timestamp DESC) as rn
-			FROM messages
-		) m ON m.chat_id = c.chat_id AND m.rn = 1
 		ORDER BY c.nickname ASC
 	`
 

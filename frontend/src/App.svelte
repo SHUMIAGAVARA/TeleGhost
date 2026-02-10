@@ -297,10 +297,18 @@
           await AppActions.SaveRouterSettings(routerSettings);
           showToast("Настройки сохранены. Требуется перезапуск.", "info");
       },
-      onAvatarChange: async (e) => {
-          const file = e.target.files[0];
-          if (file) {
-              // Handle avatar update
+      onAvatarChange: async () => {
+          try {
+              const file = await AppActions.SelectImage();
+              if (file) {
+                  const thumb = await AppActions.GetImageThumbnail(file);
+                  if (thumb) {
+                      profileAvatar = "data:image/png;base64," + thumb;
+                      showToast("Аватар выбран. Нажмите 'Сохранить', чтобы применить.", "info");
+                  }
+              }
+          } catch (e) {
+              showToast("Ошибка выбора файла: " + e, "error");
           }
       },
       onLogout: handleLogout,

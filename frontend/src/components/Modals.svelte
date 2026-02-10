@@ -43,6 +43,7 @@
     <div class="modal-content animate-slide-down" style="max-width: 400px;">
         <div class="modal-header">
             <h3>{confirmModalTitle}</h3>
+            <button class="btn-icon" on:click={onCancelConfirm}><div class="icon-svg">{@html Icons.X}</div></button>
         </div>
         <div class="modal-body">
             <p style="color: var(--text-secondary); margin-bottom: 20px;">{confirmModalText}</p>
@@ -61,6 +62,7 @@
     <div class="modal-content animate-slide-down" style="max-width: 400px;">
         <div class="modal-header">
             <h3>{isEditingFolder ? 'Редактировать папку' : 'Новая папка'}</h3>
+            <button class="btn-icon" on:click={onCancelFolder}><div class="icon-svg">{@html Icons.X}</div></button>
         </div>
         <div class="modal-body">
             <label class="form-label">Название
@@ -160,7 +162,7 @@
             </button>
         </div>
         <div class="modal-footer">
-            <button class="btn-primary full-width" on:click={onCloseSeed}>Я всё сохранил(а)</button>
+            <button class="btn-primary full-width accent-btn" on:click={onCloseSeed}>Я всё сохранил(а)</button>
         </div>
     </div>
 </div>
@@ -178,7 +180,9 @@
     .modal-footer { display: flex; gap: 12px; margin-top: 24px; }
     .btn-small { padding: 10px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
     .btn-small:hover { opacity: 0.9; transform: translateY(-1px); }
-    .btn-primary { background: var(--accent); color: white; flex: 1; }
+    .btn-small:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary { background: var(--accent); color: white; flex: 1; border: none; }
+    .accent-btn { background: #6366f1 !important; }
     .btn-glass { background: rgba(255,255,255,0.05); color: #a0a0ba; border: 1px solid rgba(255,255,255,0.1); }
     .btn-glass:hover { background: rgba(255,255,255,0.1); color: white; }
     

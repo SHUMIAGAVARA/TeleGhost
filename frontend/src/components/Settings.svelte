@@ -25,8 +25,6 @@
     export let onClose;
     export let onShowSeed;
     export let onCheckUpdates;
-
-    let avatarFileInput;
 </script>
 
 <div class="settings-panel animate-fade-in">
@@ -67,10 +65,9 @@
                             {:else}
                                 <div class="avatar-placeholder">{getInitials(profileNickname)}</div>
                             {/if}
-                            <button class="avatar-edit-btn" on:click={() => avatarFileInput.click()}>
+                            <button class="avatar-edit-btn" on:click={onAvatarChange}>
                                 <div class="icon-svg-sm">{@html Icons.Camera}</div>
                             </button>
-                            <input type="file" bind:this={avatarFileInput} on:change={onAvatarChange} accept="image/*" style="display: none;" />
                         </div>
                         
                         <div class="profile-fields">
@@ -89,8 +86,8 @@
                          <div class="info-box danger">
                             <h4>🔐 Секретный ключ (Seed phrase)</h4>
                             <p>Ваш ключ хранится только на этом устройстве. Если вы потеряете его, доступ к аккаунту будет утерян навсегда.</p>
-                            <button class="btn-secondary clickable-accent" on:click={onShowSeed} style="cursor: pointer; font-weight: 700;">Показать ключ</button>
-                         </div>
+                                    <button class="btn-secondary clickable-accent show-key-btn" on:click={onShowSeed}>Показать ключ</button>
+                                 </div>
 
                          {#if selectedProfile}
                             <div class="setting-item-box">
@@ -257,6 +254,19 @@
     .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
     .btn-secondary { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); color: #fff; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
     .btn-secondary:hover { background: rgba(99, 102, 241, 0.2); border-color: var(--accent); }
+    
+    .show-key-btn { 
+        cursor: pointer; 
+        font-weight: 700; 
+        margin-top: 12px;
+        width: 100%;
+        border: 1px dashed rgba(99, 102, 241, 0.5);
+    }
+    .show-key-btn:hover {
+        background: rgba(99, 102, 241, 0.15);
+        border-style: solid;
+    }
+
     .logout-btn { border-color: #f44336; color: #f44336; margin-top: 12px; }
 
     .info-box { padding: 24px; border-radius: 12px; margin-bottom: 24px; }

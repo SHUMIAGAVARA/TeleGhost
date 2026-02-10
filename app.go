@@ -219,9 +219,11 @@ func (a *App) initUserRepository(userID string) error {
 		return fmt.Errorf("migration failed: %w", err)
 	}
 
-	if err := repo.MigrateEncryption(a.ctx); err != nil {
-		log.Printf("[App] Encryption migration failed: %v", err)
-	}
+	go func() {
+		if err := repo.MigrateEncryption(a.ctx); err != nil {
+			log.Printf("[App] Encryption migration failed: %v", err)
+		}
+	}()
 
 	log.Printf("[App] User repository initialized: %s", userDir)
 	return nil

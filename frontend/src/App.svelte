@@ -132,6 +132,8 @@
 
   async function onLoginSuccess() {
       isInitializing = true;
+      // Start switching screen immediately so overlay has a chance to show if its in main screen branch
+      // OR better, overlay is outside if-else.
       try {
           await loadMyInfo();
           await loadContacts();
@@ -141,8 +143,6 @@
       } catch (err) {
           console.error("Initialization failed:", err);
           showToast("Ошибка при загрузке данных: " + err, 'error');
-          // If critical data failed to load, we might want to stay on login screen
-          // but usually loadContacts just gives empty array.
           screen = 'main';
       } finally {
           isInitializing = false;
@@ -397,32 +397,51 @@
 <main>
     <Toasts />
 
-    {#if screen === 'login'}
-        <Auth {logo} {onLoginSuccess} />
-    {:else if isInitializing}
+    {#if isInitializing}
         <div class="initializing-overlay animate-fade-in">
-            <div class="glass-panel" style="padding: 40px; border-radius: 24px; text-align: center;">
+            <div class="glass-panel" style="padding: 40px; border-radius: 24px; text-align: center; border: 1px solid rgba(255,255,255,0.1); background: rgba(30,30,46,0.8); backdrop-filter: blur(20px);">
                 <div class="spinner-xl"></div>
-                <h2 style="margin-top: 24px; color: #fff;">Подключение...</h2>
-                <p style="color: var(--text-secondary);">Синхронизация профиля и контактов</p>
+                <h2 style="margin-top: 24px; color: #fff; font-weight: 600;">Подключение...</h2>
+                <p style="color: var(--text-secondary); margin-top: 8px;">Синхронизация профиля и контактов</p>
             </div>
         </div>
+    {/if}
+
+    {#if screen === 'login'}
+        <Auth {logo} {onLoginSuccess} />
     {:else}
         <div class="main-screen" class:mobile-layout={isMobile}>
             {#if isMobile}
-                {#if $mobileView === 'chat' && selectedContact}
-                   <Chat {selectedContact} {messages} {newMessage} {selectedFiles} {filePreviews} 
-                         {editingMessageId} {editMessageContent} {isCompressed} {previewImage}
-                         {...chatHandlers} />
+                {#if $mobileView === 'list'}
+                    <Sidebar 
+                        {contacts} {searchQuery} {selectedContact} {activeFolderId} {folders}
+                        on:select={handleSelectContact} 
+                    />
                 {:else}
-                   <Sidebar {isMobile} {contacts} {folders} {activeFolderId} {searchQuery} 
-                            {networkStatus} {showSettings} {sidebarWidth} {isResizing} {selectedContact}
-                            {...sidebarHandlers} />
+                    <div class="content-area">
+                        {#if selectedContact}
+                            <Chat 
+                                contact={selectedContact} {messages} {newMessage} {selectedFiles} {filePreviews}
+                                {editingMessageId} {editMessageContent}
+                                on:back={() => mobileView.set('list')} 
+                                on:send={sendMessage}
+                            />
+                        {:else}
+                            <div class="no-chat">
+                                <div class="ghost-logo-wrapper">
+                                    <div class="icon-svg-xl">{@html Icons.Ghost}</div>
+                                </div>
+                                <h2>TeleGhost</h2>
+                                <p>Выберите чат для начала общения</p>
+                            </div>
+                        {/if}
+                    </div>
                 {/if}
             {:else}
-                <Sidebar {isMobile} {contacts} {folders} {activeFolderId} {searchQuery} 
-                         {networkStatus} {showSettings} {sidebarWidth} {isResizing} {selectedContact}
-                         {...sidebarHandlers} />
+                <Sidebar 
+                    {contacts} {searchQuery} {selectedContact} {activeFolderId} {folders}
+                    on:select={handleSelectContact} 
+                />
                 
                 <div class="content-area">
                     {#if showSettings}
@@ -437,9 +456,11 @@
                                   {aboutInfo}
                                   {...settingsHandlers} />
                     {:else if selectedContact}
-                        <Chat {selectedContact} {messages} {newMessage} {selectedFiles} {filePreviews} 
-                              {editingMessageId} {editMessageContent} {isCompressed} {previewImage}
-                              {...chatHandlers} />
+                        <Chat 
+                            contact={selectedContact} {messages} {newMessage} {selectedFiles} {filePreviews}
+                            {editingMessageId} {editMessageContent}
+                            on:send={sendMessage}
+                        />
                     {:else}
                         <div class="no-chat animate-fade-in">
                             <div class="ghost-logo-wrapper">

@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"teleghost/internal/network/messenger"
 	"teleghost/internal/network/router"
@@ -92,9 +93,8 @@ func (a *App) connectToI2P() {
 			select {
 			case <-a.ctx.Done():
 				return
-			default:
-				log.Println("Waiting for embedded router...")
-				// time.Sleep(1 * time.Second) // In external file, maybe use time package
+			case <-time.After(1 * time.Second):
+				log.Printf("Waiting for embedded router... trial %d/30", i+1)
 			}
 		}
 	}

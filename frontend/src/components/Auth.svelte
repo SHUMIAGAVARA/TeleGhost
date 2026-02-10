@@ -209,7 +209,13 @@
           
           <div class="profiles-grid">
             {#each allProfiles as p}
-              <div class="profile-item animate-card" on:click={() => selectProfileForLogin(p)}>
+              <div 
+                class="profile-item animate-card" 
+                role="button"
+                tabindex="0"
+                on:click={() => selectProfileForLogin(p)}
+                on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && selectProfileForLogin(p)}
+              >
                 <div class="profile-avatar" style="background: rgba(255,255,255,0.05);">
                   {#if p.id && profileAvatars[p.id]}
                     <img src={"data:image/jpeg;base64," + profileAvatars[p.id]} alt="Avatar" />
@@ -224,7 +230,13 @@
               </div>
             {/each}
             
-            <div class="profile-item add-profile" on:click={startCreateProfile}>
+            <div 
+                class="profile-item add-profile" 
+                role="button"
+                tabindex="0"
+                on:click={startCreateProfile}
+                on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && startCreateProfile()}
+            >
               <div class="plus-icon">+</div>
               <div class="add-text">Создать</div>
             </div>
@@ -273,7 +285,13 @@
             <p class="login-subtitle">Новый профиль</p>
             
             <div class="create-avatar-upload">
-                <div class="avatar-preview-box" on:click={() => document.getElementById('newProfileAvatarInput').click()}>
+                <div 
+                    class="avatar-preview-box" 
+                    role="button"
+                    tabindex="0"
+                    on:click={() => document.getElementById('newProfileAvatarInput').click()}
+                    on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && document.getElementById('newProfileAvatarInput').click()}
+                >
                     {#if newProfileAvatarPreview}
                         <img src={newProfileAvatarPreview} alt="Preview" />
                     {:else}

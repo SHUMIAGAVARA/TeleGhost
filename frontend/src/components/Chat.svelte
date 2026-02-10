@@ -42,7 +42,14 @@
 
 <div class="chat-area animate-fade-in">
     <div class="chat-header">
-        <div class="chat-contact-info" on:click={onOpenContactProfile} style="cursor: pointer;">
+        <div 
+            class="chat-contact-info" 
+            role="button"
+            tabindex="0"
+            on:click={onOpenContactProfile} 
+            on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onOpenContactProfile()}
+            style="cursor: pointer;"
+        >
             <div class="chat-avatar" style="background: rgba(255,255,255,0.05);">
                 {#if selectedContact.avatar}
                     <img src={selectedContact.avatar} alt="av"/>
@@ -75,10 +82,19 @@
                                         alt="attachment" 
                                         class="msg-img" 
                                         style="height: {msg.attachments.length === 1 ? 'auto' : '120px'}" 
+                                        role="button"
+                                        tabindex="0"
                                         on:click={() => onPreviewImage(att.local_path)}
+                                        on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onPreviewImage(att.local_path)}
                                     />
                                 {:else}
-                                    <div class="file-attachment-card" on:click|stopPropagation={() => onOpenFile(att.local_path)}>
+                                    <div 
+                                        class="file-attachment-card" 
+                                        role="button"
+                                        tabindex="0"
+                                        on:click|stopPropagation={() => onOpenFile(att.local_path)}
+                                        on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onOpenFile(att.local_path)}
+                                    >
                                         <div class="file-icon">📄</div>
                                         <div class="file-info">
                                             <div class="file-name">{att.filename || 'File'}</div>

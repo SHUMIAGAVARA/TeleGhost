@@ -64,7 +64,14 @@
 {#if !isMobile}
     <!-- Folders Rail -->
     <div class="folders-rail">
-        <div class="rail-button" class:active={showSettings} on:click={onToggleSettings}>
+        <div 
+            class="rail-button" 
+            class:active={showSettings} 
+            role="button"
+            tabindex="0"
+            on:click={onToggleSettings}
+            on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onToggleSettings()}
+        >
             <div class="icon-svg">{@html Icons.Menu}</div>
         </div>
 
@@ -73,7 +80,10 @@
                 <div 
                     class="folder-item" 
                     class:active={!showSettings && activeFolderId === folder.id && folder.id !== 'add'} 
+                    role="button"
+                    tabindex="0"
                     on:click={() => handleFolderClick(folder)}
+                    on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && handleFolderClick(folder)}
                     on:contextmenu|preventDefault={(e) => folder.id !== 'all' && folder.id !== 'add' && onEditFolder(folder)}
                     on:touchstart={(e) => folder.id !== 'all' && folder.id !== 'add' && handleTouchStart(folder, 'folder', e)}
                     on:touchend={handleTouchEnd}
@@ -121,6 +131,7 @@
                     on:touchstart={(e) => handleTouchStart(contact, 'contact', e)}
                     on:touchend={handleTouchEnd}
                     on:touchmove={handleTouchEnd}
+                    on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onSelectContact(contact)}
                     tabindex="0"
                     role="button"
                 >

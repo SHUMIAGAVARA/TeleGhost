@@ -194,7 +194,8 @@ func (r *Repository) Migrate(ctx context.Context) error {
 					added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 					updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 				);
-				INSERT INTO contacts_new SELECT * FROM contacts;
+				INSERT INTO contacts_new (id, public_key, nickname, bio, avatar, i2p_address, chat_id, is_blocked, is_verified, last_seen, added_at, updated_at) 
+				SELECT id, public_key, nickname, bio, avatar, i2p_address, chat_id, is_blocked, is_verified, last_seen, added_at, updated_at FROM contacts;
 				DROP TABLE contacts;
 				ALTER TABLE contacts_new RENAME TO contacts;
 				COMMIT;
@@ -202,7 +203,11 @@ func (r *Repository) Migrate(ctx context.Context) error {
 			`
 			_, err = r.db.ExecContext(ctx, migrationQuery)
 			if err != nil {
-				log.Printf("[Repo] Migration failed: %v", err)
+				log.Printf("[Repo] Contacts migration failed: %v", err)
+				// В случае неудачи откатываемся
+				r.db.ExecContext(ctx, "ROLLBACK;")
+			} else {
+				log.Println("[Repo] Contacts table migrated successfully.")
 			}
 		}
 	}
@@ -216,10 +221,13 @@ func (r *Repository) MigrateEncryption(ctx context.Context) error {
 		return nil
 	}
 
+	log.Println("[Repo] Checking for encryption migration...")
+
 	// Проверяем, была ли уже выполнена миграция
 	var val string
 	err := r.db.QueryRowContext(ctx, "SELECT value FROM db_metadata WHERE key = ?", "encryption_migrated").Scan(&val)
 	if err == nil && val == "true" {
+		log.Println("[Repo] Encryption already migrated.")
 		return nil
 	}
 
@@ -256,24 +264,35 @@ func (r *Repository) MigrateEncryption(ctx context.Context) error {
 
 	// 3. Сообщения
 	// Чтобы не перебирать тысячи сообщений каждый раз, проверяем последнее
+	var lastMsgID string
 	var rawContent string
-	err = r.db.QueryRowContext(ctx, "SELECT content FROM messages ORDER BY timestamp DESC LIMIT 1").Scan(&rawContent)
+	err = r.db.QueryRowContext(ctx, "SELECT id, content FROM messages ORDER BY timestamp DESC LIMIT 1").Scan(&lastMsgID, &rawContent)
 	if err == nil && rawContent != "" {
 		if r.decryptString(rawContent) == rawContent {
-			// Не зашифровано. Мигрируем ВСЕ сообщения (это может быть долго)
+			// Не зашифровано. Мигрируем ВСЕ сообщения
 			log.Println("[Repo] Migrating ALL messages to encrypted format. This may take a while...")
 
-			// Самый простой (хоть и не самый быстрый) способ миграции - вычитать всё и сохранить
-			// Но лучше в цикле по чатам
-			rows, err := r.db.QueryContext(ctx, "SELECT id, chat_id, sender_id, content, content_type, status, is_outgoing, reply_to_id, timestamp, created_at, updated_at FROM messages")
+			// Сначала собираем все ID, чтобы не держать соединение открытым во время сохранения
+			var msgIDs []string
+			rows, err := r.db.QueryContext(ctx, "SELECT id FROM messages")
 			if err == nil {
-				defer rows.Close()
 				for rows.Next() {
-					msg, err := r.scanMessage(rows)
-					if err == nil {
-						// Обогащаем вложениями (они тоже могут быть не зашифрованы)
-						_ = r.enrichMessagesWithAttachments(ctx, []*core.Message{msg})
+					var id string
+					if err := rows.Scan(&id); err == nil {
+						msgIDs = append(msgIDs, id)
+					}
+				}
+				rows.Close()
+
+				log.Printf("[Repo] Found %d messages to migrate", len(msgIDs))
+				for i, id := range msgIDs {
+					msg, err := r.GetMessage(ctx, id)
+					if err == nil && msg != nil {
+						// GetMessage уже дешифрует, а SaveMessage зашифрует заново
 						_ = r.SaveMessage(ctx, msg)
+					}
+					if i > 0 && i%100 == 0 {
+						log.Printf("[Repo] Migrated %d/%d messages...", i, len(msgIDs))
 					}
 				}
 			}

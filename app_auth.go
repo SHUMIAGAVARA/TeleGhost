@@ -209,9 +209,10 @@ func (a *App) Logout() {
 	}
 }
 
-// GetMyInfo возвращает информацию о текущем пользователе
 func (a *App) GetMyInfo() *UserInfo {
+	log.Println("[App] GetMyInfo called")
 	if a.identity == nil {
+		log.Println("[App] GetMyInfo: identity is nil")
 		return nil
 	}
 

@@ -1,7 +1,10 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -28,18 +31,26 @@ func (a *App) AddContactFromClipboard() (*ContactInfo, error) {
 		return nil, fmt.Errorf("invalid I2P destination (too short)")
 	}
 
+	// Генерируем временный ChatID на основе адреса, пока не получим публичный ключ
+	hasher := sha256.New()
+	hasher.Write([]byte(destination))
+	chatID := base64.RawURLEncoding.EncodeToString(hasher.Sum(nil)[:16])
+
 	contact := &core.Contact{
 		ID:         uuid.New().String(),
 		Nickname:   "New Contact",
 		I2PAddress: destination,
-		ChatID:     uuid.New().String(),
+		ChatID:     chatID,
 		AddedAt:    time.Now(),
 		UpdatedAt:  time.Now(),
 	}
 
+	log.Println("[App] AddContactFromClipboard: calling SaveContact")
 	if err := a.repo.SaveContact(a.ctx, contact); err != nil {
+		log.Printf("[App] AddContactFromClipboard: SaveContact error: %v", err)
 		return nil, fmt.Errorf("failed to save contact: %w", err)
 	}
+	log.Println("[App] AddContactFromClipboard: SaveContact success")
 
 	return &ContactInfo{
 		ID:         contact.ID,
@@ -56,18 +67,25 @@ func (a *App) AddContact(name, destination string) (*ContactInfo, error) {
 		return nil, fmt.Errorf("invalid I2P destination (too short)")
 	}
 
+	hasher := sha256.New()
+	hasher.Write([]byte(destination))
+	chatID := base64.RawURLEncoding.EncodeToString(hasher.Sum(nil)[:16])
+
 	contact := &core.Contact{
 		ID:         uuid.New().String(),
 		Nickname:   name,
 		I2PAddress: destination,
-		ChatID:     uuid.New().String(),
+		ChatID:     chatID,
 		AddedAt:    time.Now(),
 		UpdatedAt:  time.Now(),
 	}
 
+	log.Println("[App] AddContact: calling SaveContact")
 	if err := a.repo.SaveContact(a.ctx, contact); err != nil {
+		log.Printf("[App] AddContact: SaveContact error: %v", err)
 		return nil, fmt.Errorf("failed to save contact: %w", err)
 	}
+	log.Println("[App] AddContact: SaveContact success")
 
 	return &ContactInfo{
 		ID:         contact.ID,
@@ -91,10 +109,13 @@ func (a *App) GetContacts() ([]*ContactInfo, error) {
 		return nil, fmt.Errorf("database not initialized")
 	}
 
+	log.Println("[App] GetContacts called")
 	contacts, err := a.repo.ListContactsWithLastMessage(a.ctx)
 	if err != nil {
+		log.Printf("[App] GetContacts failed: %v", err)
 		return nil, err
 	}
+	log.Printf("[App] GetContacts found %d contacts", len(contacts))
 
 	result := make([]*ContactInfo, len(contacts))
 	for i, c := range contacts {
@@ -193,16 +214,17 @@ func (a *App) CreateFolder(name, icon string) (string, error) {
 	return id, nil
 }
 
-// GetFolders возвращает все папки с их чатами
 func (a *App) GetFolders() ([]FolderInfo, error) {
 	if a.repo == nil {
 		return nil, fmt.Errorf("database not initialized")
 	}
-
+	log.Println("[App] GetFolders called")
 	folders, err := a.repo.GetFolders(a.ctx)
 	if err != nil {
+		log.Printf("[App] GetFolders error: %v", err)
 		return nil, err
 	}
+	log.Printf("[App] GetFolders found %d folders", len(folders))
 
 	result := make([]FolderInfo, 0, len(folders))
 	for _, f := range folders {

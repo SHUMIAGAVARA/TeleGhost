@@ -193,8 +193,8 @@
        in:scale={{duration: 500, start: 0.95}}
        style="max-width: {authScreen === 'profiles' ? '540px' : '440px'}; padding: 40px; border-radius: 28px;">
     
-    <div class="login-logo animate-float" style="margin-bottom: 32px;">
-      <img src="/icon.png" alt="TeleGhost" class="rounded-full" style="width: 80px; height: 80px; filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.4)); object-fit: cover;" />
+    <div class="login-logo" style="margin-bottom: 32px;">
+      <img src="/icon.png" alt="TeleGhost" class="rounded-full shadow-lg" style="width: 80px; height: 80px; filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.4)); object-fit: cover; border: 2px solid rgba(255,255,255,0.1);" />
     </div>
     
     <h1 class="login-title" style="font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; background: linear-gradient(to right, #fff, #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">TeleGhost</h1>
@@ -264,7 +264,7 @@
               <button class="btn-primary-premium full-width" on:click={handleUnlock} disabled={isLoading || pinInput.length < 1}>
                 {#if isLoading}<span class="spinner"></span>{:else}Разблокировать{/if}
               </button>
-              <button class="btn-link" on:click={() => authScreen = 'profiles'}>
+              <button class="btn-link back-btn" on:click={() => authScreen = 'profiles'}>
                 ← Назад к списку
               </button>
             </div>
@@ -308,7 +308,7 @@
               <button class="btn-primary-premium full-width" on:click={handleFinishCreateProfile} disabled={isLoading}>
                 {#if isLoading}<span class="spinner"></span>{:else}Создать профиль{/if}
               </button>
-              <button class="btn-glass full-width" on:click={cancelCreate} style="margin-top: 8px; opacity: 0.6;">Отмена</button>
+              <button class="btn-glass full-width cancel-btn" on:click={cancelCreate} style="margin-top: 8px;">Отмена</button>
             </div>
           </div>
 
@@ -363,7 +363,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-primary full-width" on:click={confirmMnemonicSaved}>
+      <button class="btn-primary full-width accent-btn" on:click={confirmMnemonicSaved}>
         Я сохранил(а) seed-фразу
       </button>
     </div>
@@ -520,6 +520,24 @@
   .word-text { font-size: 13px; color: #fff; font-weight: 500; }
   .mnemonic-actions { text-align: center; margin-bottom: 24px; }
   .btn-text { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 14px; font-weight: 600; }
+
+  .btn-link { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 14px; margin-top: 10px; transition: color 0.2s; }
+  .btn-link:hover { color: #fff; }
+  .back-btn { 
+      display: block;
+      margin: 16px auto 0;
+      opacity: 0.7;
+  }
+  .cancel-btn {
+      background: transparent !important;
+      border: 1px solid rgba(255,255,255,0.1) !important;
+      color: rgba(255,255,255,0.5) !important;
+  }
+  .cancel-btn:hover {
+      border-color: rgba(255,255,255,0.3) !important;
+      color: #fff !important;
+  }
+  .accent-btn { background: #6366f1 !important; }
 
   .spinner {
     display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite;

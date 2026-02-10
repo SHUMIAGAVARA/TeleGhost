@@ -58,11 +58,11 @@
                 {/if}
             </div>
             <div>
-                <div class="chat-name">{selectedContact.nickname}</div>
+                <div class="chat-name">{selectedContact?.nickname || 'Unknown'}</div>
                 <div class="chat-status">
-                    <span class="status-dot" style="background: {messages.some(m => !m.isOutgoing && m.senderId === selectedContact.publicKey && (Date.now() - m.timestamp < 300000)) ? '#4CAF50' : '#9E9E9E'};"></span>
+                    <span class="status-dot" style="background: {(messages || []).some(m => !m.isOutgoing && m.senderId === selectedContact?.publicKey && (Date.now() - m.timestamp < 300000)) ? '#4CAF50' : '#9E9E9E'};"></span>
                     <span class="status-text">
-                        {messages.some(m => !m.isOutgoing && m.senderId === selectedContact.publicKey && (Date.now() - m.timestamp < 300000)) ? 'В сети' : 'Оффлайн'}
+                        {(messages || []).some(m => !m.isOutgoing && m.senderId === selectedContact?.publicKey && (Date.now() - m.timestamp < 300000)) ? 'В сети' : 'Оффлайн'}
                     </span>
                 </div>
             </div>
@@ -174,7 +174,7 @@
                     rows="1"
                 ></textarea>
             </div>
-            <button class="btn-send" on:click={onSendMessage} disabled={!newMessage.trim() && selectedFiles.length === 0}>
+            <button class="btn-send" on:click={onSendMessage} disabled={!(newMessage || "").trim() && (selectedFiles || []).length === 0}>
                 <div class="icon-svg">{@html Icons.Send}</div>
             </button>
         </div>

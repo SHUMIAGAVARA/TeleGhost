@@ -99,8 +99,9 @@
     });
     
     EventsOn("new_message", (msg) => {
+        if (!msg) return;
         if (selectedContact && msg.chatId === selectedContact.ChatID) {
-            messages = [...messages, msg];
+            messages = [...(messages || []), msg];
             scrollToBottom();
         }
         loadContacts(); // Update last message
@@ -202,6 +203,7 @@
   }
 
   function selectContact(contact) {
+      if (!contact) return;
       selectedContact = contact;
       loadMessages(contact.id);
       if (isMobile) mobileView.set('chat');

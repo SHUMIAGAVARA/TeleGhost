@@ -27,14 +27,17 @@
 
     let longPressTimer;
 
-    $: filteredContacts = contacts.filter(c => {
-        const query = searchQuery.toLowerCase();
-        return c.nickname.toLowerCase().includes(query) || (c.lastMessage && c.lastMessage.toLowerCase().includes(query));
+    $: filteredContacts = (contacts || []).filter(c => {
+        if (!c || !c.nickname) return false;
+        const query = (searchQuery || "").toLowerCase();
+        const nickname = (c.nickname || "").toLowerCase();
+        const lastMsg = (c.lastMessage || "").toLowerCase();
+        return nickname.includes(query) || lastMsg.includes(query);
     });
 
     $: uiFolders = [
         { id: 'all', name: 'Все', icon: Icons.Chat },
-        ...folders.sort((a, b) => a.position - b.position),
+        ...(folders || []).sort((a, b) => (a?.position || 0) - (b?.position || 0)),
         { id: 'add', name: 'Создать', icon: Icons.Plus }
     ];
 

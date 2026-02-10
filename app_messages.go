@@ -5,11 +5,13 @@ import (
 	"mime"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"teleghost/internal/core"
 	"teleghost/internal/core/identity"
 	pb "teleghost/internal/proto"
+	"teleghost/internal/utils"
 
 	"github.com/google/uuid"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -35,6 +37,92 @@ func (a *App) SendFileMessage(chatID, text string, files []string, isRaw bool) e
 	now := time.Now().UnixMilli()
 	msgID := fmt.Sprintf("%d-%s", now, a.identity.Keys.UserID[:8])
 
+	// Проверяем, являются ли все файлы изображениями и не запрошен ли "raw" режим
+	allImages := true
+	for _, f := range files {
+		ext := strings.ToLower(filepath.Ext(f))
+		if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".webp" {
+			allImages = false
+			break
+		}
+	}
+
+	if !isRaw && allImages {
+		// Прямая отправка сжатых изображений
+		attachments := make([]*pb.Attachment, 0, len(files))
+		for _, filePath := range files {
+			data, mimeType, width, height, err := utils.CompressImage(filePath, 1280, 1280)
+			if err != nil {
+				continue
+			}
+
+			att := &pb.Attachment{
+				Id:           uuid.New().String(),
+				Filename:     filepath.Base(filePath),
+				MimeType:     mimeType,
+				Size:         int64(len(data)),
+				Data:         data,
+				IsCompressed: true,
+				Width:        int32(width),
+				Height:       int32(height),
+			}
+			attachments = append(attachments, att)
+		}
+
+		if len(attachments) == 0 {
+			return fmt.Errorf("failed to compress any images")
+		}
+
+		if err := a.messenger.SendAttachmentMessageWithID(destination, actualChatID, msgID, text, attachments); err != nil {
+			return fmt.Errorf("failed to send message: %w", err)
+		}
+
+		coreAttachments := make([]*core.Attachment, 0, len(attachments))
+		for _, att := range attachments {
+			savedPath, _ := a.saveAttachment(att.Filename, att.Data)
+			coreAtt := &core.Attachment{
+				ID:           att.Id,
+				Filename:     att.Filename,
+				MimeType:     att.MimeType,
+				Size:         att.Size,
+				LocalPath:    savedPath,
+				IsCompressed: att.IsCompressed,
+				Width:        int(att.Width),
+				Height:       int(att.Height),
+			}
+			coreAttachments = append(coreAttachments, coreAtt)
+		}
+
+		msg := &core.Message{
+			ID:          msgID,
+			ChatID:      actualChatID,
+			SenderID:    a.identity.Keys.UserID, // Revert to UserID
+			Content:     text,
+			ContentType: "mixed",
+			Status:      core.MessageStatusSent,
+			IsOutgoing:  true,
+			Timestamp:   now,
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+			Attachments: coreAttachments,
+		}
+		a.repo.SaveMessage(a.ctx, msg)
+
+		runtime.EventsEmit(a.ctx, "new_message", map[string]interface{}{
+			"ID":          msg.ID,
+			"ChatID":      msg.ChatID,
+			"SenderID":    msg.SenderID,
+			"Content":     msg.Content,
+			"Timestamp":   msg.Timestamp,
+			"IsOutgoing":  msg.IsOutgoing,
+			"ContentType": msg.ContentType,
+			"Status":      msg.Status.String(),
+		})
+
+		return nil
+	}
+
+	// Иначе используем flow с предложением (Offer Flow)
 	a.transferMu.Lock()
 	a.pendingTransfers[msgID] = &PendingTransfer{
 		Destination: destination,
@@ -62,7 +150,7 @@ func (a *App) SendFileMessage(chatID, text string, files []string, isRaw bool) e
 	msg := &core.Message{
 		ID:          msgID,
 		ChatID:      actualChatID,
-		SenderID:    a.identity.Keys.PublicKeyBase64, // Use consistency
+		SenderID:    a.identity.Keys.UserID, // Revert to UserID
 		Content:     text,
 		ContentType: "file_offer",
 		Status:      core.MessageStatusSent,
@@ -193,7 +281,7 @@ func (a *App) SendText(contactID, text string) error {
 	msg := &core.Message{
 		ID:          uuid.New().String(),
 		ChatID:      contact.ChatID,
-		SenderID:    a.identity.Keys.PublicKeyBase64, // Use PublicKey for consistency
+		SenderID:    a.identity.Keys.UserID, // Revert to UserID
 		Content:     text,
 		ContentType: "text",
 		Status:      core.MessageStatusSent,

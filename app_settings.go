@@ -152,9 +152,9 @@ func (a *App) connectToI2P() {
 	a.messenger.SetNickname(nickname)
 	a.messenger.SetProfileUpdateHandler(a.onProfileUpdate)
 	a.messenger.SetProfileRequestHandler(a.onProfileRequest)
-	// a.messenger.SetFileOfferHandler(a.onFileOffer)
-	// a.messenger.SetFileResponseHandler(a.onFileResponse)
-	// a.messenger.SetAttachmentSaver(a.saveAttachment)
+	a.messenger.SetFileOfferHandler(a.onFileOffer)
+	a.messenger.SetFileResponseHandler(a.onFileResponse)
+	a.messenger.SetAttachmentSaver(a.saveAttachment)
 
 	if err := a.messenger.Start(a.ctx); err != nil {
 		a.setNetworkStatus(NetworkStatusError)

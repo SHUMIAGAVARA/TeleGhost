@@ -12,6 +12,8 @@ export function AddContact(arg1:string,arg2:string):Promise<main.ContactInfo>;
 
 export function AddContactFromClipboard():Promise<main.ContactInfo>;
 
+export function CheckForUpdates():Promise<string>;
+
 export function CopyImageToClipboard(arg1:string):Promise<void>;
 
 export function CopyToClipboard(arg1:string):Promise<void>;
@@ -33,6 +35,8 @@ export function DeleteMessage(arg1:string):Promise<void>;
 export function DeleteMessageForAll(arg1:string):Promise<void>;
 
 export function EditMessage(arg1:string,arg2:string):Promise<void>;
+
+export function GetAppAboutInfo():Promise<main.AppAboutInfo>;
 
 export function GetContacts():Promise<Array<main.ContactInfo>>;
 

@@ -18,6 +18,10 @@ export function AddContactFromClipboard() {
   return window['go']['main']['App']['AddContactFromClipboard']();
 }
 
+export function CheckForUpdates() {
+  return window['go']['main']['App']['CheckForUpdates']();
+}
+
 export function CopyImageToClipboard(arg1) {
   return window['go']['main']['App']['CopyImageToClipboard'](arg1);
 }
@@ -60,6 +64,10 @@ export function DeleteMessageForAll(arg1) {
 
 export function EditMessage(arg1, arg2) {
   return window['go']['main']['App']['EditMessage'](arg1, arg2);
+}
+
+export function GetAppAboutInfo() {
+  return window['go']['main']['App']['GetAppAboutInfo']();
 }
 
 export function GetContacts() {

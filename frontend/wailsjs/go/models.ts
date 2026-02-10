@@ -1,5 +1,25 @@
 export namespace main {
 	
+	export class AppAboutInfo {
+	    app_version: string;
+	    i2p_version: string;
+	    i2p_path: string;
+	    author: string;
+	    license: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new AppAboutInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.app_version = source["app_version"];
+	        this.i2p_version = source["i2p_version"];
+	        this.i2p_path = source["i2p_path"];
+	        this.author = source["author"];
+	        this.license = source["license"];
+	    }
+	}
 	export class ContactInfo {
 	    ID: string;
 	    Nickname: string;

@@ -393,7 +393,11 @@
       onSelectFolder: (id) => { activeFolderId = id; showSettings = false; },
       onEditFolder: (folder) => {
           isEditingFolder = true;
-          currentFolderData = { ID: folder.ID, Name: folder.Name, Icon: folder.Icon };
+          currentFolderData = { 
+              ID: folder.ID || folder.id, 
+              Name: folder.Name || folder.name, 
+              Icon: folder.Icon || folder.icon 
+          };
           showFolderModal = true;
       },
       onCreateFolder: () => {
@@ -584,13 +588,14 @@
       },
       onDeleteFolder: async () => {
           const folder = folderContextMenu.folder || (isEditingFolder ? currentFolderData : null);
-          if (!folder || !folder.ID) return;
+          const folderID = folder?.ID || folder?.id;
+          if (!folderID) return;
           
           showConfirmModal = true;
           confirmModalTitle = "Удалить папку";
-          confirmModalText = `Вы уверены, что хотите удалить папку "${folder.Name}"? Сами чаты останутся в общем списке.`;
+          confirmModalText = `Вы уверены, что хотите удалить папку "${folder.Name || folder.name}"? Сами чаты останутся в общем списке.`;
           confirmAction = async () => {
-              await AppActions.DeleteFolder(folder.ID);
+              await AppActions.DeleteFolder(folderID);
               showFolderModal = false;
               folderContextMenu.show = false;
               loadContacts();

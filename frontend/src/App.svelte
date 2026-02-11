@@ -14,6 +14,7 @@
   import Chat from './components/Chat.svelte';
   import Settings from './components/Settings.svelte';
   import Modals from './components/Modals.svelte';
+  import QRModal from './components/QRModal.svelte';
   
   import { showToast } from './stores.js';
   import { getInitials, formatTime, parseMarkdown, getStatusColor, getStatusText } from './utils.js';
@@ -61,6 +62,7 @@
   let profileAvatar = '';
   let routerSettings = { tunnelLength: 1, logToFile: false };
   let selectedProfile = null;
+  let showQRModal = false;
 
   // Modals State
   let showConfirmModal = false;
@@ -413,6 +415,7 @@
           AppActions.CopyToClipboard(myDestination);
           showToast("Адрес скопирован", "success");
       },
+      onOpenMyQR: () => { showQRModal = true; },
       onSelectFolder: (id) => { activeFolderId = id; showSettings = false; },
       onEditFolder: (folder) => {
           isEditingFolder = true;
@@ -835,6 +838,13 @@
         {showChangePinModal} 
         onSavePin={modalHandlers.onSavePin} 
         onCancelChangePin={modalHandlers.onCancelChangePin}
+    />
+
+    <QRModal 
+        show={showQRModal} 
+        address={myDestination} 
+        on:close={() => showQRModal = false} 
+        on:toast={(e) => showToast(e.detail.message, e.detail.type)}
     />
 
     {#if previewImage}

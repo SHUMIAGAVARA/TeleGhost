@@ -22,6 +22,7 @@
     export let onOpenAddContact;
     export let onAddContactFromClipboard;
     export let onCopyDestination;
+    export let onOpenMyQR;
     export let onSelectFolder;
     export let onEditFolder;
     export let onCreateFolder;
@@ -189,9 +190,9 @@
         
         <!-- My Destination -->
         <div class="my-destination">
-            <button class="btn-copy" on:click={onCopyDestination}>
-                <div class="icon-svg-sm">{@html Icons.Copy}</div>
-                <span>Копировать мой I2P адрес</span>
+            <button class="btn-copy" on:click={onOpenMyQR}>
+                <div class="icon-svg-sm">{@html Icons.QrCode}</div>
+                <span>Мой I2P адрес</span>
             </button>
         </div>
     </div>
@@ -286,8 +287,8 @@
                 <div class="icon-svg">{@html Icons.MessageSquarePlus}</div>
                 <span>Новый чат</span>
             </button>
-            <button class="mobile-action-btn" on:click={onCopyDestination}>
-                <div class="icon-svg">{@html Icons.Copy}</div>
+            <button class="mobile-action-btn" on:click={onOpenMyQR}>
+                <div class="icon-svg">{@html Icons.QrCode}</div>
                 <span>Мой адрес</span>
             </button>
         </div>

@@ -98,10 +98,38 @@ type ContactInfo struct {
 	I2PAddress      string     `json:"I2PAddress"`
 	PublicKey       string     `json:"PublicKey"`
 	ChatID          string     `json:"ChatID"`
-	LastMessage     string     `json:"LastMessage"`
-	LastMessageTime *time.Time `json:"LastMessageTime"`
 	IsBlocked       bool       `json:"IsBlocked"`
 	IsVerified      bool       `json:"IsVerified"`
+	LastMessage     string     `json:"LastMessage"`
+	LastMessageTime *time.Time `json:"LastMessageTime"`
+	UnreadCount     int        `json:"UnreadCount"`
+}
+
+const (
+	// MaxAvatarSize — максимальный размер аватарки (512 КБ)
+	MaxAvatarSize = 512 * 1024
+)
+
+// SaveAvatar сохраняет аватарку в несжатом/нешифрованном виде
+func (a *AppCore) SaveAvatar(filename string, data []byte) (string, error) {
+	if a.Identity == nil {
+		return "", fmt.Errorf("user not logged in")
+	}
+
+	if len(data) > MaxAvatarSize {
+		return "", fmt.Errorf("изображение слишком большое (макс. %d байт)", MaxAvatarSize)
+	}
+
+	userDir := filepath.Join(a.DataDir, "users", a.Identity.Keys.UserID)
+	avatarsDir := filepath.Join(userDir, "avatars")
+	os.MkdirAll(avatarsDir, 0755)
+
+	fullPath := filepath.Join(avatarsDir, filename)
+	if err := os.WriteFile(fullPath, data, 0644); err != nil {
+		return "", err
+	}
+
+	return fullPath, nil
 }
 
 // MessageInfo — информация о сообщении (для фронтенда)
@@ -257,8 +285,11 @@ func (a *AppCore) UpdateMyProfile(nickname, bio, avatar string) error {
 			}
 
 			if err == nil {
-				// Сохраняем байты в файл медиа пользователя
-				newPath, err := a.SaveAttachment("my_avatar.png", data)
+				if len(data) > MaxAvatarSize {
+					return fmt.Errorf("аватарка слишком большая (максимум %d КБ)", MaxAvatarSize/1024)
+				}
+				// Сохраняем байты в файл аватара пользователя (НЕ зашифровано!)
+				newPath, err := a.SaveAvatar("my_avatar.png", data)
 				if err == nil {
 					avatarPath = newPath
 					// Также обновляем в БД путь на локальный, а не base64
@@ -289,7 +320,7 @@ func (a *AppCore) GetCurrentProfile() map[string]interface{} {
 				"id":           p.ID,
 				"display_name": p.DisplayName,
 				"user_id":      p.UserID,
-				"avatar_path":  p.AvatarPath,
+				"avatar_path":  a.formatProfileAvatarURL(p.UserID, p.AvatarPath),
 				"use_pin":      p.UsePin,
 			}
 		}
@@ -299,6 +330,7 @@ func (a *AppCore) GetCurrentProfile() map[string]interface{} {
 
 // SetNetworkStatus устанавливает статус сети и уведомляет фронтенд.
 func (a *AppCore) SetNetworkStatus(status NetworkStatus) {
+	log.Printf("[AppCore] Network status changed: %s", status)
 	a.mu.Lock()
 	a.Status = status
 	a.mu.Unlock()
@@ -424,23 +456,43 @@ func (a *AppCore) ConnectToI2P() {
 	a.SetNetworkStatus(StatusOnline)
 }
 
-// formatAvatarURL преобразует локальный путь в URL для фронтенда
+// formatAvatarURL преобразует локальный путь в URL для фронтенда для текущего пользователя
 func (a *AppCore) formatAvatarURL(path string) string {
+	if a.Identity == nil {
+		return a.formatProfileAvatarURL("", path)
+	}
+	return a.formatProfileAvatarURL(a.Identity.Keys.UserID, path)
+}
+
+// formatProfileAvatarURL преобразует путь в URL с учетом UserID
+func (a *AppCore) formatProfileAvatarURL(userID, path string) string {
 	if path == "" {
 		return ""
 	}
 	if strings.HasPrefix(path, "data:") {
 		return path
 	}
-	// Если это абсолютный путь, берем только имя файла и добавляем префикс /secure/
-	// который обрабатывается MediaHandler
-	return "/secure/" + filepath.Base(path)
+	filename := filepath.Base(path)
+	// Если это абсолютный путь, берем только имя файла и добавляем префикс /avatars/
+	// если он лежит в папке avatars или /secure/ если в media
+	if strings.Contains(path, "avatars") {
+		if userID != "" {
+			return fmt.Sprintf("/avatars/%s/%s", userID, filename)
+		}
+		return "/avatars/unknown/" + filename
+	}
+	return "/secure/" + filename
 }
 
 // onProfileUpdate обрабатывает входящее обновление профиля от контакта
 func (a *AppCore) onProfileUpdate(senderPubKey, nickname, bio string, avatar []byte) {
 	if a.Repo == nil {
 		return
+	}
+
+	if len(avatar) > MaxAvatarSize {
+		log.Printf("[AppCore] Ignored large avatar (%d bytes) from %s", len(avatar), senderPubKey[:8])
+		avatar = nil // Не сохраняем слишком большую аватарку
 	}
 
 	contact, _ := a.Repo.GetContactByPublicKey(a.Ctx, senderPubKey)
@@ -452,9 +504,9 @@ func (a *AppCore) onProfileUpdate(senderPubKey, nickname, bio string, avatar []b
 	contact.Bio = bio
 
 	if len(avatar) > 0 {
-		// Сохраняем аватар
+		// Сохраняем аватар (НЕ зашифровано!)
 		filename := fmt.Sprintf("avatar_%s.png", senderPubKey[:8])
-		path, err := a.SaveAttachment(filename, avatar)
+		path, err := a.SaveAvatar(filename, avatar)
 		if err == nil {
 			contact.Avatar = path
 		}
@@ -477,7 +529,14 @@ func (a *AppCore) onProfileRequest(requestorPubKey string) {
 
 	var avatarData []byte
 	if user.Avatar != "" {
-		avatarData, _ = os.ReadFile(user.Avatar)
+		data, err := os.ReadFile(user.Avatar)
+		if err == nil {
+			if len(data) <= MaxAvatarSize {
+				avatarData = data
+			} else {
+				log.Printf("[AppCore] Our avatar is too large to send (%d bytes)", len(data))
+			}
+		}
 	}
 
 	// Отправляем наш профиль в ответ

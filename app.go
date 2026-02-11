@@ -231,10 +231,28 @@ func (a *App) shutdown(ctx context.Context) {
 // GetMediaHandler возвращает обработчик для медиафайлов
 func (a *App) GetMediaHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if a.core == nil || a.core.Identity == nil {
+		if a.core == nil {
+			http.Error(w, "Core not initialized", http.StatusInternalServerError)
+			return
+		}
+
+		if strings.HasPrefix(r.URL.Path, "/avatars/") {
+			// Формат: /avatars/<userID>/<filename>
+			parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/avatars/"), "/")
+			if len(parts) >= 2 {
+				userID := parts[0]
+				filename := parts[1]
+				avatarPath := filepath.Join(a.core.DataDir, "users", userID, "avatars", filename)
+				http.ServeFile(w, r, avatarPath)
+				return
+			}
+		}
+
+		if a.core.Identity == nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
+
 		// MediaCrypt инициализируется в AppCore при логине
 		mediaDir := filepath.Join(a.core.DataDir, "users", a.core.Identity.Keys.UserID, "media")
 		mc, _ := media.NewMediaCrypt(a.core.Identity.Keys.EncryptionKey)

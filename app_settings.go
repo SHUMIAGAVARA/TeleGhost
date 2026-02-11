@@ -1,5 +1,7 @@
 package main
 
+import "log"
+
 // GetMyDestination возвращает I2P адрес.
 func (a *App) GetMyDestination() string {
 	return a.core.GetMyDestination()
@@ -28,7 +30,8 @@ func (a *App) GetAppAboutInfo() *AppAboutInfo {
 
 // GetNetworkStatus возвращает статус сети.
 func (a *App) GetNetworkStatus() string {
-	status := a.core.GetNetworkStatus()
+	status := string(a.core.Status)
+	log.Printf("[App] GetNetworkStatus: coreStatus=%s", status)
 	if status == "offline" && a.embeddedRouter != nil {
 		if !a.embeddedRouter.IsReady() {
 			return "starting"

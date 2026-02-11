@@ -156,7 +156,9 @@
 
     // Check network status AFTER listeners are ready
     try {
-        networkStatus = await AppActions.GetNetworkStatus();
+        const initialStatus = await AppActions.GetNetworkStatus();
+        console.log("[App] Initial network status:", initialStatus);
+        networkStatus = initialStatus;
     } catch (e) {
         console.error("[App] Failed to get network status:", e);
     }
@@ -226,6 +228,13 @@
           
           // Start background polling
           setInterval(loadContacts, 300 * 1000);
+          setInterval(async () => {
+              const status = await AppActions.GetNetworkStatus();
+              if (status !== networkStatus) {
+                  console.log("[App] Polled network status changed:", status);
+                  networkStatus = status;
+              }
+          }, 10 * 1000); // Check status every 10s
       } catch (err) {
           console.error("[App] onLoginSuccess failed:", err);
           showToast("Ошибка при загрузке данных: " + err, 'error');

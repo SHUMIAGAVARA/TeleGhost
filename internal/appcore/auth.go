@@ -25,7 +25,7 @@ func (a *AppCore) ListProfiles() ([]map[string]interface{}, error) {
 			"id":           p.ID,
 			"display_name": p.DisplayName,
 			"user_id":      p.UserID,
-			"avatar_path":  p.AvatarPath,
+			"avatar_path":  a.formatProfileAvatarURL(p.UserID, p.AvatarPath),
 			"use_pin":      p.UsePin,
 		}
 	}
@@ -210,6 +210,8 @@ func (a *AppCore) GetMyInfo() map[string]interface{} {
 	} else if a.Router != nil {
 		res["Destination"] = a.Router.GetDestination()
 	}
+
+	res["Status"] = string(a.Status)
 
 	return res
 }

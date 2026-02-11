@@ -81,7 +81,7 @@
     function handleScroll(e) {
         const container = e.target;
         const distanceToBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
-        showScrollButton = distanceToBottom > 300;
+        showScrollButton = distanceToBottom > 50;
     }
 
     function scrollToBottom(force = false) {
@@ -100,7 +100,7 @@
                     // If content grew and we were ALREADY at bottom (or close), stay at bottom
                     const distanceToBottom = containerRef.scrollHeight - containerRef.scrollTop - containerRef.clientHeight;
                     // Relaxed threshold
-                    if (distanceToBottom < 300) {
+                    if (distanceToBottom < 100) {
                          containerRef.scrollTop = containerRef.scrollHeight;
                     }
                 }

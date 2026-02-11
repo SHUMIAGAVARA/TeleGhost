@@ -41,6 +41,14 @@
     export let mnemonic = '';
     export let onCloseSeed;
 
+    // Change PIN Modal
+    export let showChangePinModal = false;
+    export let onSavePin;
+    export let onCancelChangePin;
+    let newPin = '';
+    let confirmPin = '';
+    let pinError = '';
+
     // I2P address toggle
     let showFullAddress = false;
 
@@ -245,6 +253,93 @@
         </div>
         <div class="modal-footer">
             <button class="btn-primary full-width accent-btn clickable-btn" on:click|preventDefault|stopPropagation={onCloseSeed}>Я всё сохранил(а)</button>
+        </div>
+    </div>
+</div>
+{/if}
+
+<!-- Change PIN Modal -->
+{#if showChangePinModal}
+<div 
+    class="modal-backdrop animate-fade-in" 
+    role="button"
+    tabindex="0"
+    on:click|self={onCancelChangePin}
+    on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && e.target === e.currentTarget && onCancelChangePin()}
+>
+    <div class="modal-content animate-slide-down" style="max-width: 450px;">
+        <div class="modal-header">
+            <h3>🔐 Сменить ПИН-код</h3>
+            <button class="btn-icon" on:click={onCancelChangePin}><div class="icon-svg">{@html Icons.X}</div></button>
+        </div>
+        <div class="modal-body">
+            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px;">
+                Введите новый ПИН-код для быстрого входа в аккаунт. Минимум 6 символов.
+            </p>
+            
+            <div class="form-group">
+                <label class="form-label">Новый ПИН-код
+                    <input 
+                        type="password" 
+                        bind:value={newPin} 
+                        class="input-field" 
+                        placeholder="Минимум 6 символов"
+                        on:input={() => pinError = ''}
+                    />
+                </label>
+            </div>
+            
+            <div class="form-group" style="margin-top: 16px;">
+                <label class="form-label">Подтвердите ПИН-код
+                    <input 
+                        type="password" 
+                        bind:value={confirmPin} 
+                        class="input-field" 
+                        placeholder="Повторите ПИН-код"
+                        on:input={() => pinError = ''}
+                        on:keydown={(e) => {
+                            if (e.key === 'Enter') {
+                                if (newPin.length >= 6 && newPin === confirmPin) {
+                                    onSavePin(newPin);
+                                    newPin = '';
+                                    confirmPin = '';
+                                    pinError = '';
+                                } else if (newPin.length < 6) {
+                                    pinError = 'ПИН-код должен быть минимум 6 символов';
+                                } else {
+                                    pinError = 'ПИН-коды не совпадают';
+                                }
+                            }
+                        }}
+                    />
+                </label>
+            </div>
+            
+            {#if pinError}
+                <p style="color: #ff6b6b; font-size: 12px; margin-top: 8px; background: rgba(255,100,100,0.1); padding: 8px; border-radius: 8px;">
+                    ⚠️ {pinError}
+                </p>
+            {/if}
+        </div>
+        <div class="modal-footer">
+            <button class="btn-small btn-glass" on:click={onCancelChangePin}>Отмена</button>
+            <button 
+                class="btn-small btn-primary clickable-btn" 
+                on:click={() => {
+                    if (newPin.length < 6) {
+                        pinError = 'ПИН-код должен быть минимум 6 символов';
+                    } else if (newPin !== confirmPin) {
+                        pinError = 'ПИН-коды не совпадают';
+                    } else {
+                        onSavePin(newPin);
+                        newPin = '';
+                        confirmPin = '';
+                        pinError = '';
+                    }
+                }}
+            >
+                Сохранить
+            </button>
         </div>
     </div>
 </div>

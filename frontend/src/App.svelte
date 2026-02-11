@@ -67,6 +67,7 @@
   let confirmAction = null;
   
   let showSeedModal = false;
+  let showChangePinModal = false;
   
   let showFolderModal = false;
   let isEditingFolder = false;
@@ -329,7 +330,14 @@
       onContextMenu: (e, contact) => {
           contextMenu = { show: true, x: e.clientX || (e.touches ? e.touches[0].clientX : 0), y: e.clientY || (e.touches ? e.touches[0].clientY : 0), contact };
       },
-      onToggleSettings: () => { showSettings = true; settingsView = 'menu'; },
+      onToggleSettings: () => { 
+          if (showSettings) {
+              showSettings = false;
+          } else {
+              showSettings = true;
+              settingsView = 'menu';
+          }
+      },
       onStartResize: (e) => {
           isResizing = true;
           const handleMove = (e) => {
@@ -522,13 +530,7 @@
       },
       onChangePin: async () => {
           if (!selectedProfile) return;
-          try {
-              const pin = prompt('Введите новый ПИН-код (минимум 6 символов):');
-              if (!pin || pin.length < 6) { showToast('ПИН-код должен быть минимум 6 символов', 'error'); return; }
-              const mnemonic = currentUserInfo?.Mnemonic || '';
-              await AppActions.UpdateProfile(selectedProfile.id, '', '', false, true, pin, mnemonic);
-              showToast('ПИН-код обновлён', 'success');
-          } catch(e) { showToast('Ошибка: ' + e, 'error'); }
+          showChangePinModal = true;
       },
       onBackToMenu: () => { settingsView = 'menu'; },
       onOpenCategory: (id) => { 
@@ -614,7 +616,20 @@
           addContactName = '';
           addContactAddress = '';
       },
-      onCloseSeed: () => { showSeedModal = false; }
+      onCloseSeed: () => { showSeedModal = false; },
+      onSavePin: async (pin) => {
+          if (!selectedProfile) return;
+          try {
+              const mnemonic = currentUserInfo?.Mnemonic || '';
+              await AppActions.UpdateProfile(selectedProfile.id, '', '', false, true, pin, mnemonic);
+              selectedProfile = await AppActions.GetCurrentProfile();
+              showChangePinModal = false;
+              showToast('ПИН-код обновлён', 'success');
+          } catch(e) { 
+              showToast('Ошибка: ' + e, 'error'); 
+          }
+      },
+      onCancelChangePin: () => { showChangePinModal = false; }
   };
 </script>
 
@@ -741,6 +756,7 @@
             showContactProfile={showContactProfile} contact={selectedContact}
             {showAddContact} bind:addContactName bind:addContactAddress
             {showSeedModal} mnemonic={currentUserInfo?.Mnemonic || ''}
+            {showChangePinModal}
             {...modalHandlers} />
 
     {#if previewImage}

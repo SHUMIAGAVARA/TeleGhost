@@ -35,15 +35,15 @@ android {
     kotlinOptions {
         jvmTarget = '17'
     }
+    buildFeatures {
+        buildConfig true
+    }
 }
 
 dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.aar'])
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.webkit:webkit:1.10.0'
-
-    // gomobile-сгенерированный .aar с Go кодом
-    // CI копирует teleghost.aar → android/app/libs/
-    implementation files('libs/teleghost.aar')
 }

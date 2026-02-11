@@ -79,6 +79,16 @@
         }
     }
 
+    function handleImageLoad(e) {
+        const container = document.querySelector('.messages-container');
+        if (container) {
+            const distanceToBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+            if (distanceToBottom < 150) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+    }
+
     // Direct image loading logic if possible, or pass it
     export let startLoadingImage; 
 </script>
@@ -160,6 +170,7 @@
                                             tabindex="0"
                                             on:click={() => onPreviewImage(att.LocalPath)}
                                             on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onPreviewImage(att.LocalPath)}
+                                            on:load={handleImageLoad}
                                         />
                                     {:else}
                                         <div class="file-attachment-container">

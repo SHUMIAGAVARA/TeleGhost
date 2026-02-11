@@ -41,6 +41,7 @@
   let showAddContact = false;
   let addContactName = '';
   let addContactAddress = '';
+  let pinnedChats = [];
   
   // Chat State
   let messages = [];
@@ -103,6 +104,12 @@
     window.addEventListener('blur', () => AppActions.SetAppFocus(false));
     AppActions.SetAppFocus(document.hasFocus());
     
+    // Load pinned chats
+    try {
+        const savedPinned = localStorage.getItem('pinnedChats');
+        if (savedPinned) pinnedChats = JSON.parse(savedPinned);
+    } catch (e) { console.error('Error loading pinned chats:', e); }
+
     // Back button support for mobile
     window.addEventListener('popstate', (e) => {
         if (isMobile) {
@@ -433,6 +440,30 @@
       },
       onFolderContextMenu: (e, folder) => {
           folderContextMenu = { show: true, x: e.clientX, y: e.clientY, folder: folder };
+      },
+      onTogglePin: (contactId) => {
+          if (pinnedChats.includes(contactId)) {
+              pinnedChats = pinnedChats.filter(id => id !== contactId);
+          } else {
+              if (pinnedChats.length >= 5) {
+                  showToast('Максимум 5 закрепленных чатов', 'error');
+                  return;
+              }
+              pinnedChats = [...pinnedChats, contactId];
+          }
+          localStorage.setItem('pinnedChats', JSON.stringify(pinnedChats));
+      },
+      onMovePin: (contactId, direction) => {
+          const index = pinnedChats.indexOf(contactId);
+          if (index === -1) return;
+          const newIndex = index + direction;
+          if (newIndex < 0 || newIndex >= pinnedChats.length) return;
+          
+          const temp = pinnedChats[index];
+          pinnedChats[index] = pinnedChats[newIndex];
+          pinnedChats[newIndex] = temp;
+          pinnedChats = [...pinnedChats];
+          localStorage.setItem('pinnedChats', JSON.stringify(pinnedChats));
       }
   };
 
@@ -728,7 +759,7 @@
                     <Sidebar 
                         {isMobile} {contacts} {folders} {activeFolderId} {searchQuery} 
                         {networkStatus} {showSettings} {sidebarWidth} {isResizing} {selectedContact}
-                        {unreadCount} {identity}
+                        {unreadCount} {identity} {pinnedChats}
                         {...sidebarHandlers} 
                     />
                 {:else if $mobileView === 'chat' && selectedContact}
@@ -771,7 +802,7 @@
                 <Sidebar 
                     {isMobile} {contacts} {folders} {activeFolderId} {searchQuery} 
                     {networkStatus} {showSettings} {sidebarWidth} {isResizing} {selectedContact}
-                    {unreadCount} {identity}
+                    {unreadCount} {identity} {pinnedChats}
                     {...sidebarHandlers} 
                 />
                 
@@ -890,6 +921,22 @@
                         </div>
                     </div>
                 {/if}
+            {/if}
+            <div class="context-item" on:click={() => {
+                sidebarHandlers.onTogglePin(contextMenu.contact.ID);
+                contextMenu.show = false;
+            }}>
+                {pinnedChats.includes(contextMenu.contact.ID) ? 'Открепить' : 'Закрепить'}
+            </div>
+            {#if pinnedChats.includes(contextMenu.contact.ID)}
+                <div class="context-item" on:click={() => {
+                    sidebarHandlers.onMovePin(contextMenu.contact.ID, -1);
+                    contextMenu.show = false;
+                }}>Переместить выше</div>
+                <div class="context-item" on:click={() => {
+                    sidebarHandlers.onMovePin(contextMenu.contact.ID, 1);
+                    contextMenu.show = false;
+                }}>Переместить ниже</div>
             {/if}
             <div class="context-item danger" on:click={() => { 
                 AppActions.DeleteContact(contextMenu.contact.ID); 

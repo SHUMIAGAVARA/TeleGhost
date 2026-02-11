@@ -15,6 +15,7 @@
     export let selectedContact;
     export let identity;
     export let unreadCount = 0;
+    export let pinnedChats = [];
 
     export let onSelectContact;
     export let onContextMenu;
@@ -49,6 +50,20 @@
         const nickname = (c.Nickname || "").toLowerCase();
         const lastMsg = (c.LastMessage || "").toLowerCase();
         return nickname.includes(query) || lastMsg.includes(query);
+    });
+
+    $: sortedContacts = [...filteredContacts].sort((a, b) => {
+        const aIndex = pinnedChats.indexOf(a.ID);
+        const bIndex = pinnedChats.indexOf(b.ID);
+        
+        if (aIndex !== -1 && bIndex !== -1) {
+            return aIndex - bIndex; // Both pinned, sort by index
+        }
+        if (aIndex !== -1) return -1; // a pinned
+        if (bIndex !== -1) return 1;  // b pinned
+        
+        // Keep original order otherwise (usually by last message time if backend provides it sorted, or ID)
+        return 0;
     });
 
     $: totalUnread = (contacts || []).reduce((sum, c) => sum + (c.UnreadCount || 0), 0);
@@ -170,10 +185,11 @@
                 </div>
             {/if}
 
-            {#each filteredContacts as contact}
+            {#each sortedContacts as contact}
                 <div 
                     class="contact-item animate-card" 
                     class:selected={selectedContact && selectedContact.ID === contact.ID} 
+                    class:pinned={pinnedChats.includes(contact.ID)}
                     on:click={() => onSelectContact(contact)}
                     on:contextmenu|preventDefault={(e) => onContextMenu(e, contact)}
                     on:touchstart={(e) => handleTouchStart(contact, 'contact', e)}
@@ -191,7 +207,15 @@
                         {/if}
                     </div>
                     <div class="contact-info">
-                        <div class="contact-name">{contact.Nickname}</div>
+                        <div class="contact-header">
+                            <div class="contact-name">
+                                {contact.Nickname}
+                                {#if pinnedChats.includes(contact.ID)}
+                                    <span class="pin-icon">{@html Icons.Pin}</span>
+                                {/if}
+                            </div>
+                            <span class="contact-time">{contact.LastMessageTime ? formatTime(contact.LastMessageTime) : ''}</span>
+                        </div>
                         <div class="contact-last">{contact.LastMessage || 'Нет сообщений'}</div>
                     </div>
                     {#if contact.UnreadCount > 0}
@@ -660,4 +684,9 @@
     .mobile-action-btn:last-child:hover {
         background: rgba(255,255,255,0.12);
     }
+
+    .contact-header { display: flex; justify-content: space-between; align-items: center; }
+    .pin-icon { width: 12px; height: 12px; margin-left: 4px; color: var(--accent); transform: rotate(45deg); display: inline-block; vertical-align: middle; }
+    .pin-icon :global(svg) { width: 100%; height: 100%; }
+    .contact-time { font-size: 11px; color: var(--text-secondary); opacity: 0.7; }
 </style>

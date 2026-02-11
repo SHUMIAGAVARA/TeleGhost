@@ -135,14 +135,7 @@
         }
     });
 
-    // Auto-scroll on messages array change
-    $: if (messages && messages.length > 0) {
-        tick().then(() => {
-             if (containerRef && !showScrollButton) {
-                 scrollToBottom(true);
-             }
-        });
-    }
+
 </script>
 
 <div class="chat-area animate-fade-in" class:mobile={isMobile} style="height: 100dvh;">

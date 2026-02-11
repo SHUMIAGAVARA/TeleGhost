@@ -142,7 +142,7 @@
                 // Remove optimistic messages that match (by tempId prefix)
                 messages = [...(messages || []).filter(m => !m._optimistic), msg];
             }
-            scrollToBottom();
+            // scrollToBottom(); // User requested to remove auto-scroll on new messages
         }
         loadContacts(); // Update last message
     });

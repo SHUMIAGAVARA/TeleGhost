@@ -27,9 +27,11 @@ export namespace main {
 	    Avatar: string;
 	    I2PAddress: string;
 	    LastMessage: string;
+	    LastMessageTime: number;
 	    LastSeen: string;
 	    IsOnline: boolean;
 	    ChatID: string;
+	    UnreadCount: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new ContactInfo(source);
@@ -43,9 +45,11 @@ export namespace main {
 	        this.Avatar = source["Avatar"];
 	        this.I2PAddress = source["I2PAddress"];
 	        this.LastMessage = source["LastMessage"];
+	        this.LastMessageTime = source["LastMessageTime"];
 	        this.LastSeen = source["LastSeen"];
 	        this.IsOnline = source["IsOnline"];
 	        this.ChatID = source["ChatID"];
+	        this.UnreadCount = source["UnreadCount"];
 	    }
 	}
 	export class FolderInfo {
@@ -54,6 +58,7 @@ export namespace main {
 	    Icon: string;
 	    ChatIDs: string[];
 	    Position: number;
+	    UnreadCount: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new FolderInfo(source);
@@ -66,6 +71,7 @@ export namespace main {
 	        this.Icon = source["Icon"];
 	        this.ChatIDs = source["ChatIDs"];
 	        this.Position = source["Position"];
+	        this.UnreadCount = source["UnreadCount"];
 	    }
 	}
 	export class MessageInfo {

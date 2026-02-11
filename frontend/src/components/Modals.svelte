@@ -22,8 +22,6 @@
     export let showContactProfile = false;
     export let contact = null;
     export let onCloseContactProfile;
-
-    export let onCancelAddToFolder;
     
     // Add/Search Contact Modal
     export let showAddContact = false;

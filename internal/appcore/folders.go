@@ -31,16 +31,26 @@ func (a *AppCore) GetFolders() ([]*FolderInfo, error) {
 		return nil, err
 	}
 
+	// Получаем все контакты, чтобы иметь маппинг ContactID -> ChatID
+	contacts, _ := a.Repo.ListContacts(a.Ctx)
+	cidToChatID := make(map[string]string)
+	for _, c := range contacts {
+		cidToChatID[c.ID] = c.ChatID
+	}
+
+	unreadMap, _ := a.Repo.GetUnreadCountByChat(a.Ctx)
+
 	result := make([]*FolderInfo, len(folders))
 	for i, f := range folders {
-		chatIDs, _ := a.Repo.GetFolderChats(a.Ctx, f.ID)
+		contactIDs, _ := a.Repo.GetFolderChats(a.Ctx, f.ID)
 
 		// Считаем непрочитанные для папки
 		unreadTotal := 0
-		unreadMap, _ := a.Repo.GetUnreadCountByChat(a.Ctx)
-		for _, chatID := range chatIDs {
-			if count, ok := unreadMap[chatID]; ok {
-				unreadTotal += count
+		for _, contactID := range contactIDs {
+			if chatID, ok := cidToChatID[contactID]; ok {
+				if count, ok := unreadMap[chatID]; ok {
+					unreadTotal += count
+				}
 			}
 		}
 
@@ -49,7 +59,7 @@ func (a *AppCore) GetFolders() ([]*FolderInfo, error) {
 			Name:        f.Name,
 			Icon:        f.Icon,
 			Position:    f.Position,
-			ChatIDs:     chatIDs,
+			ChatIDs:     contactIDs,
 			UnreadCount: unreadTotal,
 		}
 	}

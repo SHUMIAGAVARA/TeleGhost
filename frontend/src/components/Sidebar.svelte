@@ -33,10 +33,13 @@
         if (!c || !c.Nickname) return false;
         
         // Фильтрация по папкам
-        if (activeFolderId !== 'all') {
-            const folder = (folders || []).find(f => f.ID === activeFolderId);
-            if (folder && folder.ChatIDs && !folder.ChatIDs.includes(c.ID)) {
-                return false;
+        if (activeFolderId && activeFolderId !== 'all') {
+            const folder = (folders || []).find(f => (f.ID || f.id) === activeFolderId);
+            if (folder) {
+                const chatIds = folder.ChatIDs || folder.chat_ids || [];
+                if (!chatIds.includes(c.ID)) {
+                    return false;
+                }
             }
         }
 
@@ -50,7 +53,7 @@
 
     $: uiFolders = [
         { ID: 'all', Name: 'Все', Icon: Icons.Chat, UnreadCount: totalUnread },
-        ...([...(folders || [])].sort((a, b) => (a?.position || 0) - (b?.position || 0))),
+        ...([...(folders || [])].sort((a, b) => ((a.Position ?? a.position) || 0) - ((b.Position ?? b.position) || 0))),
         { ID: 'add', Name: 'Создать', Icon: Icons.Plus, UnreadCount: 0 }
     ];
 

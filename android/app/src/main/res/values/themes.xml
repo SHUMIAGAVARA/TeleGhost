@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.TeleGhost" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">#6c5ce7</item>
+        <item name="colorPrimaryVariant">#a29bfe</item>
+        <item name="colorOnPrimary">@white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">#00cec9</item>
+        <item name="colorSecondaryVariant">#81ecec</item>
+        <item name="colorOnSecondary">@black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
+    </style>
+</resources>

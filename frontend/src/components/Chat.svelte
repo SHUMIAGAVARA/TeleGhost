@@ -121,38 +121,16 @@
                 containerRef.scrollTop = containerRef.scrollHeight;
             }
             
-            // Watch for size changes (image loads, new messages)
+            // We only need to observe to SHOW/HIDE the button, NOT to force scroll
             resizeObserver = new ResizeObserver(() => {
-                if (!messages || messages.length === 0) return;
-                // If we are near bottom, sticky scroll
-               // Use a safe check to avoid infinite loops
-               if (!showScrollButton && containerRef) {
-                    // Wrap in animation frame to break sync layout loops
-                    requestAnimationFrame(() => {
-                        if (containerRef && !showScrollButton) {
-                             containerRef.scrollTop = containerRef.scrollHeight;
-                        }
-                    });
-                }
+                if (!containerRef) return;
+                const distanceToBottom = containerRef.scrollHeight - containerRef.scrollTop - containerRef.clientHeight;
+                showScrollButton = distanceToBottom > 50;
             });
             resizeObserver.observe(containerRef);
             
-            // Also observe child changes (mutations) just in case
-            const mutationObserver = new MutationObserver(() => {
-                if (!messages || messages.length === 0) return;
-                if (!showScrollButton && containerRef) {
-                     requestAnimationFrame(() => {
-                        if (containerRef && !showScrollButton) {
-                            containerRef.scrollTop = containerRef.scrollHeight; 
-                        }
-                     });
-                }
-            });
-            mutationObserver.observe(containerRef, { childList: true, subtree: true });
-            
             return () => {
                 resizeObserver.disconnect();
-                mutationObserver.disconnect();
             };
         }
     });

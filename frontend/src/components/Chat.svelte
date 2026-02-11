@@ -1,7 +1,8 @@
 <script>
     import { Icons } from '../Icons.js';
     import { getInitials, formatTime, parseMarkdown, getAvatarGradient } from '../utils.js';
-    import { fade } from 'svelte/transition';
+    import { fade, fly } from 'svelte/transition';
+    import { onMount, tick } from 'svelte';
 
     export let selectedContact;
     export let messages = [];
@@ -72,25 +73,97 @@
         }
     }
 
-    function handleKeyPress(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            onSendMessage();
-        }
+    let showScrollButton = false;
+    let resizeObserver;
+    let containerRef;
+
+    function handleScroll(e) {
+        const container = e.target;
+        const distanceToBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+        showScrollButton = distanceToBottom > 300;
     }
 
-    function handleImageLoad(e) {
-        const container = document.querySelector('.messages-container');
-        if (container) {
-            const distanceToBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
-            if (distanceToBottom < 150) {
-                container.scrollTop = container.scrollHeight;
+    function scrollToBottom(force = false) {
+        // Guard against empty state loops (CRITICAL FIX)
+        if (!processScroll(force)) return;
+
+        tick().then(() => {
+            requestAnimationFrame(() => {
+                if (containerRef) {
+                    // If force is true, we scroll to bottom no matter what
+                    if (force) {
+                        containerRef.scrollTop = containerRef.scrollHeight;
+                        return;
+                    }
+                    
+                    // If content grew and we were ALREADY at bottom (or close), stay at bottom
+                    const distanceToBottom = containerRef.scrollHeight - containerRef.scrollTop - containerRef.clientHeight;
+                    // Relaxed threshold
+                    if (distanceToBottom < 300) {
+                         containerRef.scrollTop = containerRef.scrollHeight;
+                    }
+                }
+            });
+        });
+    }
+
+    function processScroll(force) {
+        if (!containerRef) return false;
+        if (!force && (!messages || messages.length === 0)) return false;
+        return true;
+    }
+
+    onMount(() => {
+        if (containerRef) {
+            // Scroll to bottom initially
+            if (messages && messages.length > 0) {
+                containerRef.scrollTop = containerRef.scrollHeight;
             }
+            
+            // Watch for size changes (image loads, new messages)
+            resizeObserver = new ResizeObserver(() => {
+                if (!messages || messages.length === 0) return;
+                // If we are near bottom, sticky scroll
+               // Use a safe check to avoid infinite loops
+               if (!showScrollButton && containerRef) {
+                    // Wrap in animation frame to break sync layout loops
+                    requestAnimationFrame(() => {
+                        if (containerRef && !showScrollButton) {
+                             containerRef.scrollTop = containerRef.scrollHeight;
+                        }
+                    });
+                }
+            });
+            resizeObserver.observe(containerRef);
+            
+            // Also observe child changes (mutations) just in case
+            const mutationObserver = new MutationObserver(() => {
+                if (!messages || messages.length === 0) return;
+                if (!showScrollButton && containerRef) {
+                     requestAnimationFrame(() => {
+                        if (containerRef && !showScrollButton) {
+                            containerRef.scrollTop = containerRef.scrollHeight; 
+                        }
+                     });
+                }
+            });
+            mutationObserver.observe(containerRef, { childList: true, subtree: true });
+            
+            return () => {
+                resizeObserver.disconnect();
+                mutationObserver.disconnect();
+            };
         }
-    }
+    });
 
-    // Direct image loading logic if possible, or pass it
-    export let startLoadingImage; 
+    // Auto-scroll on messages array change
+    $: if (messages && messages.length > 0) {
+        tick().then(() => {
+             if (containerRef && !showScrollButton) {
+                 scrollToBottom(true);
+             }
+        });
+    }
 </script>
 
 <div class="chat-area animate-fade-in" class:mobile={isMobile} style="height: 100dvh;">
@@ -127,7 +200,7 @@
         </div>
     </div>
     
-    <div class="messages-container messages-scroll-area">
+    <div class="messages-container messages-scroll-area" bind:this={containerRef} on:scroll={handleScroll}>
         {#each messages as msg (msg.ID)}
             <div 
                 class="message animate-message" 
@@ -170,7 +243,6 @@
                                             tabindex="0"
                                             on:click={() => onPreviewImage(att.LocalPath)}
                                             on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onPreviewImage(att.LocalPath)}
-                                            on:load={handleImageLoad}
                                         />
                                     {:else}
                                         <div class="file-attachment-container">
@@ -237,6 +309,12 @@
                 {/if}
             </div>
         {/each}
+        
+        {#if showScrollButton}
+            <button class="btn-scroll-bottom" transition:fly={{ y: 20, duration: 200 }} on:click={() => scrollToBottom(true)}>
+                <div class="icon-svg">{@html Icons.ArrowDown}</div>
+            </button> 
+        {/if}
     </div>
 
     <div class="input-area-wrapper">
@@ -438,4 +516,27 @@
     .reply-text-preview { font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .btn-cancel-reply { background: transparent; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px; border-radius: 50%; display: flex; transform: rotate(45deg); }
     .btn-cancel-reply:hover { color: #ff6b6b; }
+
+    .btn-scroll-bottom {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        color: var(--accent);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 90;
+        transition: transform 0.2s, background 0.2s;
+    }
+    .btn-scroll-bottom:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.1);
+    }
 </style>

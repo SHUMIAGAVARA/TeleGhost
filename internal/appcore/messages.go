@@ -19,7 +19,8 @@ import (
 
 // SendText отправляет текстовое сообщение.
 func (a *AppCore) SendText(contactID, text, replyToID string) error {
-	if a.Messenger == nil {
+	isSelf := a.Identity != nil && contactID == a.Identity.Keys.UserID
+	if a.Messenger == nil && !isSelf {
 		return fmt.Errorf("not connected to I2P")
 	}
 	if a.Repo == nil {
@@ -84,14 +85,15 @@ func (a *AppCore) SendText(contactID, text, replyToID string) error {
 	a.Repo.SaveMessage(a.Ctx, msg)
 
 	a.Emitter.Emit("new_message", map[string]interface{}{
-		"ID":         msg.ID,
-		"ChatID":     msg.ChatID,
-		"SenderID":   msg.SenderID,
-		"Content":    msg.Content,
-		"Timestamp":  msg.Timestamp,
-		"IsOutgoing": msg.IsOutgoing,
-		"Status":     "sent",
-		"ReplyToID":  replyToID,
+		"ID":           msg.ID,
+		"ChatID":       msg.ChatID,
+		"SenderID":     msg.SenderID,
+		"Content":      msg.Content,
+		"Timestamp":    msg.Timestamp,
+		"IsOutgoing":   msg.IsOutgoing,
+		"Status":       "sent",
+		"ReplyToID":    replyToID,
+		"ReplyPreview": a.getReplyPreview(replyToID, contact),
 	})
 
 	return nil
@@ -334,15 +336,16 @@ func (a *AppCore) SendFileMessage(chatID, text, replyToID string, files []string
 		a.Repo.SaveMessage(a.Ctx, msg)
 
 		a.Emitter.Emit("new_message", map[string]interface{}{
-			"ID":          msg.ID,
-			"ChatID":      msg.ChatID,
-			"SenderID":    msg.SenderID,
-			"Content":     msg.Content,
-			"Timestamp":   msg.Timestamp,
-			"IsOutgoing":  msg.IsOutgoing,
-			"ContentType": msg.ContentType,
-			"Status":      msg.Status.String(),
-			"ReplyToID":   replyToID,
+			"ID":           msg.ID,
+			"ChatID":       msg.ChatID,
+			"SenderID":     msg.SenderID,
+			"Content":      msg.Content,
+			"Timestamp":    msg.Timestamp,
+			"IsOutgoing":   msg.IsOutgoing,
+			"ContentType":  msg.ContentType,
+			"Status":       msg.Status.String(),
+			"ReplyToID":    replyToID,
+			"ReplyPreview": a.getReplyPreview(replyToID, contact),
 		})
 
 		return nil
@@ -413,17 +416,18 @@ func (a *AppCore) SendFileMessage(chatID, text, replyToID string, files []string
 	a.Repo.SaveMessage(a.Ctx, msg)
 
 	a.Emitter.Emit("new_message", map[string]interface{}{
-		"ID":          msg.ID,
-		"ChatID":      msg.ChatID,
-		"SenderID":    msg.SenderID,
-		"Content":     msg.Content,
-		"Timestamp":   msg.Timestamp,
-		"IsOutgoing":  msg.IsOutgoing,
-		"ContentType": "file_offer",
-		"FileCount":   len(files),
-		"TotalSize":   totalSize,
-		"Filenames":   filenames,
-		"ReplyToID":   replyToID,
+		"ID":           msg.ID,
+		"ChatID":       msg.ChatID,
+		"SenderID":     msg.SenderID,
+		"Content":      msg.Content,
+		"Timestamp":    msg.Timestamp,
+		"IsOutgoing":   msg.IsOutgoing,
+		"ContentType":  "file_offer",
+		"FileCount":    len(files),
+		"TotalSize":    totalSize,
+		"Filenames":    filenames,
+		"ReplyToID":    replyToID,
+		"ReplyPreview": a.getReplyPreview(replyToID, contact),
 	})
 
 	return nil

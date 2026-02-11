@@ -198,6 +198,7 @@ type AppCore struct {
 	DataDir string
 
 	IsFocused    bool   // Текущий статус фокуса окна
+	IsVisible    bool   // Видимо ли окно (не в трее)
 	ActiveChatID string // ID чата, который сейчас открыт
 
 	TransferMu       sync.RWMutex
@@ -217,6 +218,7 @@ func NewAppCore(dataDir string, emitter EventEmitter, platform PlatformServices)
 		Status:           StatusOffline,
 		Emitter:          emitter,
 		Platform:         platform,
+		IsVisible:        true,
 		PendingTransfers: make(map[string]*PendingTransfer),
 	}
 
@@ -582,20 +584,11 @@ func (a *AppCore) OnMessageReceived(msg *core.Message, senderPubKey, senderAddr 
 		return
 	}
 
-	var replyPreview *ReplyPreview
-	if msg.ReplyToID != nil && *msg.ReplyToID != "" {
-		orig, _ := a.Repo.GetMessage(a.Ctx, *msg.ReplyToID)
-		if orig != nil {
-			author := contact.Nickname
-			if orig.IsOutgoing {
-				author = "Я"
-			}
-			replyPreview = &ReplyPreview{
-				AuthorName: author,
-				Content:    orig.Content,
-			}
-		}
+	var replyToIDStr string
+	if msg.ReplyToID != nil {
+		replyToIDStr = *msg.ReplyToID
 	}
+	replyPreview := a.getReplyPreview(replyToIDStr, contact)
 
 	a.Emitter.Emit("new_message", map[string]interface{}{
 		"ID":           msg.ID,
@@ -611,8 +604,8 @@ func (a *AppCore) OnMessageReceived(msg *core.Message, senderPubKey, senderAddr 
 	})
 
 	if !msg.IsOutgoing {
-		// Подавляем уведомление, если приложение в фокусе и открыт именно этот чат
-		if !(a.IsFocused && a.ActiveChatID == msg.ChatID) {
+		// Подавляем уведомление, если приложение видимо, в фокусе и открыт именно этот чат
+		if !a.IsVisible || !(a.IsFocused && a.ActiveChatID == msg.ChatID) {
 			go a.SendNotification(contact.Nickname, msg.Content, msg.ContentType)
 		}
 		go a.UpdateUnreadCount()
@@ -659,4 +652,28 @@ func (a *AppCore) SendNotification(senderName, content, contentType string) {
 	}
 
 	a.Platform.Notify(title, message)
+}
+
+// getReplyPreview ищет исходное сообщение и формирует превью для ответа
+func (a *AppCore) getReplyPreview(replyToID string, contact *core.Contact) *ReplyPreview {
+	if replyToID == "" || a.Repo == nil {
+		return nil
+	}
+
+	orig, _ := a.Repo.GetMessage(a.Ctx, replyToID)
+	if orig == nil {
+		return nil
+	}
+
+	author := "Неизвестный"
+	if orig.IsOutgoing {
+		author = "Я"
+	} else if contact != nil {
+		author = contact.Nickname
+	}
+
+	return &ReplyPreview{
+		AuthorName: author,
+		Content:    orig.Content,
+	}
 }

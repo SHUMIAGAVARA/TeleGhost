@@ -71,10 +71,15 @@ func (t *TrayManager) toggleWindow() {
 	if t.isVisible {
 		runtime.WindowHide(t.app.ctx)
 		t.isVisible = false
+		if t.app.core != nil {
+			t.app.core.IsVisible = false
+		}
 	} else {
 		runtime.WindowShow(t.app.ctx)
-		// runtime.WindowSetFocus не найден, WindowShow должен поднять окно
 		t.isVisible = true
+		if t.app.core != nil {
+			t.app.core.IsVisible = true
+		}
 	}
 }
 

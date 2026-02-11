@@ -60,16 +60,18 @@ type ContactInfo struct {
 
 // MessageInfo сообщение для фронтенда
 type MessageInfo struct {
-	ID          string
-	Content     string
-	Timestamp   int64
-	IsOutgoing  bool
-	Status      string
-	ContentType string
-	FileCount   int
-	TotalSize   int64
-	Filenames   []string
-	Attachments []map[string]interface{}
+	ID           string
+	Content      string
+	Timestamp    int64
+	IsOutgoing   bool
+	Status       string
+	ContentType  string
+	FileCount    int
+	TotalSize    int64
+	Filenames    []string
+	Attachments  []map[string]interface{}
+	ReplyToID    string
+	ReplyPreview *appcore.ReplyPreview
 }
 
 // UserInfo информация о текущем пользователе
@@ -162,6 +164,16 @@ func (p *WailsPlatform) Notify(title, message string) {
 	if err := beeep.Notify(title, message, appIcon); err != nil {
 		log.Printf("[App] Failed to send notification: %v", err)
 	}
+}
+
+// ClipboardSet sets text to clipboard
+func (a *App) ClipboardSet(text string) {
+	runtime.ClipboardSetText(a.ctx, text)
+}
+
+// ClipboardGet gets text from clipboard
+func (a *App) ClipboardGet() (string, error) {
+	return runtime.ClipboardGetText(a.ctx)
 }
 
 // NewApp creates a new App application struct
@@ -375,6 +387,13 @@ func (a *App) SaveFileToLocation(path, filename string) (string, error) {
 func (a *App) SetActiveChat(chatID string) {
 	if a.core != nil {
 		a.core.ActiveChatID = chatID
+	}
+}
+
+// SetAppFocus устанавливает фокус приложения
+func (a *App) SetAppFocus(focused bool) {
+	if a.core != nil {
+		a.core.IsFocused = focused
 	}
 }
 

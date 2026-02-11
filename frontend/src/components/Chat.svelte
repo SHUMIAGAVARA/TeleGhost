@@ -478,6 +478,11 @@
     .message-images { display: grid; gap: 4px; margin-bottom: 6px; border-radius: 8px; overflow: hidden; }
     .msg-img { width: 100%; object-fit: cover; cursor: pointer; background: rgba(0,0,0,0.2); }
 
+    .message-content { 
+        overflow-wrap: anywhere; 
+        word-break: break-word; 
+        max-width: 100%;
+    }
     .message-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; justify-content: flex-end; opacity: 0.7; font-size: 10px; }
     .message-time { white-space: nowrap; }
 

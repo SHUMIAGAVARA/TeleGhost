@@ -469,7 +469,12 @@
 
   const chatHandlers = {
       onSendMessage: sendMessage,
-      onKeyPress: (e) => e.key === 'Enter' && !e.shiftKey && sendMessage(),
+      onKeyPress: (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage();
+          }
+      },
       onPaste: async (e) => {
           const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
           if (!items) return;

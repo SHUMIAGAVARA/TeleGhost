@@ -84,6 +84,19 @@
         showScrollButton = distanceToBottom > 50;
     }
 
+    function handleImageLoad() {
+        if (!containerRef) return;
+        // Check if we are roughly at the bottom
+        // If we are, stick to bottom as image loads/expands
+        const distanceToBottom = containerRef.scrollHeight - containerRef.scrollTop - containerRef.clientHeight;
+        // Use a slightly larger buffer (150px) to catch "near bottom" cases
+        if (distanceToBottom < 250) { 
+             requestAnimationFrame(() => {
+                 if (containerRef) containerRef.scrollTop = containerRef.scrollHeight;
+             });
+        }
+    }
+
     function scrollToBottom(force = false) {
         // Guard against empty state loops (CRITICAL FIX)
         if (!processScroll(force)) return;
@@ -215,6 +228,7 @@
                                             tabindex="0"
                                             on:click={() => onPreviewImage(att.LocalPath)}
                                             on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onPreviewImage(att.LocalPath)}
+                                            on:load={handleImageLoad}
                                         />
                                     {:else}
                                         <div class="file-attachment-container">

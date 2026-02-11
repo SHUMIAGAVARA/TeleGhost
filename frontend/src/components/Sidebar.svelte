@@ -13,6 +13,7 @@
     export let sidebarWidth;
     export let isResizing;
     export let selectedContact;
+    export let identity;
     export let unreadCount = 0;
 
     export let onSelectContact;
@@ -149,6 +150,26 @@
         
         <!-- Contacts List -->
         <div class="contacts-list">
+            <!-- Favorites Chat -->
+            {#if !searchQuery || 'избранное'.includes(searchQuery.toLowerCase()) || 'saved messages'.includes(searchQuery.toLowerCase()) || 'favorites'.includes(searchQuery.toLowerCase())}
+                <div 
+                    class="contact-item favorites-item animate-card" 
+                    class:selected={selectedContact && (selectedContact.IsFavorites || selectedContact.ID === identity)} 
+                    on:click={() => onSelectContact({ID: identity, Nickname: 'Избранное', IsFavorites: true, ChatID: identity})}
+                    on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onSelectContact({ID: identity, Nickname: 'Избранное', IsFavorites: true, ChatID: identity})}
+                    tabindex="0"
+                    role="button"
+                >
+                    <div class="contact-avatar favorites-avatar" style="background: linear-gradient(135deg, #6366f1 0%, #a78bfa 100%);">
+                        <div class="icon-svg-sm" style="color: white; width: 20px; height: 20px;">{@html Icons.Bookmark}</div>
+                    </div>
+                    <div class="contact-info">
+                        <div class="contact-name">Избранное</div>
+                        <div class="contact-last">Сохранённые сообщения</div>
+                    </div>
+                </div>
+            {/if}
+
             {#each filteredContacts as contact}
                 <div 
                     class="contact-item animate-card" 
@@ -243,6 +264,25 @@
 
         <!-- Mobile Contacts List -->
         <div class="contacts-list mobile-contacts">
+            <!-- Mobile Favorites Chat -->
+            {#if !searchQuery || 'избранное'.includes(searchQuery.toLowerCase()) || 'saved messages'.includes(searchQuery.toLowerCase()) || 'favorites'.includes(searchQuery.toLowerCase())}
+                <div 
+                    class="contact-item favorites-item animate-card"
+                    class:selected={selectedContact && (selectedContact.IsFavorites || selectedContact.ID === identity)}
+                    on:click={() => onSelectContact({ID: identity, Nickname: 'Избранное', IsFavorites: true, ChatID: identity})}
+                    tabindex="0"
+                    role="button"
+                >
+                    <div class="contact-avatar favorites-avatar" style="background: linear-gradient(135deg, #6366f1 0%, #a78bfa 100%);">
+                        <div class="icon-svg-sm" style="color: white; width: 20px; height: 20px;">{@html Icons.Bookmark}</div>
+                    </div>
+                    <div class="contact-info">
+                        <div class="contact-name">Избранное</div>
+                        <div class="contact-last">Сохранённые сообщения</div>
+                    </div>
+                </div>
+            {/if}
+
             {#each filteredContacts as contact}
                 <div 
                     class="contact-item animate-card"

@@ -728,7 +728,7 @@
                     <Sidebar 
                         {isMobile} {contacts} {folders} {activeFolderId} {searchQuery} 
                         {networkStatus} {showSettings} {sidebarWidth} {isResizing} {selectedContact}
-                        {unreadCount}
+                        {unreadCount} {identity}
                         {...sidebarHandlers} 
                     />
                 {:else if $mobileView === 'chat' && selectedContact}
@@ -771,7 +771,7 @@
                 <Sidebar 
                     {isMobile} {contacts} {folders} {activeFolderId} {searchQuery} 
                     {networkStatus} {showSettings} {sidebarWidth} {isResizing} {selectedContact}
-                    {unreadCount}
+                    {unreadCount} {identity}
                     {...sidebarHandlers} 
                 />
                 

@@ -26,14 +26,25 @@ func (a *AppCore) SendText(contactID, text, replyToID string) error {
 		return fmt.Errorf("not logged in")
 	}
 
-	contact, err := a.Repo.GetContact(a.Ctx, contactID)
-	if err != nil || contact == nil {
-		return fmt.Errorf("contact not found")
-	}
+	var contact *core.Contact
+	if contactID == a.Identity.Keys.UserID {
+		contact = &core.Contact{
+			ID:        a.Identity.Keys.UserID,
+			Nickname:  "Избранное",
+			PublicKey: a.Identity.Keys.PublicKeyBase64,
+			ChatID:    a.Identity.Keys.UserID, // Use UserID as ChatID for self
+		}
+	} else {
+		var err error
+		contact, err = a.Repo.GetContact(a.Ctx, contactID)
+		if err != nil || contact == nil {
+			return fmt.Errorf("contact not found")
+		}
 
-	if contact.ChatID == "" {
-		contact.ChatID = identity.CalculateChatID(a.Identity.Keys.PublicKeyBase64, contact.PublicKey)
-		a.Repo.SaveContact(a.Ctx, contact)
+		if contact.ChatID == "" {
+			contact.ChatID = identity.CalculateChatID(a.Identity.Keys.PublicKeyBase64, contact.PublicKey)
+			a.Repo.SaveContact(a.Ctx, contact)
+		}
 	}
 
 	log.Printf("[AppCore] Sending message to %s (ChatID: %s)", contact.Nickname, contact.ChatID)
@@ -46,9 +57,11 @@ func (a *AppCore) SendText(contactID, text, replyToID string) error {
 		}
 	}
 
-	if err := a.Messenger.SendTextMessage(contact.I2PAddress, contact.ChatID, text, replyToID); err != nil {
-		log.Printf("[AppCore] SendTextMessage error to %s: %v", contact.Nickname, err)
-		return fmt.Errorf("send failed: %w", err)
+	if contactID != a.Identity.Keys.UserID {
+		if err := a.Messenger.SendTextMessage(contact.I2PAddress, contact.ChatID, text, replyToID); err != nil {
+			log.Printf("[AppCore] SendTextMessage error to %s: %v", contact.Nickname, err)
+			return fmt.Errorf("send failed: %w", err)
+		}
 	}
 
 	msg := &core.Message{
@@ -90,12 +103,18 @@ func (a *AppCore) GetMessages(contactID string, limit, offset int) ([]*MessageIn
 		return []*MessageInfo{}, nil
 	}
 
-	contact, err := a.Repo.GetContact(a.Ctx, contactID)
-	if err != nil || contact == nil {
-		return nil, fmt.Errorf("contact not found")
+	var chatID string
+	if contactID == a.Identity.Keys.UserID {
+		chatID = a.Identity.Keys.UserID
+	} else {
+		contact, err := a.Repo.GetContact(a.Ctx, contactID)
+		if err != nil || contact == nil {
+			return nil, fmt.Errorf("contact not found")
+		}
+		chatID = contact.ChatID
 	}
 
-	messages, err := a.Repo.GetChatHistory(a.Ctx, contact.ChatID, limit, offset)
+	messages, err := a.Repo.GetChatHistory(a.Ctx, chatID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -204,17 +223,36 @@ func (a *AppCore) SendFileMessage(chatID, text, replyToID string, files []string
 		return fmt.Errorf("messenger not started")
 	}
 
-	contact, err := a.Repo.GetContact(a.Ctx, chatID)
-	if err != nil || contact == nil {
-		return fmt.Errorf("contact not found")
-	}
+	var destination string
+	var actualChatID string
+	var isSelf bool
 
-	destination := contact.I2PAddress
-	if contact.ChatID == "" {
-		contact.ChatID = identity.CalculateChatID(a.Identity.Keys.PublicKeyBase64, contact.PublicKey)
-		a.Repo.SaveContact(a.Ctx, contact)
+	var contact *core.Contact
+	if chatID == a.Identity.Keys.UserID {
+		destination = ""
+		actualChatID = a.Identity.Keys.UserID
+		isSelf = true
+	} else {
+		var err error
+		contact, err = a.Repo.GetContact(a.Ctx, chatID)
+		if err != nil || contact == nil {
+			return fmt.Errorf("contact not found")
+		}
+
+		destination = contact.I2PAddress
+		if contact.ChatID == "" {
+			contact.ChatID = identity.CalculateChatID(a.Identity.Keys.PublicKeyBase64, contact.PublicKey)
+			a.Repo.SaveContact(a.Ctx, contact)
+		}
+		actualChatID = contact.ChatID
+
+		if contact.PublicKey == "" {
+			log.Printf("[AppCore] No public key for %s, sending handshake first...", contact.Nickname)
+			if err := a.Messenger.SendHandshake(contact.I2PAddress); err != nil {
+				log.Printf("[AppCore] Handshake failed: %v", err)
+			}
+		}
 	}
-	actualChatID := contact.ChatID
 
 	now := time.Now().UnixMilli()
 	msgID := fmt.Sprintf("%d-%s", now, a.Identity.Keys.UserID[:8])
@@ -226,13 +264,6 @@ func (a *AppCore) SendFileMessage(chatID, text, replyToID string, files []string
 		if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".webp" {
 			allImages = false
 			break
-		}
-	}
-
-	if contact.PublicKey == "" {
-		log.Printf("[AppCore] No public key for %s, sending handshake first...", contact.Nickname)
-		if err := a.Messenger.SendHandshake(contact.I2PAddress); err != nil {
-			log.Printf("[AppCore] Handshake failed: %v", err)
 		}
 	}
 
@@ -261,8 +292,10 @@ func (a *AppCore) SendFileMessage(chatID, text, replyToID string, files []string
 			return fmt.Errorf("failed to compress any images")
 		}
 
-		if err := a.Messenger.SendAttachmentMessageWithID(destination, actualChatID, msgID, text, replyToID, attachments); err != nil {
-			return fmt.Errorf("failed to send message: %w", err)
+		if !isSelf {
+			if err := a.Messenger.SendAttachmentMessageWithID(destination, actualChatID, msgID, text, replyToID, attachments); err != nil {
+				return fmt.Errorf("failed to send message: %w", err)
+			}
 		}
 
 		coreAttachments := make([]*core.Attachment, 0, len(attachments))
@@ -336,8 +369,10 @@ func (a *AppCore) SendFileMessage(chatID, text, replyToID string, files []string
 		filenames[i] = filepath.Base(f)
 	}
 
-	if err := a.Messenger.SendFileOffer(destination, actualChatID, msgID, filenames, totalSize, int32(len(files))); err != nil {
-		return fmt.Errorf("failed to send file offer: %w", err)
+	if !isSelf {
+		if err := a.Messenger.SendFileOffer(destination, actualChatID, msgID, filenames, totalSize, int32(len(files))); err != nil {
+			return fmt.Errorf("failed to send file offer: %w", err)
+		}
 	}
 
 	msg := &core.Message{

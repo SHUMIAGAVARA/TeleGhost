@@ -125,11 +125,21 @@ func (r *Router) Start(ctx context.Context) error {
 		return fmt.Errorf("failed to create data dir: %w", err)
 	}
 
-	// Копируем сертификаты, если их нет
+	// Копируем сертификаты, если их нет или папка пуста
 	certsDir := filepath.Join(r.dataDir, "certificates")
+	shouldCopy := false
 	if _, err := os.Stat(certsDir); os.IsNotExist(err) {
+		shouldCopy = true
+	} else {
+		// Проверяем, не пуста ли папка
+		files, _ := os.ReadDir(certsDir)
+		if len(files) == 0 {
+			shouldCopy = true
+		}
+	}
+
+	if shouldCopy {
 		log.Printf("[i2pd] Copying certificates to %s...", certsDir)
-		// Extract embedded certificates
 		if err := copyEmbeddedCerts(certsDir); err != nil {
 			log.Printf("[i2pd] Warning: failed to copy certificates: %v", err)
 		}
@@ -221,13 +231,11 @@ func (r *Router) Stop() error {
 		return nil
 	}
 
-	log.Printf("[i2pd] Stopping router...")
+	log.Println("[I2PD] Stopping router...") // Changed from Printf to Println and message
 	C.i2pd_stop()
-	C.i2pd_terminate()
+	C.i2pd_terminate() // Вызываем терминацию для полной очистки ресурсов
 
 	r.running = false
-	log.Printf("[i2pd] Router stopped")
-
 	return nil
 }
 

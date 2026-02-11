@@ -118,6 +118,10 @@ export function GetRouterSettings() {
   return window['go']['main']['App']['GetRouterSettings']();
 }
 
+export function GetUnreadCount() {
+  return window['go']['main']['App']['GetUnreadCount']();
+}
+
 export function ListProfiles() {
   return window['go']['main']['App']['ListProfiles']();
 }
@@ -128,6 +132,10 @@ export function Login(arg1) {
 
 export function Logout() {
   return window['go']['main']['App']['Logout']();
+}
+
+export function MarkChatAsRead(arg1) {
+  return window['go']['main']['App']['MarkChatAsRead'](arg1);
 }
 
 export function OpenFile(arg1) {

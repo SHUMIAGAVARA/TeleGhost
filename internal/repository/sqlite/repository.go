@@ -102,6 +102,7 @@ func (r *Repository) Migrate(ctx context.Context) error {
 		content_type TEXT DEFAULT 'text',
 		status INTEGER DEFAULT 0,
 		is_outgoing INTEGER DEFAULT 0,
+		is_read INTEGER DEFAULT 0,
 		reply_to_id TEXT,
 		timestamp INTEGER NOT NULL,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -207,6 +208,35 @@ func (r *Repository) Migrate(ctx context.Context) error {
 				_, _ = r.db.ExecContext(ctx, "ROLLBACK;")
 			} else {
 				log.Println("[Repo] Contacts table migrated successfully.")
+			}
+		}
+	}
+
+	// Миграция: Добавляем поле is_read в таблицу messages, если его нет
+	rows, err = r.db.QueryContext(ctx, "PRAGMA table_info(messages)")
+	if err == nil {
+		defer rows.Close()
+		hasIsRead := false
+		for rows.Next() {
+			var cid int
+			var name, ctype string
+			var notnull, pk int
+			var dflt_value interface{}
+			if err := rows.Scan(&cid, &name, &ctype, &notnull, &dflt_value, &pk); err == nil {
+				if name == "is_read" {
+					hasIsRead = true
+					break
+				}
+			}
+		}
+
+		if !hasIsRead {
+			log.Println("[Repo] Adding is_read column to messages table...")
+			_, err = r.db.ExecContext(ctx, "ALTER TABLE messages ADD COLUMN is_read INTEGER DEFAULT 0")
+			if err != nil {
+				log.Printf("[Repo] Failed to add is_read column: %v", err)
+			} else {
+				log.Println("[Repo] is_read column added successfully.")
 			}
 		}
 	}
@@ -1054,6 +1084,31 @@ func (r *Repository) UpdateChatID(ctx context.Context, oldID, newID string) erro
 	_, err = r.db.ExecContext(ctx, "UPDATE messages SET chat_id = ? WHERE chat_id = ?", newID, oldID)
 	if err != nil {
 		return fmt.Errorf("failed to update messages chat ID: %w", err)
+	}
+
+	return nil
+}
+
+// GetUnreadCount возвращает общее количество непрочитанных сообщений
+func (r *Repository) GetUnreadCount(ctx context.Context) (int, error) {
+	query := `SELECT COUNT(*) FROM messages WHERE is_outgoing = 0 AND is_read = 0`
+
+	var count int
+	err := r.db.QueryRowContext(ctx, query).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get unread count: %w", err)
+	}
+
+	return count, nil
+}
+
+// MarkChatAsRead помечает все сообщения в чате как прочитанные
+func (r *Repository) MarkChatAsRead(ctx context.Context, chatID string) error {
+	query := `UPDATE messages SET is_read = 1 WHERE chat_id = ? AND is_outgoing = 0`
+
+	_, err := r.db.ExecContext(ctx, query, chatID)
+	if err != nil {
+		return fmt.Errorf("failed to mark chat as read: %w", err)
 	}
 
 	return nil

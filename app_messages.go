@@ -280,6 +280,12 @@ func (a *App) onMessageReceived(msg *core.Message, senderPubKey, senderAddr stri
 		"IsOutgoing":  msg.IsOutgoing,
 		"ContentType": msg.ContentType,
 	})
+
+	// Отправляем системное уведомление, если окно скрыто
+	if !msg.IsOutgoing && contact != nil {
+		go a.sendNotification(contact.Nickname, msg.Content, msg.ContentType)
+		go a.updateUnreadCount()
+	}
 }
 
 // SendText отправляет текстовое сообщение

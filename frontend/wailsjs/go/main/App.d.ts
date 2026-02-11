@@ -62,11 +62,15 @@ export function GetNetworkStatus():Promise<string>;
 
 export function GetRouterSettings():Promise<main.RouterSettings>;
 
+export function GetUnreadCount():Promise<number>;
+
 export function ListProfiles():Promise<Array<profiles.ProfileMetadata>>;
 
 export function Login(arg1:string):Promise<void>;
 
 export function Logout():Promise<void>;
+
+export function MarkChatAsRead(arg1:string):Promise<void>;
 
 export function OpenFile(arg1:string):Promise<void>;
 

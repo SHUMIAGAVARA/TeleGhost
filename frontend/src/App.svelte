@@ -26,6 +26,7 @@
   let networkStatus = 'offline';
   let myDestination = '';
   let currentUserInfo = null;
+  let unreadCount = 0;
   
   // Sidebar/Contacts State
   let contacts = [];
@@ -145,6 +146,10 @@
         console.log("[App] Received contact_updated event, reloading contacts...");
         loadContacts();
     });
+
+    EventsOn("unread_count", (count) => {
+        unreadCount = count;
+    });
   });
 
   async function loadMyInfo() {
@@ -160,6 +165,11 @@
       try {
           selectedProfile = await AppActions.GetCurrentProfile();
       } catch(e) { console.warn('GetCurrentProfile failed:', e); }
+
+      // Load unread count
+      try {
+          unreadCount = await AppActions.GetUnreadCount();
+      } catch(e) { console.warn('GetUnreadCount failed:', e); }
   }
 
   async function loadContacts() {
@@ -260,6 +270,11 @@
   }
 
   async function loadMessages(contactId) {
+      const contact = contacts.find(c => c.ID === contactId);
+      if (contact && contact.ChatID) {
+          // Помечаем чат как прочитанный
+          await AppActions.MarkChatAsRead(contact.ChatID);
+      }
       messages = await AppActions.GetMessages(contactId, 50, 0);
       scrollToBottom();
   }
@@ -671,6 +686,7 @@
                     <Sidebar 
                         {isMobile} {contacts} {folders} {activeFolderId} {searchQuery} 
                         {networkStatus} {showSettings} {sidebarWidth} {isResizing} {selectedContact}
+                        {unreadCount}
                         {...sidebarHandlers} 
                     />
                 {:else if $mobileView === 'chat' && selectedContact}
@@ -713,6 +729,7 @@
                 <Sidebar 
                     {isMobile} {contacts} {folders} {activeFolderId} {searchQuery} 
                     {networkStatus} {showSettings} {sidebarWidth} {isResizing} {selectedContact}
+                    {unreadCount}
                     {...sidebarHandlers} 
                 />
                 

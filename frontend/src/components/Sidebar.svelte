@@ -13,6 +13,7 @@
     export let sidebarWidth;
     export let isResizing;
     export let selectedContact;
+    export let unreadCount = 0;
 
     export let onSelectContact;
     export let onContextMenu;
@@ -86,6 +87,9 @@
             on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onToggleSettings()}
         >
             <div class="icon-svg">{@html Icons.Menu}</div>
+            {#if unreadCount > 0}
+                <div class="unread-badge">{unreadCount > 99 ? '99+' : unreadCount}</div>
+            {/if}
         </div>
 
         <div class="folders-list">
@@ -186,8 +190,11 @@
     <div class="mobile-sidebar">
         <!-- Mobile Header -->
         <div class="mobile-header">
-            <button class="mobile-menu-btn" on:click={onToggleSettings}>
+            <button class="mobile-menu-btn" on:click={onToggleSettings} style="position: relative;">
                 <div class="icon-svg">{@html Icons.Menu}</div>
+                {#if unreadCount > 0}
+                    <div class="unread-badge mobile-badge">{unreadCount > 99 ? '99+' : unreadCount}</div>
+                {/if}
             </button>
             <h1 class="mobile-title">TeleGhost</h1>
             <div class="mobile-network-dot" style="background: {getStatusColor(networkStatus)}" title={getStatusText(networkStatus)}></div>
@@ -293,10 +300,44 @@
         margin-bottom: 20px;
         color: var(--text-secondary);
         transition: all 0.2s;
+        position: relative;
     }
     .rail-button:hover, .rail-button.active {
         background: rgba(255,255,255,0.1);
         color: white;
+    }
+
+    .unread-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        background: #ff4757;
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+        box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+        animation: badge-pulse 2s ease-in-out infinite;
+    }
+
+    .mobile-badge {
+        top: 2px;
+        right: 2px;
+        font-size: 9px;
+        min-width: 16px;
+        height: 16px;
+        border-radius: 8px;
+    }
+
+    @keyframes badge-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
     }
 
     .folder-item {

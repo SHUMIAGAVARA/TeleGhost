@@ -114,11 +114,9 @@
         }
     });
     
-    // Check network status
-    networkStatus = await AppActions.GetNetworkStatus();
-    
-    // Listen for events
+    // Listen for events (move before any awaits!)
     EventsOn("network_status", (status) => {
+        console.log("[App] Network status changed:", status);
         networkStatus = status;
     });
     
@@ -155,6 +153,13 @@
     EventsOn("unread_count", (count) => {
         unreadCount = count;
     });
+
+    // Check network status AFTER listeners are ready
+    try {
+        networkStatus = await AppActions.GetNetworkStatus();
+    } catch (e) {
+        console.error("[App] Failed to get network status:", e);
+    }
   });
 
   async function loadMyInfo() {
@@ -165,6 +170,7 @@
           profileAvatar = info.Avatar;
           myDestination = info.Destination;
           identity = info.ID;
+          if (info.Status) networkStatus = info.Status;
       }
       // Load current profile metadata for PIN settings
       try {
@@ -209,6 +215,7 @@
       try {
           await loadMyInfo();
           screen = 'main';
+          networkStatus = await AppActions.GetNetworkStatus();
           mobileView.set('list');
           
           // Wait for essential data before hiding the overlay

@@ -10,17 +10,18 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
-	"teleghost/internal/appcore"
-	"teleghost/internal/network/media"
-
 	"github.com/gen2brain/beeep"
 	"github.com/nfnt/resize"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"golang.design/x/clipboard"
+
+	"teleghost/internal/appcore"
+	"teleghost/internal/network/media"
 )
 
 // NetworkStatus статус подключения к I2P
@@ -121,7 +122,7 @@ type WailsEmitter struct {
 }
 
 func (e *WailsEmitter) Emit(event string, data ...interface{}) {
-	runtime.EventsEmit(e.ctx, event, data...)
+	wailsRuntime.EventsEmit(e.ctx, event, data...)
 }
 
 // WailsPlatform — реализация appcore.PlatformServices через Wails runtime
@@ -130,32 +131,32 @@ type WailsPlatform struct {
 }
 
 func (p *WailsPlatform) OpenFileDialog(title string, filters []string) (string, error) {
-	return runtime.OpenFileDialog(p.ctx, runtime.OpenDialogOptions{
+	return wailsRuntime.OpenFileDialog(p.ctx, wailsRuntime.OpenDialogOptions{
 		Title: title,
 	})
 }
 
 func (p *WailsPlatform) SaveFileDialog(title, defaultFilename string) (string, error) {
-	return runtime.SaveFileDialog(p.ctx, runtime.SaveDialogOptions{
+	return wailsRuntime.SaveFileDialog(p.ctx, wailsRuntime.SaveDialogOptions{
 		Title:           title,
 		DefaultFilename: defaultFilename,
 	})
 }
 
 func (p *WailsPlatform) ClipboardSet(text string) {
-	runtime.ClipboardSetText(p.ctx, text)
+	wailsRuntime.ClipboardSetText(p.ctx, text)
 }
 
 func (p *WailsPlatform) ClipboardGet() (string, error) {
-	return runtime.ClipboardGetText(p.ctx)
+	return wailsRuntime.ClipboardGetText(p.ctx)
 }
 
 func (p *WailsPlatform) ShowWindow() {
-	runtime.WindowShow(p.ctx)
+	wailsRuntime.WindowShow(p.ctx)
 }
 
 func (p *WailsPlatform) HideWindow() {
-	runtime.WindowHide(p.ctx)
+	wailsRuntime.WindowHide(p.ctx)
 }
 
 func (p *WailsPlatform) Notify(title, message string) {
@@ -169,18 +170,17 @@ func (p *WailsPlatform) Notify(title, message string) {
 func (p *WailsPlatform) ShareFile(path string) error {
 	// For desktop, just open the folder containing the file
 	dir := filepath.Dir(path)
-	runtime.BrowserOpenURL(p.ctx, "file://"+dir)
-	return nil
+	return openFile(dir)
 }
 
 // ClipboardSet sets text to clipboard
 func (a *App) ClipboardSet(text string) {
-	runtime.ClipboardSetText(a.ctx, text)
+	wailsRuntime.ClipboardSetText(a.ctx, text)
 }
 
 // ClipboardGet gets text from clipboard
 func (a *App) ClipboardGet() (string, error) {
-	return runtime.ClipboardGetText(a.ctx)
+	return wailsRuntime.ClipboardGetText(a.ctx)
 }
 
 // NewApp creates a new App application struct
@@ -282,19 +282,19 @@ func (a *App) GetMediaHandler() http.Handler {
 
 // ShowWindow показывает окно из трея
 func (a *App) ShowWindow() {
-	runtime.WindowShow(a.ctx)
+	wailsRuntime.WindowShow(a.ctx)
 }
 
 // QuitApp закрывает приложение
 func (a *App) QuitApp() {
-	runtime.Quit(a.ctx)
+	wailsRuntime.Quit(a.ctx)
 }
 
 // SelectImage открывает диалог выбора изображения
 func (a *App) SelectImage() (string, error) {
-	return runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
+	return wailsRuntime.OpenFileDialog(a.ctx, wailsRuntime.OpenDialogOptions{
 		Title: "Выберите изображение",
-		Filters: []runtime.FileFilter{
+		Filters: []wailsRuntime.FileFilter{
 			{DisplayName: "Изображения (*.png;*.jpg;*.jpeg;*.webp)", Pattern: "*.png;*.jpg;*.jpeg;*.webp"},
 		},
 	})
@@ -302,7 +302,7 @@ func (a *App) SelectImage() (string, error) {
 
 // SelectFiles открывает диалог выбора файлов
 func (a *App) SelectFiles() ([]string, error) {
-	return runtime.OpenMultipleFilesDialog(a.ctx, runtime.OpenDialogOptions{
+	return wailsRuntime.OpenMultipleFilesDialog(a.ctx, wailsRuntime.OpenDialogOptions{
 		Title: "Выберите файлы",
 	})
 }
@@ -356,20 +356,17 @@ func (a *App) SaveTempImage(base64Data, filename string) (string, error) {
 
 // OpenFile открывает файл системным приложением
 func (a *App) OpenFile(path string) error {
-	runtime.BrowserOpenURL(a.ctx, "file://"+path)
-	return nil
+	return openFile(path)
 }
 
 // ShowInFolder открывает папку с файлом
 func (a *App) ShowInFolder(path string) error {
-	// Wails v2 не имеет кроссплатформенного ShowInFolder, используем костыль или заглушку
-	runtime.BrowserOpenURL(a.ctx, "file://"+filepath.Dir(path))
-	return nil
+	return openFile(filepath.Dir(path))
 }
 
 // SaveFileToLocation сохраняет файл в выбранное место
 func (a *App) SaveFileToLocation(path, filename string) (string, error) {
-	dest, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
+	dest, err := wailsRuntime.SaveFileDialog(a.ctx, wailsRuntime.SaveDialogOptions{
 		Title:           "Сохранить файл",
 		DefaultFilename: filename,
 	})
@@ -441,6 +438,25 @@ func (a *App) ImportReseed(path string) error {
 func (a *App) ShareFile(path string) error {
 	// For desktop, just open the folder containing the file
 	dir := filepath.Dir(path)
-	runtime.BrowserOpenURL(a.ctx, "file://"+dir)
-	return nil
+	return openFile(dir)
+}
+
+// openFile opens a file or directory using the system default application.
+// This avoids Wails "Invalid URL scheme" error for file:// URLs.
+func openFile(path string) error {
+	var cmd string
+	var args []string
+
+	switch wailsRuntime.GOOS {
+	case "windows":
+		cmd = "explorer"
+		args = []string{path}
+	case "darwin":
+		cmd = "open"
+		args = []string{path}
+	default: // "linux", "freebsd", "openbsd", "netbsd"
+		cmd = "xdg-open"
+		args = []string{path}
+	}
+	return exec.Command(cmd, args...).Start()
 }

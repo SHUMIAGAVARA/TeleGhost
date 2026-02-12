@@ -133,7 +133,7 @@ class TeleGhostService : Service() {
     private fun buildNotification(): Notification {
         // Intent для открытия MainActivity при нажатии на уведомление
         val openIntent = Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         val openPending = PendingIntent.getActivity(
             this, 0, openIntent,

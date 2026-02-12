@@ -45,28 +45,33 @@ for i in "${!ARCHS[@]}"; do
     OPENSSL_LIB="$OPENSSL_ROOT/$ARCH/lib"
     
     # Locate Boost for this Arch
-    # Check for common include first
-    BOOST_INCLUDE="$BOOST_ROOT/include"
-    if [ ! -d "$BOOST_INCLUDE" ]; then
-         # Check for arch-specific include
-         if [ -d "$BOOST_ROOT/$ARCH/include" ]; then
-             BOOST_INCLUDE="$BOOST_ROOT/$ARCH/include"
-         fi
+    # Check different path patterns
+    if [ -d "$BOOST_ROOT/include/boost" ]; then
+        BOOST_INCLUDE="$BOOST_ROOT/include"
+    elif [ -d "$BOOST_ROOT/boost" ]; then
+        BOOST_INCLUDE="$BOOST_ROOT"
+    elif [ -d "$BOOST_ROOT/$ARCH/include/boost" ]; then
+        BOOST_INCLUDE="$BOOST_ROOT/$ARCH/include"
+    else
+        echo "Warning: No boost headers folder found in $BOOST_ROOT or subdirs"
+        BOOST_INCLUDE="$BOOST_ROOT/include"
     fi
-    
-    # Try different patterns for lib dir
-    BOOST_LIB="$BOOST_ROOT/lib/$ARCH" 
-    if [ ! -d "$BOOST_LIB" ]; then
-         BOOST_LIB="$BOOST_ROOT/$ARCH/lib"
-    fi
-    if [ ! -d "$BOOST_LIB" ]; then
-         echo "Error: Could not find Boost libs for $ARCH in $BOOST_ROOT"
-         # Fallback to search?
+
+    # Locate Boost libs for this Arch
+    if [ -d "$BOOST_ROOT/lib/$ARCH" ]; then
+        BOOST_LIB="$BOOST_ROOT/lib/$ARCH"
+    elif [ -d "$BOOST_ROOT/$ARCH/lib" ]; then
+        BOOST_LIB="$BOOST_ROOT/$ARCH/lib"
+    else
+        echo "Warning: No boost libs folder found for $ARCH in $BOOST_ROOT"
+        BOOST_LIB="$BOOST_ROOT/$ARCH/lib"
     fi
 
     echo "   Using OpenSSL: $OPENSSL_INCLUDE"
     echo "   Using Boost Include: $BOOST_INCLUDE"
     echo "   Using Boost Lib: $BOOST_LIB"
+    echo "   Boost Lib contents (first 10 files):"
+    ls -p "$BOOST_LIB" 2>/dev/null | grep -v / | head -n 10 || echo "   (empty or non-existent)"
 
     # CMake Configure
     cmake -B "$ARCH_BUILD_DIR" -S "$I2PD_SRC/build" \
@@ -83,9 +88,13 @@ for i in "${!ARCHS[@]}"; do
         -DBOOST_ROOT="$BOOST_ROOT" \
         -DBOOST_INCLUDEDIR="$BOOST_INCLUDE" \
         -DBOOST_LIBRARYDIR="$BOOST_LIB" \
+        -DBoost_INCLUDE_DIR="$BOOST_INCLUDE" \
+        -DBoost_LIBRARY_DIRS="$BOOST_LIB" \
         -DBoost_NO_BOOST_CMAKE=ON \
         -DBoost_NO_SYSTEM_PATHS=ON \
         -DBoost_USE_STATIC_LIBS=ON \
+        -DBoost_COMPILER="" \
+        -DBoost_ARCHITECTURE="" \
         -DBoost_DEBUG=ON \
         -DCMAKE_BUILD_TYPE=Release
 

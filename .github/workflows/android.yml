@@ -269,8 +269,14 @@ jobs:
           I2P_INC="-I$GITHUB_WORKSPACE/internal/network/i2pd/i2pd/libi2pd -I$GITHUB_WORKSPACE/internal/network/i2pd/i2pd/libi2pd_client -I$GITHUB_WORKSPACE/internal/network/i2pd/i2pd/i18n -I$GITHUB_WORKSPACE/internal/network/i2pd/i2pd"
           DEP_INC="-I$GITHUB_WORKSPACE/$BOOST_INCLUDE_DIR -I$GITHUB_WORKSPACE/$OPENSSL_INCLUDE_DIR"
           
-          export CGO_CXXFLAGS="$I2P_INC $DEP_INC"
-          export CGO_CFLAGS="$DEP_INC" # OpenSSL might be used in C
+          # Fix for Boost + Clang compatibility:
+          # -Wno-enum-constexpr-conversion: Fixes -1 outside range error in Boost MPL
+          # -Wno-deprecated-builtins: Silences warnings about deprecated triviality checks
+          # -D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_FUNCTION: Consistency with i2pd build
+          EXTRA_FLAGS="-Wno-enum-constexpr-conversion -Wno-deprecated-builtins -D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_FUNCTION"
+          
+          export CGO_CXXFLAGS="$I2P_INC $DEP_INC $EXTRA_FLAGS"
+          export CGO_CFLAGS="$DEP_INC"
           
           echo "CGO_CXXFLAGS: $CGO_CXXFLAGS"
           

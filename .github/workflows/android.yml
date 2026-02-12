@@ -152,25 +152,24 @@ jobs:
           git clone --depth 1 -b boost-1_78_0 https://github.com/PurpleI2P/Boost-for-Android-Prebuilt.git boost_prebuilt
           
           
-          echo "Scanning for Boost root..."
           
-          # Check if content is in root (common for some branches)
-          if [ -d "boost_prebuilt/boost" ] || [ -d "boost_prebuilt/include/boost" ]; then
+          echo "Scanning for Boost root..."
+          ls -F boost_prebuilt/
+          
+          # Find version directory (e.g. boost-1_78_0 or boost_1_78_0)
+          # We prefer the subdirectory if it exists
+          BOOST_SUBDIR=$(find boost_prebuilt -maxdepth 1 -type d -name "boost*" | grep -v "^boost_prebuilt$" | head -n 1)
+          
+          if [ -n "$BOOST_SUBDIR" ]; then
+             echo "Found Boost Version Subdir: $BOOST_SUBDIR"
+             echo "BOOST_ROOT=$PWD/$BOOST_SUBDIR" >> $GITHUB_ENV
+          elif [ -d "boost_prebuilt/boost" ] || [ -d "boost_prebuilt/include/boost" ]; then
              echo "Found Boost content in root."
              echo "BOOST_ROOT=$PWD/boost_prebuilt" >> $GITHUB_ENV
           else
-             # Find version directory (e.g. boost-1_78_0 or boost_1_78_0)
-             # Use broadly matching pattern 'boost*'
-             BOOST_DIR_NAME=$(find boost_prebuilt -maxdepth 1 -type d -name "boost*" | head -n 1)
-             
-             if [ -z "$BOOST_DIR_NAME" ]; then
-                echo "Error: Could not find any boost directory usage pattern 'boost*' inside boost_prebuilt"
-                ls -F boost_prebuilt
-                exit 1
-             fi
-             
-             echo "Found Boost Version Subdir: $BOOST_DIR_NAME"
-             echo "BOOST_ROOT=$PWD/$BOOST_DIR_NAME" >> $GITHUB_ENV
+             echo "Error: Could not find any boost directory usage pattern 'boost*' inside boost_prebuilt"
+             ls -R boost_prebuilt
+             exit 1
           fi
 
       - name: Download OpenSSL Prebuilts

@@ -564,21 +564,30 @@ func (a *AppCore) OnMessageReceived(msg *core.Message, senderPubKey, senderAddr 
 
 	contact, _ := a.Repo.GetContactByPublicKey(a.Ctx, senderPubKey)
 	if contact == nil {
-		// Создаем контакт если неизвестен
-		newChatID := identity.CalculateChatID(a.Identity.Keys.PublicKeyBase64, senderPubKey)
-		contact = &core.Contact{
-			ID:         uuid.New().String(),
-			PublicKey:  senderPubKey,
-			Nickname:   "Unknown " + senderPubKey[:8],
-			I2PAddress: senderAddr,
-			ChatID:     newChatID,
-			AddedAt:    time.Now(),
-		}
-		a.Repo.SaveContact(a.Ctx, contact)
-		a.Emitter.Emit("contact_updated")
-		// Запрашиваем профиль у нового контакта
-		if a.Messenger != nil {
-			go a.Messenger.SendProfileRequest(senderAddr)
+		// Попробуем найти по адресу (для случая, когда контакт добавлен вручную по b32)
+		contact, _ = a.Repo.GetContactByAddress(a.Ctx, senderAddr)
+		if contact != nil {
+			log.Printf("[AppCore] Found contact by address %s, updating PublicKey", senderAddr)
+			contact.PublicKey = senderPubKey
+			a.Repo.SaveContact(a.Ctx, contact)
+			a.Emitter.Emit("contact_updated")
+		} else {
+			// Создаем контакт если неизвестен
+			newChatID := identity.CalculateChatID(a.Identity.Keys.PublicKeyBase64, senderPubKey)
+			contact = &core.Contact{
+				ID:         uuid.New().String(),
+				PublicKey:  senderPubKey,
+				Nickname:   "Unknown " + senderPubKey[:8],
+				I2PAddress: senderAddr,
+				ChatID:     newChatID,
+				AddedAt:    time.Now(),
+			}
+			a.Repo.SaveContact(a.Ctx, contact)
+			a.Emitter.Emit("contact_updated")
+			// Запрашиваем профиль у нового контакта
+			if a.Messenger != nil {
+				go a.Messenger.SendProfileRequest(senderAddr)
+			}
 		}
 	}
 

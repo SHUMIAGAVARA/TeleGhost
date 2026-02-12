@@ -101,6 +101,8 @@ export function SetActiveChat(arg1:string):Promise<void>;
 
 export function SetAppFocus(arg1:boolean):Promise<void>;
 
+export function SetFileSelector(arg1:main.FileSelector):Promise<void>;
+
 export function ShareFile(arg1:string):Promise<void>;
 
 export function ShowInFolder(arg1:string):Promise<void>;

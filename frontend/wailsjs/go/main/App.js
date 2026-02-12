@@ -198,6 +198,10 @@ export function SetAppFocus(arg1) {
   return window['go']['main']['App']['SetAppFocus'](arg1);
 }
 
+export function SetFileSelector(arg1) {
+  return window['go']['main']['App']['SetFileSelector'](arg1);
+}
+
 export function ShareFile(arg1) {
   return window['go']['main']['App']['ShareFile'](arg1);
 }

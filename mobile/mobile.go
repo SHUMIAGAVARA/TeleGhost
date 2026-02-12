@@ -30,6 +30,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -233,6 +235,53 @@ func Start(dataDir string) {
 	} else {
 		mux.Handle("/", http.FileServer(http.FS(subFS)))
 	}
+
+	// Media Handlers for avatars and files
+	mux.HandleFunc("/avatars/", func(w http.ResponseWriter, r *http.Request) {
+		// Logic similar to desktop GetMediaHandler
+		// Path format: /avatars/{userID|unknown}/{filename}
+		parts := strings.Split(r.URL.Path, "/")
+		if len(parts) < 4 {
+			http.NotFound(w, r)
+			return
+		}
+		userID := parts[2]
+		filename := parts[3]
+
+		var path string
+		if userID == "unknown" {
+			// Try to find in any user avatar dir? No, this is tricky.
+			// Ideally we should know who we are.
+			// But on mobile we have globalApp.Identity.
+			if globalApp != nil && globalApp.Identity != nil {
+				path = filepath.Join(dataDir, "users", globalApp.Identity.Keys.UserID, "avatars", filename)
+			}
+		} else {
+			path = filepath.Join(dataDir, "users", userID, "avatars", filename)
+		}
+
+		if path != "" {
+			http.ServeFile(w, r, path)
+		} else {
+			http.NotFound(w, r)
+		}
+	})
+
+	mux.HandleFunc("/media/", func(w http.ResponseWriter, r *http.Request) {
+		// Path format: /media/{filename}
+		// Assuming media is stored in user's media folder?
+		// Desktop implementation usually handles this.
+		// Let's assume globalApp.DataDir/media or similar?
+		// Actually, let's look at AppCore.SaveAttachment...
+		// It likely saves to `users/{UserID}/media`.
+		if globalApp != nil && globalApp.Identity != nil {
+			filename := filepath.Base(r.URL.Path)
+			path := filepath.Join(dataDir, "users", globalApp.Identity.Keys.UserID, "media", filename)
+			http.ServeFile(w, r, path)
+		} else {
+			http.NotFound(w, r)
+		}
+	})
 
 	server = &http.Server{
 		Addr:    "127.0.0.1:8080",
@@ -510,7 +559,11 @@ func dispatch(app *appcore.AppCore, method string, args []json.RawMessage) (inte
 	case "CopyToClipboard":
 		var text string
 		parseArgs(args, &text)
-		app.CopyToClipboard(text)
+		if bridge != nil {
+			bridge.ClipboardSet(text)
+		} else {
+			log.Println("[Mobile] Clipboard bridge not available")
+		}
 		return nil, nil
 
 	case "GetFileBase64":

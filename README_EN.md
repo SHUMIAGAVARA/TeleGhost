@@ -36,20 +36,20 @@ You can download the latest ready-to-use versions of TeleGhost for your system f
 
 ## 🗺 Roadmap
 
-### Phase 1: Rich Media (In Progress)
+### Rich Media (In Progress)
 - **Voice Messages**: Opus compression + chunked delivery for I2P stability.
 - ~~**Files & Photos**: On-client compression and Resume capability for file transfers.~~
-- **Local Security**: Full SQLite database encryption using a key derived from your Seed phrase.
+- ~~**Local Security**: Full SQLite database encryption using a key derived from your Seed phrase.~~
 
-### Phase 2: GhostMail & Federation
+### GhostMail & Federation
 - **Offline Delivery**: Hybrid P2P + Home Server (Store-and-Forward) architecture.
 - **Server Federation**: Encrypted mail exchange between trusted nodes.
 - **Anti-Spam**: Proof-of-Work (RandomX/SHA) implementation for unknown senders.
 
-### Phase 3: Real-Time & Mobility
+### Real-Time & Mobility
 - **Calls**: Audio calls via UDP (SSU2) support.
 - ~~**Security Profiles**: On-the-fly tunnel mode switching (🚀 **Fast**, 🛡️ **Default**, 👻 **Invisible**).~~
-- **Mobile Support**: Engine optimization for mobile platforms and development of a native mobile client.
+- ~~**Mobile Support**: Engine optimization for mobile platforms and development of a native mobile client.~~
 
 
 ---

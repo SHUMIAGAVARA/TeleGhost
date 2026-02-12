@@ -129,6 +129,18 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: teleghost-windows
+          
+      - name: Download AAR Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: teleghost-aar
+        continue-on-error: true
+
+      - name: Download APK Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: teleghost-android-debug
+        continue-on-error: true
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -136,6 +148,8 @@ jobs:
           files: |
             TeleGhost-linux-amd64
             TeleGhost.exe
+            teleghost.aar
+            *.apk
           draft: false
           prerelease: false
         env:

@@ -183,7 +183,7 @@
                                     <span class="label">Загрузить сеть (Импорт)</span>
                                     <p class="hint">Импортировать файл .zip для подключения</p>
                                 </div>
-                                <button class="btn-secondary" on:click={onImportReseed} disabled={networkStatus === 'online'}>📥 Импорт</button>
+                                <button class="btn-secondary" on:click={onImportReseed}>📥 Импорт</button>
                             </div>
                         </div>
                     </div>

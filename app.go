@@ -415,16 +415,47 @@ func (a *App) ExportReseed() (string, error) {
 	if a.core == nil {
 		return "", fmt.Errorf("core not initialized")
 	}
-	path, err := a.core.ExportReseed()
+	// 1. Создание временного архива
+	tempPath, err := a.core.ExportReseed()
 	if err != nil {
 		return "", err
 	}
-	// On desktop, we might want to let user save it where they want?
-	// The user requirement says: "Open system file manager".
-	// ExportReseed returns a temp path.
-	// We can auto-open the folder.
-	a.ShareFile(path)
-	return path, nil
+
+	// 2. Предлагаем пользователю сохранить файл
+	defaultName := filepath.Base(tempPath)
+	destPath, err := wailsRuntime.SaveFileDialog(a.ctx, wailsRuntime.SaveDialogOptions{
+		Title:           "Сохранить файл сети",
+		DefaultFilename: defaultName,
+		Filters: []wailsRuntime.FileFilter{
+			{DisplayName: "ZIP Archive (*.zip)", Pattern: "*.zip"},
+		},
+	})
+
+	if err != nil {
+		// Ошибка диалога
+		return "", err
+	}
+
+	if destPath == "" {
+		// Пользователь отменил сохранение
+		return "", fmt.Errorf("export cancelled")
+	}
+
+	// 3. Перемещаем файл из temp в выбранное место
+	// Rename может не сработать между дисками, поэтому лучше Read/Write
+	input, err := os.ReadFile(tempPath)
+	if err != nil {
+		return "", err
+	}
+	if err := os.WriteFile(destPath, input, 0644); err != nil {
+		return "", err
+	}
+	os.Remove(tempPath) // Удаляем временный файл
+
+	// 4. Открываем папку с сохраненным файлом
+	a.ShareFile(destPath)
+
+	return destPath, nil
 }
 
 // ImportReseed wraps AppCore.ImportReseed

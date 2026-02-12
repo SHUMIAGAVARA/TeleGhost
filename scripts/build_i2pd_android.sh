@@ -45,33 +45,39 @@ for i in "${!ARCHS[@]}"; do
     OPENSSL_LIB="$OPENSSL_ROOT/$ARCH/lib"
     
     # Locate Boost for this Arch
-    # Check different path patterns
-    if [ -d "$BOOST_ROOT/include/boost" ]; then
-        BOOST_INCLUDE="$BOOST_ROOT/include"
-    elif [ -d "$BOOST_ROOT/boost" ]; then
-        BOOST_INCLUDE="$BOOST_ROOT"
-    elif [ -d "$BOOST_ROOT/$ARCH/include/boost" ]; then
-        BOOST_INCLUDE="$BOOST_ROOT/$ARCH/include"
-    else
-        echo "Warning: No boost headers folder found in $BOOST_ROOT or subdirs"
-        BOOST_INCLUDE="$BOOST_ROOT/include"
+    echo "--- Boost Discovery for $ARCH ---"
+    
+    # Find headers (version.hpp)
+    BOOST_INCLUDE_PATH=$(find "$BOOST_ROOT" -name "version.hpp" | grep "boost/version.hpp" | head -n 1 | sed 's|/boost/version.hpp||')
+    if [ -z "$BOOST_INCLUDE_PATH" ]; then
+        echo "Warning: find could not locate version.hpp, using fallback paths"
+        if [ -d "$BOOST_ROOT/include/boost" ]; then BOOST_INCLUDE_PATH="$BOOST_ROOT/include";
+        elif [ -d "$BOOST_ROOT/boost" ]; then BOOST_INCLUDE_PATH="$BOOST_ROOT";
+        else BOOST_INCLUDE_PATH="$BOOST_ROOT/include"; fi
     fi
+    echo "   Boost Include: $BOOST_INCLUDE_PATH"
 
-    # Locate Boost libs for this Arch
-    if [ -d "$BOOST_ROOT/lib/$ARCH" ]; then
-        BOOST_LIB="$BOOST_ROOT/lib/$ARCH"
-    elif [ -d "$BOOST_ROOT/$ARCH/lib" ]; then
-        BOOST_LIB="$BOOST_ROOT/$ARCH/lib"
-    else
-        echo "Warning: No boost libs folder found for $ARCH in $BOOST_ROOT"
-        BOOST_LIB="$BOOST_ROOT/$ARCH/lib"
+    # Find libs (search for filesystem lib in arch folder)
+    # PurpleI2P structure is varied, so we look for libboost_filesystem.a specifically in a path containing the arch name
+    BOOST_LIB_PATH=$(find "$BOOST_ROOT" -name "libboost_filesystem.a" | grep "/$ARCH/" | head -n 1 | xargs dirname)
+    if [ -z "$BOOST_LIB_PATH" ]; then
+        echo "Warning: find could not locate libboost_filesystem.a for $ARCH, using fallback paths"
+        if [ -d "$BOOST_ROOT/lib/$ARCH" ]; then BOOST_LIB_PATH="$BOOST_ROOT/lib/$ARCH";
+        elif [ -d "$BOOST_ROOT/$ARCH/lib" ]; then BOOST_LIB_PATH="$BOOST_ROOT/$ARCH/lib";
+        else BOOST_LIB_PATH="$BOOST_ROOT/$ARCH/lib"; fi
     fi
+    echo "   Boost Lib Dir: $BOOST_LIB_PATH"
+    echo "   Boost Lib contents:"
+    ls -l "$BOOST_LIB_PATH" 2>/dev/null | grep "libboost" | head -n 5 || echo "   (no libboost files found!)"
 
-    echo "   Using OpenSSL: $OPENSSL_INCLUDE"
-    echo "   Using Boost Include: $BOOST_INCLUDE"
-    echo "   Using Boost Lib: $BOOST_LIB"
-    echo "   Boost Lib contents (first 10 files):"
-    ls -p "$BOOST_LIB" 2>/dev/null | grep -v / | head -n 10 || echo "   (empty or non-existent)"
+    # Export for environment detection (some CMake versions use this)
+    export BOOST_ROOT="$BOOST_ROOT"
+    export BOOST_INCLUDEDIR="$BOOST_INCLUDE_PATH"
+    export BOOST_LIBRARYDIR="$BOOST_LIB_PATH"
+
+    # Precise library paths for CMake as a last resort
+    LIB_FS="$BOOST_LIB_PATH/libboost_filesystem.a"
+    LIB_PO="$BOOST_LIB_PATH/libboost_program_options.a"
 
     # CMake Configure
     cmake -B "$ARCH_BUILD_DIR" -S "$I2PD_SRC/build" \
@@ -86,15 +92,18 @@ for i in "${!ARCHS[@]}"; do
         -DWITH_STATIC=ON \
         -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT/$ARCH" \
         -DBOOST_ROOT="$BOOST_ROOT" \
-        -DBOOST_INCLUDEDIR="$BOOST_INCLUDE" \
-        -DBOOST_LIBRARYDIR="$BOOST_LIB" \
-        -DBoost_INCLUDE_DIR="$BOOST_INCLUDE" \
-        -DBoost_LIBRARY_DIRS="$BOOST_LIB" \
+        -DBOOST_INCLUDEDIR="$BOOST_INCLUDE_PATH" \
+        -DBOOST_LIBRARYDIR="$BOOST_LIB_PATH" \
+        -DBoost_INCLUDE_DIR="$BOOST_INCLUDE_PATH" \
+        -DBoost_LIBRARY_DIR_RELEASE="$BOOST_LIB_PATH" \
+        -DBoost_LIBRARY_DIR_DEBUG="$BOOST_LIB_PATH" \
+        -DBoost_FILESYSTEM_LIBRARY_RELEASE="$LIB_FS" \
+        -DBoost_PROGRAM_OPTIONS_LIBRARY_RELEASE="$LIB_PO" \
+        -DBoost_FILESYSTEM_LIBRARY_DEBUG="$LIB_FS" \
+        -DBoost_PROGRAM_OPTIONS_LIBRARY_DEBUG="$LIB_PO" \
         -DBoost_NO_BOOST_CMAKE=ON \
         -DBoost_NO_SYSTEM_PATHS=ON \
         -DBoost_USE_STATIC_LIBS=ON \
-        -DBoost_COMPILER="" \
-        -DBoost_ARCHITECTURE="" \
         -DBoost_DEBUG=ON \
         -DCMAKE_BUILD_TYPE=Release
 

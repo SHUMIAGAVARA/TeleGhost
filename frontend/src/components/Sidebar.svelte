@@ -537,6 +537,7 @@
         align-items: center;
         gap: 12px;
         padding: 12px 16px;
+        padding-top: calc(12px + env(safe-area-inset-top));
         background: var(--bg-secondary, #1e1e2e);
         border-bottom: 1px solid var(--border);
     }

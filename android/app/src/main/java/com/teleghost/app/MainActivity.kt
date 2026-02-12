@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity(), mobile.PlatformBridge {
             View.SYSTEM_UI_FLAG_LAYOUT_STABLE
             or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         )
-        window.statusBarColor = android.graphics.Color.parseColor("#0c0c14")
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
         window.navigationBarColor = android.graphics.Color.parseColor("#0c0c14")
 
         // Не давать Android убить Activity при нехватки памяти

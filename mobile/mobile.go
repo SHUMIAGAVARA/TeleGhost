@@ -1,3 +1,6 @@
+//go:build cgo_i2pd
+// +build cgo_i2pd
+
 // Package mobile предоставляет HTTP-адаптер для запуска TeleGhost на Android.
 //
 // Архитектура:
@@ -10,10 +13,11 @@
 //
 // Сборка:
 //
-//	CGO_ENABLED=1 gomobile bind -target=android -androidapi 21 -o teleghost.aar ./mobile
+//	CGO_ENABLED=1 gomobile bind -tags cgo_i2pd -target=android -androidapi 21 -o teleghost.aar ./mobile
 package mobile
 
 import (
+	"context"
 	"embed"
 	"encoding/json"
 	"fmt"
@@ -24,6 +28,7 @@ import (
 	"time"
 
 	"teleghost/internal/appcore"
+	"teleghost/internal/network/i2pd"
 )
 
 //go:embed all:dist
@@ -216,6 +221,33 @@ func Start(dataDir string) {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Printf("[Mobile] Server error: %v", err)
 		}
+	}()
+
+	// Start embedded I2P Router
+	// This is critical for mobile where we don't have an external router service
+	go func() {
+		routerDir := dataDir + "/i2pd"
+		log.Printf("[Mobile] Starting embedded i2pd router in %s", routerDir)
+
+		cfg := i2pd.DefaultConfig()
+		cfg.DataDir = routerDir
+		cfg.LogToFile = true // Useful for debugging on mobile
+
+		router := i2pd.NewRouter(cfg)
+		if err := router.Start(context.Background()); err != nil {
+			log.Printf("[Mobile] Failed to start i2pd router: %v", err)
+		} else {
+			log.Printf("[Mobile] i2pd router started successfully")
+		}
+	}()
+
+	// Connect AppCore to the (now starting) router
+	// We do this in a goroutine to not block the main thread and allow time for router startup
+	go func() {
+		// Wait a bit for SAM bridge to be ready
+		time.Sleep(2 * time.Second)
+		log.Printf("[Mobile] Connecting AppCore to I2P...")
+		app.ConnectToI2P()
 	}()
 
 	log.Printf("[Mobile] Server started, dataDir=%s", dataDir)

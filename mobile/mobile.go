@@ -104,7 +104,8 @@ func (e *SSEEmitter) unsubscribe(ch chan string) {
 type PlatformBridge interface {
 	PickFile()
 	ShareFile(path string)
-	ClipboardSet(text string) // New method
+	ClipboardSet(text string)
+	ShowNotification(title, message string) // New method
 }
 
 var (
@@ -171,7 +172,11 @@ func (p *MobilePlatform) HideWindow() {}
 // MobileFileSelector removed (redundant)
 
 func (p *MobilePlatform) Notify(title, message string) {
-	log.Printf("[Mobile] Notification: %s - %s", title, message)
+	if bridge != nil {
+		bridge.ShowNotification(title, message)
+	} else {
+		log.Printf("[Mobile] Notification (no bridge): %s - %s", title, message)
+	}
 }
 
 func (p *MobilePlatform) ShareFile(path string) error {

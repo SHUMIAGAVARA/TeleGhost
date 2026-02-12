@@ -379,24 +379,64 @@ func (a *AppCore) SendFileMessage(chatID, text, replyToID string, files []string
 	}
 
 	// Offer Flow
+	// Pre-process images to strip metadata
+	processedFiles := make([]string, len(files))
+	copy(processedFiles, files)
+
+	// Create cache dir for stripped images
+	cacheDir := filepath.Join(a.DataDir, "cache", "stripped")
+	os.MkdirAll(cacheDir, 0700)
+
+	for i, f := range files {
+		ext := strings.ToLower(filepath.Ext(f))
+		if ext == ".jpg" || ext == ".jpeg" || ext == ".png" {
+			data, err := os.ReadFile(f)
+			if err == nil {
+				stripped, _, err := core.StripMetadata(data, f)
+				if err == nil {
+					// Save stripped file
+					newFilename := fmt.Sprintf("stripped_%d_%s", time.Now().UnixNano(), filepath.Base(f))
+					newPath := filepath.Join(cacheDir, newFilename)
+					if err := os.WriteFile(newPath, stripped, 0600); err == nil {
+						log.Printf("[AppCore] Stripped metadata from %s", filepath.Base(f))
+						processedFiles[i] = newPath
+					}
+				} else {
+					log.Printf("[AppCore] Failed to strip metadata from %s: %v", filepath.Base(f), err)
+				}
+			}
+		}
+	}
+
 	a.TransferMu.Lock()
 	a.PendingTransfers[msgID] = &PendingTransfer{
 		Destination: destination,
 		ChatID:      actualChatID,
-		Files:       files,
+		Files:       processedFiles,
 		MessageID:   msgID,
 		Timestamp:   now,
 	}
 	a.TransferMu.Unlock()
 
 	var totalSize int64
-	filenames := make([]string, len(files))
-	for i, f := range files {
+	filenames := make([]string, len(processedFiles))
+	for i, f := range processedFiles {
 		info, _ := os.Stat(f)
 		if info != nil {
 			totalSize += info.Size()
 		}
-		filenames[i] = filepath.Base(f)
+		// Use original filename for display if it was stripped (remove "stripped_" prefix logic or just use original name)
+		// Actually, we want to send the clean file but keep the original name in the UI/Offer?
+		// The offer sends 'filenames' list.
+		// If we changed the path to "stripped_...", `filepath.Base(f)` will be "stripped_...".
+		// We should probably preserve the original filename in the offer, but send the stripped content.
+		// `messenger.SendFileOffer` takes filenames.
+		// If I send "stripped_photo.jpg", receiver sees "stripped_photo.jpg".
+		// I should revert the name to original in the offer list.
+
+		// Let's get the original name from the input `files` slice.
+		originalName := filepath.Base(files[i])
+		filenames[i] = originalName
 	}
 
 	if !isSelf {
@@ -421,17 +461,20 @@ func (a *AppCore) SendFileMessage(chatID, text, replyToID string, files []string
 		msg.ReplyToID = &replyToID
 	}
 
-	coreAttachments := make([]*core.Attachment, 0, len(files))
-	for _, f := range files {
+	coreAttachments := make([]*core.Attachment, 0, len(processedFiles))
+	for i, f := range processedFiles {
 		stat, _ := os.Stat(f)
 		size := int64(0)
 		if stat != nil {
 			size = stat.Size()
 		}
+		// Use original filename for the attachment record
+		originalName := filepath.Base(files[i])
+
 		coreAtt := &core.Attachment{
 			ID:           uuid.New().String(),
 			MessageID:    msgID,
-			Filename:     filepath.Base(f),
+			Filename:     originalName,
 			MimeType:     "application/octet-stream",
 			Size:         size,
 			LocalPath:    f,

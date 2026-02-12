@@ -38,6 +38,21 @@ class MainActivity : AppCompatActivity(), mobile.PlatformBridge {
         private const val HEALTH_URL = "$SERVER_URL/health"
         private const val MAX_RETRIES = 30
         private const val RETRY_DELAY_MS = 1000L
+        private const val NOTIFICATION_CHANNEL_ID = "teleghost_messages"
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Messages"
+            val descriptionText = "New messages from contacts"
+            val importance = android.app.NotificationManager.IMPORTANCE_DEFAULT
+            val channel = android.app.NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+            }
+            val notificationManager: android.app.NotificationManager =
+                getSystemService(android.content.Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
     }
 
     // File Picker Launcher
@@ -96,6 +111,9 @@ class MainActivity : AppCompatActivity(), mobile.PlatformBridge {
         setupWebView()
         startGoService()
 
+        // Create notification channel
+        createNotificationChannel()
+
         // Register this activity as the Native Bridge for Go
         mobile.Mobile.setPlatformBridge(this)
     }
@@ -153,9 +171,48 @@ class MainActivity : AppCompatActivity(), mobile.PlatformBridge {
                 val clipboard = getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                 val clip = android.content.ClipData.newPlainText("TeleGhost", text)
                 clipboard.setPrimaryClip(clip)
-                // android.widget.Toast.makeText(this, "Скопировано", android.widget.Toast.LENGTH_SHORT).show() // Toast делается во фронтенде
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Clipboard set failed", e)
+            }
+        }
+    }
+
+    override fun showNotification(title: String, message: String) {
+        runOnUiThread {
+            try {
+                // Check permission for Android 13+
+                if (Build.VERSION.SDK_INT >= 33) {
+                     if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                         // Request permission? For now just log and skip or maybe request.
+                         // Requesting permission inside notification call is bad UX.
+                         // Ideally we should request it on startup.
+                         // Let's assume user granted it or strict mode off for now.
+                         // But we should try to show if possible.
+                         // Actually, let's just try building it, if permission denied it will be ignored by system.
+                     }
+                }
+
+                val builder = androidx.core.app.NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                    .setSmallIcon(android.R.drawable.ic_dialog_email) // Replace with app icon if available: R.mipmap.ic_launcher
+                    .setContentTitle(title)
+                    .setContentText(message)
+                    .setPriority(androidx.core.app.NotificationCompat.PRIORITY_DEFAULT)
+                    .setAutoCancel(true)
+
+                // PendingIntent to open app when clicked
+                val intent = Intent(this, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                val pendingIntent: android.app.PendingIntent = android.app.PendingIntent.getActivity(this, 0, intent, android.app.PendingIntent.FLAG_IMMUTABLE)
+                builder.setContentIntent(pendingIntent)
+
+                with(androidx.core.app.NotificationManagerCompat.from(this)) {
+                    // notificationId is a unique int for each notification that you must define
+                    // using current time as ID to show multiple notifications
+                    notify(System.currentTimeMillis().toInt(), builder.build())
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Notification failed", e)
             }
         }
     }

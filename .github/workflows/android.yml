@@ -156,6 +156,13 @@ jobs:
           
           echo "BOOST_ROOT=$PWD/boost" >> $GITHUB_ENV
 
+      # ── 10.1. Install OpenSSL (Headers Only for now) ─────────────────────
+      - name: Download OpenSSL Headers
+        run: |
+          echo "Cloning OpenSSL 1.1.1w..."
+          git clone --depth 1 -b OpenSSL_1_1_1w https://github.com/openssl/openssl.git
+          echo "OPENSSL_ROOT=$PWD/openssl" >> $GITHUB_ENV
+
       # ── 11. BUILD: gomobile bind ────────────────────────────────────────
       #
       # gomobile bind компилирует Go пакет в .aar для Android.
@@ -167,8 +174,8 @@ jobs:
           export PATH="$PATH:$(go env GOPATH)/bin"
           export CGO_ENABLED=1
           export ANDROID_NDK_HOME="${{ env.ANDROID_NDK_HOME }}"
-          # Add Boost to include path
-          export CGO_CXXFLAGS="-I$BOOST_ROOT"
+          # Add Boost and OpenSSL to include path
+          export CGO_CXXFLAGS="-I$BOOST_ROOT -I$OPENSSL_ROOT/include"
           
           echo "══════════════════════════════════════════════"
           echo "  Building teleghost.aar"

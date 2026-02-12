@@ -14,14 +14,14 @@
 package mobile
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"sync"
 	"time"
-	"embed"
-	"io/fs"
 
 	"teleghost/internal/appcore"
 )
@@ -85,15 +85,59 @@ func (e *SSEEmitter) unsubscribe(ch chan string) {
 
 // ─── Mobile PlatformServices (заглушки) ─────────────────────────────────────
 
+// PlatformBridge defines methods that Native Android/iOS must implement.
+type PlatformBridge interface {
+	PickFile()
+}
+
+var (
+	bridge            PlatformBridge
+	fileSelectionChan = make(chan string) // Channel to receive file path from Native side
+)
+
+// SetPlatformBridge connects the native OS implementation to Go.
+func SetPlatformBridge(b PlatformBridge) {
+	bridge = b
+}
+
+// OnFileSelected is called by Native side when a file is picked.
+// path: absolute path to the file (must be accessible by Go).
+// Pass empty string to signal cancellation.
+func OnFileSelected(path string) {
+	// Send to channel if someone is waiting
+	select {
+	case fileSelectionChan <- path:
+	default:
+		log.Println("[Mobile] Dropping file selection (no active request)")
+	}
+}
+
 // MobilePlatform — no-op реализация PlatformServices для Android.
 // Файловые диалоги и буфер обмена недоступны через Go на мобилке.
 type MobilePlatform struct{}
 
 func (p *MobilePlatform) OpenFileDialog(title string, filters []string) (string, error) {
-	return "", fmt.Errorf("file dialogs not available on mobile")
+	if bridge == nil {
+		return "", fmt.Errorf("native bridge not connected")
+	}
+
+	// 1. Request file pick from Native side
+	bridge.PickFile()
+
+	// 2. Wait for result (blocking)
+	select {
+	case path := <-fileSelectionChan:
+		if path == "" {
+			return "", fmt.Errorf("selection canceled")
+		}
+		return path, nil
+	case <-time.After(5 * time.Minute): // Timeout to prevent eternal freeze
+		return "", fmt.Errorf("file selection timed out")
+	}
 }
+
 func (p *MobilePlatform) SaveFileDialog(title, defaultFilename string) (string, error) {
-	return "", fmt.Errorf("file dialogs not available on mobile")
+	return "", fmt.Errorf("save dialog not implemented on mobile")
 }
 func (p *MobilePlatform) ClipboardSet(text string) {}
 func (p *MobilePlatform) ClipboardGet() (string, error) {
@@ -408,8 +452,19 @@ func dispatch(app *appcore.AppCore, method string, args []json.RawMessage) (inte
 		// Для мобилки можно просто вернуть ошибку или реализовать временное сохранение
 		return "", fmt.Errorf("SaveTempImage not implemented on mobile")
 
-	case "SelectFiles", "SelectImage":
-		return nil, fmt.Errorf("file selection not available on mobile via HTTP bridge")
+	case "SelectFiles":
+		path, err := app.Platform.OpenFileDialog("Select File", nil)
+		if err != nil {
+			return nil, err
+		}
+		return []string{path}, nil
+
+	case "SelectImage":
+		path, err := app.Platform.OpenFileDialog("Select Image", nil)
+		if err != nil {
+			return nil, err
+		}
+		return path, nil
 
 	case "OpenFile", "ShowInFolder":
 		return nil, fmt.Errorf("system file opening not available on mobile")

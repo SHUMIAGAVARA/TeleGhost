@@ -1,16 +1,19 @@
 package com.teleghost.app
 
 import android.annotation.SuppressLint
-import android.content.ComponentName
+import android.app.Activity
 import android.content.Intent
-import android.content.ServiceConnection
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.IBinder
 import android.view.View
 import android.view.WindowManager
 import android.webkit.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import java.io.File
+import java.io.FileOutputStream
+import java.util.UUID
 
 /**
  * MainActivity — главная Activity приложения.
@@ -22,11 +25,12 @@ import androidx.appcompat.app.AppCompatActivity
  *
  * WebView отображает тот же Svelte-фронтенд, что и Wails на десктопе.
  * Api Bridge (api_bridge.js) автоматически переключается на HTTP.
+ *
+ * Update: Implements mobile.PlatformBridge for native file selection.
  */
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), mobile.PlatformBridge {
 
     private lateinit var webView: WebView
-    private var serviceBound = false
 
     companion object {
         private const val TAG = "TeleGhost"
@@ -34,6 +38,34 @@ class MainActivity : AppCompatActivity() {
         private const val HEALTH_URL = "$SERVER_URL/health"
         private const val MAX_RETRIES = 30
         private const val RETRY_DELAY_MS = 1000L
+    }
+
+    // File Picker Launcher
+    private val filePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val uri = result.data?.data
+            if (uri != null) {
+                // Copy in background to avoid freezing UI
+                android.util.Log.i(TAG, "File selected: $uri")
+                Thread {
+                    try {
+                        val path = copyFileToInternalStorage(uri)
+                        android.util.Log.i(TAG, "File copied to: $path")
+                        mobile.Mobile.onFileSelected(path)
+                    } catch (e: Exception) {
+                        android.util.Log.e(TAG, "Failed to copy file", e)
+                        mobile.Mobile.onFileSelected("") // Signal error/cancel
+                    }
+                }.start()
+            } else {
+                mobile.Mobile.onFileSelected("")
+            }
+        } else {
+            android.util.Log.i(TAG, "File selection canceled")
+            mobile.Mobile.onFileSelected("")
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,6 +93,51 @@ class MainActivity : AppCompatActivity() {
 
         setupWebView()
         startGoService()
+
+        // Register this activity as the Native Bridge for Go
+        mobile.Mobile.setPlatformBridge(this)
+    }
+
+    // --- PlatformBridge Implementation ---
+    override fun pickFile() {
+        runOnUiThread {
+            try {
+                val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                    type = "*/*"
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/*", "video/*", "application/pdf", "text/*"))
+                }
+                filePickerLauncher.launch(intent)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Failed to launch picker", e)
+                mobile.Mobile.onFileSelected("")
+            }
+        }
+    }
+
+    private fun copyFileToInternalStorage(uri: Uri): String {
+        val contentResolver = applicationContext.contentResolver
+        val mimeType = contentResolver.getType(uri) ?: "application/octet-stream"
+        
+        // Try to guess extension
+        val ext = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: "bin"
+        val filename = "upload_${UUID.randomUUID()}.$ext"
+
+        val tempDir = File(filesDir, "tmp_uploads")
+        if (!tempDir.exists()) tempDir.mkdirs()
+        
+        // Clean old files (optional, maybe older than 1 day)
+        // ...
+
+        val destFile = File(tempDir, filename)
+        
+        contentResolver.openInputStream(uri)?.use { input ->
+            FileOutputStream(destFile).use { output ->
+                input.copyTo(output)
+            }
+        } ?: throw Exception("Cannot open input stream")
+
+        return destFile.absolutePath
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -200,6 +277,8 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         webView.onResume()
+        // Re-register just in case
+        mobile.Mobile.setPlatformBridge(this)
     }
 
     override fun onPause() {

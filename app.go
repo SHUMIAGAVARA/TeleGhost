@@ -18,6 +18,7 @@ import (
 
 	"github.com/gen2brain/beeep"
 	"github.com/nfnt/resize"
+	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 	"golang.design/x/clipboard"
 
 	"teleghost/internal/appcore"

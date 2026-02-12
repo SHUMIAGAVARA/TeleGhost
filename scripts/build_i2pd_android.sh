@@ -45,10 +45,15 @@ for i in "${!ARCHS[@]}"; do
     OPENSSL_LIB="$OPENSSL_ROOT/$ARCH/lib"
     
     # Locate Boost for this Arch
-    # Assuming structure: $BOOST_ROOT/$ARCH/include and lib
-    # Similar to OpenSSL? Need to verify Boost structure.
-    # If Boost is flat (headers common), libs in arch?
-    BOOST_INCLUDE="$BOOST_ROOT/include" # Often common
+    # Check for common include first
+    BOOST_INCLUDE="$BOOST_ROOT/include"
+    if [ ! -d "$BOOST_INCLUDE" ]; then
+         # Check for arch-specific include
+         if [ -d "$BOOST_ROOT/$ARCH/include" ]; then
+             BOOST_INCLUDE="$BOOST_ROOT/$ARCH/include"
+         fi
+    fi
+    
     # Try different patterns for lib dir
     BOOST_LIB="$BOOST_ROOT/lib/$ARCH" 
     if [ ! -d "$BOOST_LIB" ]; then
@@ -60,6 +65,7 @@ for i in "${!ARCHS[@]}"; do
     fi
 
     echo "   Using OpenSSL: $OPENSSL_INCLUDE"
+    echo "   Using Boost Include: $BOOST_INCLUDE"
     echo "   Using Boost Lib: $BOOST_LIB"
 
     # CMake Configure
@@ -74,6 +80,7 @@ for i in "${!ARCHS[@]}"; do
         -DWITH_BINARY=OFF \
         -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT/$ARCH" \
         -DBOOST_ROOT="$BOOST_ROOT" \
+        -DBoost_ROOT="$BOOST_ROOT" \
         -DBOOST_INCLUDEDIR="$BOOST_INCLUDE" \
         -DBOOST_LIBRARYDIR="$BOOST_LIB" \
         -DCMAKE_BUILD_TYPE=Release

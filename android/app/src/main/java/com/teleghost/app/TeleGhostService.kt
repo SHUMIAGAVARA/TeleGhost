@@ -95,8 +95,9 @@ class TeleGhostService : Service() {
 
                 isGoServerRunning = true
                 Log.i(TAG, "Go server started successfully")
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to start Go server", e)
+            } catch (t: Throwable) {
+                Log.e(TAG, "CRITICAL ERROR: Failed to start Go server", t)
+                // Можно отправить уведомление пользователю
             }
         }.start()
     }

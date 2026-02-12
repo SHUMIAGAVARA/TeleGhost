@@ -178,6 +178,11 @@ var (
 // Вызывается из Android Service через JNI.
 // dataDir — путь к внутреннему хранилищу: context.getFilesDir()
 func Start(dataDir string) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("[CRITICAL] Mobile panic: %v", r)
+		}
+	}()
 	if globalApp != nil {
 		log.Println("[Mobile] Server already running")
 		return

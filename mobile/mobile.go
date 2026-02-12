@@ -106,6 +106,7 @@ type PlatformBridge interface {
 	ShareFile(path string)
 	ClipboardSet(text string)
 	ShowNotification(title, message string) // New method
+	SaveFile(path, filename string)         // New method for saving to Downloads
 }
 
 var (
@@ -600,7 +601,13 @@ func dispatch(app *appcore.AppCore, method string, args []json.RawMessage) (inte
 		return nil, fmt.Errorf("system file opening not available on mobile")
 
 	case "SaveFileToLocation":
-		return nil, fmt.Errorf("file saving to location not available on mobile")
+		var path, filename string
+		parseArgs(args, &path, &filename)
+		if bridge != nil {
+			bridge.SaveFile(path, filename)
+			return nil, nil
+		}
+		return nil, fmt.Errorf("native bridge not connected")
 
 	case "GetImageThumbnail":
 		var path string

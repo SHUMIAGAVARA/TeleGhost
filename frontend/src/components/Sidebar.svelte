@@ -345,7 +345,18 @@
                 <div class="icon-svg">{@html Icons.MessageSquarePlus}</div>
                 <span>Новый чат</span>
             </button>
-            <button class="mobile-action-btn" on:click={onOpenMyQR}>
+            <button class="mobile-action-btn" on:click={() => {
+                // If onOpenMyQR is just opening modal, maybe we want direct copy?
+                // The user asked "cannot copy own qr code/address".
+                // Let's open QR modal (onOpenMyQR) BUT ensure QR modal has copy button.
+                // Or successfuly adding a copy action here too.
+                // Let's do both: Open QR, but also long press to copy? 
+                // Simple: just open QR, but verify QR modal has copy.
+                // Wait, user said "cannot copy". 
+                // Let's add a copy button TO the QR modal. 
+                // For now, let's make this button open QR, and separately ensure QR modal has copy.
+                onOpenMyQR();
+            }}>
                 <div class="icon-svg">{@html Icons.QrCode}</div>
                 <span>Мой адрес</span>
             </button>

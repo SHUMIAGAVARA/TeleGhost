@@ -2,7 +2,7 @@
     import { Icons } from '../Icons.js';
     import { getInitials, formatTime, parseMarkdown, getAvatarGradient } from '../utils.js';
     import { fade, fly } from 'svelte/transition';
-    import { onMount, tick } from 'svelte';
+    import { onMount, tick, createEventDispatcher } from 'svelte';
 
     export let selectedContact;
     export let messages = [];
@@ -18,6 +18,8 @@
     export let onCancelReply;
 
     export let onSendMessage;
+    export let canLoadMore = false;
+    export let onLoadMore = null;
     export let onKeyPress;
     export let onPaste;
     export let onSelectFiles;
@@ -87,10 +89,23 @@
     let resizeObserver;
     let containerRef;
 
-    function handleScroll(e) {
+    let isLoadingMore = false;
+    async function handleScroll(e) {
         const container = e.target;
         const distanceToBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
         showScrollButton = distanceToBottom > 50;
+
+        // Load more when reaching top
+        if (container.scrollTop < 100 && canLoadMore && !isLoadingMore && onLoadMore) {
+            isLoadingMore = true;
+            const oldHeight = container.scrollHeight;
+            await onLoadMore();
+            await tick();
+            // Maintain scroll position relative to bottom
+            const newHeight = container.scrollHeight;
+            container.scrollTop += (newHeight - oldHeight);
+            isLoadingMore = false;
+        }
     }
 
     function scrollToBottom(force = false) {
@@ -151,42 +166,42 @@
     }
 
     // Handle Messages Update & Image Counting
-    $: if (messages && !chatReady && currentContactId) {
-        // Count images ONLY in the initial load phase
-        let imgCount = 0;
-        // Check only last 20 messages for performance, deeper history images shouldn't affect initial scroll much
-        const recentMessages = messages.slice(-20); 
-        
-        recentMessages.forEach(msg => {
-            if (msg.Attachments) {
-                msg.Attachments.forEach(att => {
-                    if (att.MimeType && att.MimeType.startsWith('image/')) {
-                        imgCount++;
-                    }
-                });
-            }
-        });
-
-        pendingImages = imgCount;
-        
-        if (pendingImages === 0) {
-            // No images to wait for (or messages empty), show immediately
-            finishLoading();
-        } else {
-            // Set a fallback timeout in case images fail to load
-            setTimeout(() => {
-                if (!chatReady) finishLoading();
-            }, 1500); // 1.5s max wait
+    $: if (messages && currentContactId) {
+        if (!chatReady) {
+            chatReady = true;
+            imagesLoading = false;
+            scrollToBottom(true);
         }
     }
 
     function onImageLoad() {
         if (chatReady) return;
         loadedImages++;
-        if (loadedImages >= pendingImages) {
-            finishLoading();
-        }
+        // finishLoading() could be here but we simplified it to messages reaction
     }
+    
+    const dispatch = createEventDispatcher();
+    let pollInterval;
+
+    onMount(() => {
+        if (containerRef) {
+            resizeObserver = new ResizeObserver(() => {
+                if (!containerRef) return;
+                const distanceToBottom = containerRef.scrollHeight - containerRef.scrollTop - containerRef.clientHeight;
+                showScrollButton = distanceToBottom > 50;
+            });
+            resizeObserver.observe(containerRef);
+        }
+        
+        scrollToBottom(true);
+
+        return () => {
+            if (pollInterval) clearInterval(pollInterval);
+            if (resizeObserver) {
+                resizeObserver.disconnect();
+            }
+        }
+    });
 
     // Auto-scroll on new messages
     $: if (messages && messages.length > 0 && chatReady) {
@@ -195,18 +210,9 @@
 
     function finishLoading() {
         if (chatReady) return;
-        
-        // Scroll while invisible FIRST
-        tick().then(() => {
-             scrollToBottom(true);
-             
-             // Slight delay to ensure layout paints and scroll applies BEFORE we show it
-             setTimeout(() => {
-                 scrollToBottom(true); // Scroll again to be sure
-                 chatReady = true;
-                 imagesLoading = false;
-             }, 250);
-        });
+        chatReady = true;
+        imagesLoading = false;
+        scrollToBottom(true);
     }
 
 </script>
@@ -222,7 +228,27 @@
             class="chat-contact-info" 
             role="button"
             tabindex="0"
-            on:click={onOpenContactProfile} 
+            on:click={() => {
+                if (isMobile) {
+                    // On mobile, show profile or copy address option
+                    // For now, let's copy address on long press or just show profile
+                    // The user asked to "copy address". Let's use onOpenContactProfile which usually has it, 
+                    // or add a copy action here. 
+                    // Let's stick to onOpenContactProfile but ensure that profile has copy.
+                    onOpenContactProfile();
+                } else {
+                     onOpenContactProfile();
+                }
+            }} 
+            on:contextmenu|preventDefault={() => {
+                 // Context menu to copy address
+                 if (selectedContact?.PublicKey) {
+                     // We need a way to call CopyToClipboard from here or pass it up
+                     // Dispath event or use prop? 
+                     // Using clipboard API directly might work if secured context
+                     navigator.clipboard.writeText(selectedContact.PublicKey).then(() => alert('Адрес скопирован'));
+                 }
+            }}
             on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onOpenContactProfile()}
             style="cursor: pointer;"
         >
@@ -240,6 +266,18 @@
                     <span class="status-text">
                         {(messages || []).some(m => !m.IsOutgoing && m.SenderID === selectedContact?.PublicKey && (Date.now() - m.Timestamp < 300000)) ? 'В сети' : 'Оффлайн'}
                     </span>
+                    {#if isMobile}
+                         <button class="btn-icon-xs" style="margin-left: 8px; opacity: 0.7;" on:click|stopPropagation={() => {
+                             if(selectedContact?.PublicKey) {
+                                 // Dispatch copy event or usage generic bridge
+                                 // We need to import AppActions or similar if available, or just use native nav
+                                 // Start simple:
+                                 navigator.clipboard.writeText(selectedContact.PublicKey).then(() => alert('Адрес скопирован'));
+                             }
+                         }}>
+                            <div class="icon-svg-xs">{@html Icons.Copy || '📋'}</div>
+                         </button>
+                    {/if}
                 </div>
             </div>
         </div>
@@ -275,7 +313,13 @@
                                 tabindex="0"
                                 on:click|stopPropagation={() => {
                                     const target = document.getElementById(`msg-${msg.ReplyToID}`);
-                                    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    if (target) {
+                                        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        target.classList.add('highlight-scroll');
+                                        setTimeout(() => target.classList.remove('highlight-scroll'), 2000);
+                                    } else {
+                                        dispatch('jumpToMessage', msg.ReplyToID);
+                                    }
                                 }}
                             >
                                 <div class="reply-author">{msg.ReplyPreview.author_name || msg.ReplyPreview.AuthorName}</div>
@@ -661,5 +705,14 @@
     }
     @keyframes spin {
         to { transform: rotate(360deg); }
+    }
+
+    :global(.highlight-scroll) {
+        animation: highlight-flash 2.5s ease-out !important;
+    }
+    @keyframes highlight-flash {
+        0% { filter: brightness(1.7); transform: scale(1.02); box-shadow: 0 0 30px var(--accent); z-index: 10; }
+        30% { filter: brightness(1.7); transform: scale(1.02); box-shadow: 0 0 30px var(--accent); z-index: 10; }
+        100% { filter: brightness(1); transform: scale(1); box-shadow: none; z-index: 1; }
     }
 </style>

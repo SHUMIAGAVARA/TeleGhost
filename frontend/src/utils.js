@@ -80,8 +80,17 @@ export function parseMarkdown(text) {
     // Strikethrough
     html = html.replace(/~~([^~]+)~~/g, '<del>$1</del>');
 
-    // Links (simple)
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+    // Links (markdown)
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+
+    // Auto-link raw URLs (http/https) that are NOT already inside an anchor tag
+    // Use tokenization approach: match HTML tags OR URLs. Only replace URLs if not a tag.
+    html = html.replace(/<[^>]+>|https?:\/\/[^\s<]+/g, (match) => {
+        if (match.startsWith('<')) {
+            return match; // It's a tag, return as is
+        }
+        return `<a href="${match}" target="_blank" rel="noopener noreferrer">${match}</a>`;
+    });
 
     // Line breaks
     return html.replace(/\n/g, '<br>');

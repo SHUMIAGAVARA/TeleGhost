@@ -53,6 +53,8 @@
   let isCompressed = true;
   let previewImage = null;
   let replyingTo = null;
+  let canLoadMore = true;
+  let isLoadingMore = false;
   
   // Settings State
   let showSettings = false;
@@ -162,9 +164,33 @@
         loadContacts();
     });
 
-    EventsOn("contact_updated", () => {
+    EventsOn("contact_updated", async () => {
         console.log("[App] Received contact_updated event, reloading contacts...");
-        loadContacts();
+        await loadContacts();
+
+        // Check if selectedContact needs update
+        if (selectedContact) {
+            const updated = contacts.find(c => c.ID === selectedContact.ID);
+            if (updated) {
+                // Critical: Check if ChatID changed
+                if (updated.ChatID !== selectedContact.ChatID) {
+                    console.log("[App] Selected contact updated (ChatID changed), reloading chat...");
+                    selectedContact = updated;
+                    await loadMessages(updated.ID);
+                } else if (
+                    updated.Nickname !== selectedContact.Nickname ||
+                    updated.Avatar !== selectedContact.Avatar ||
+                    updated.IsBlocked !== selectedContact.IsBlocked ||
+                    updated.IsVerified !== selectedContact.IsVerified
+                ) {
+                    // Only update reference if visible fields changed
+                    console.log("[App] Selected contact updated (Info changed), updating reference...");
+                    selectedContact = updated;
+                } else {
+                    // Data is same, DO NOT touch selectedContact to avoid re-render
+                }
+            }
+        }
     });
 
     EventsOn("unread_count", (count) => {
@@ -291,8 +317,10 @@
       selectedContact = contact;
       showSettings = false;
       loadMessages(contact.ID);
+      
       AppActions.SetActiveChat(contact.ChatID || "");
-      // Сбрасываем счетчик во фронтенде для мгновенного отклика
+      
+      // Update unread count immediately
       contact.UnreadCount = 0;
       contacts = [...contacts];
       if (contact.ChatID) {
@@ -308,11 +336,97 @@
   async function loadMessages(contactId) {
       const contact = contacts.find(c => c.ID === contactId);
       if (contact && contact.ChatID) {
-          // Помечаем чат как прочитанный
           await AppActions.MarkChatAsRead(contact.ChatID);
       }
-      messages = await AppActions.GetMessages(contactId, 50, 0);
-      scrollToBottom();
+      
+      try {
+          canLoadMore = true;
+          const limit = 200;
+          messages = await AppActions.GetMessages(contactId, limit, 0);
+          if (messages && messages.length < limit) {
+              canLoadMore = false;
+          }
+      } catch (err) {
+          messages = [];
+          canLoadMore = false;
+      }
+      scrollToBottom(true);
+  }
+
+  async function loadMoreMessages() {
+      if (!selectedContact || !canLoadMore || isLoadingMore) return;
+      
+      isLoadingMore = true;
+      try {
+          const limit = 200;
+          const offset = messages.length;
+          const moreMessages = await AppActions.GetMessages(selectedContact.ID, limit, offset);
+          
+          if (!moreMessages || moreMessages.length < limit) {
+              canLoadMore = false;
+          }
+          
+          if (moreMessages && moreMessages.length > 0) {
+              messages = [...moreMessages, ...messages];
+          }
+      } catch (err) {
+          console.error('[App] Failed to load more messages:', err);
+      } finally {
+          isLoadingMore = false;
+      }
+  }
+
+  async function jumpToMessage(msgId) {
+      if (!selectedContact) return;
+      
+      // Check if already in messages
+      const found = messages.find(m => m.ID === msgId);
+      if (found) {
+          await tick();
+          const target = document.getElementById(`msg-${msgId}`);
+          if (target) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              target.classList.add('highlight-scroll');
+              setTimeout(() => target.classList.remove('highlight-scroll'), 2000);
+          }
+          return;
+      }
+
+      if (!canLoadMore) return;
+
+      // Search deeper
+      let currentOffset = messages.length;
+      const limit = 500; // Load larger batches for jumping
+      let searchCount = 0;
+      
+      showToast("Поиск сообщения в истории...", "info");
+      
+      while (canLoadMore && searchCount < 5) { // Max 2500 extra messages
+          const batch = await AppActions.GetMessages(selectedContact.ID, limit, currentOffset);
+          if (!batch || batch.length === 0) {
+              canLoadMore = false;
+              break;
+          }
+          
+          messages = [...batch, ...messages];
+          currentOffset += batch.length;
+          if (batch.length < limit) canLoadMore = false;
+          
+          const inBatch = batch.find(m => m.ID === msgId);
+          if (inBatch) {
+              await tick();
+              const target = document.getElementById(`msg-${msgId}`);
+              if (target) {
+                  target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  target.classList.add('highlight-scroll');
+                  setTimeout(() => target.classList.remove('highlight-scroll'), 2000);
+              }
+              return;
+          }
+          searchCount++;
+      }
+      
+      showToast("Сообщение не найдено в ближайшей истории", "error");
   }
 
   async function sendMessage() {
@@ -577,8 +691,14 @@
           previewImage = "data:image/jpeg;base64," + base64;
       },
       startLoadingImage: (node, path) => {
-          AppActions.GetFileBase64(path).then(b64 => {
-              if (b64) node.src = "data:image/jpeg;base64," + b64;
+          console.log('[App] Requesting thumbnail for:', path);
+          AppActions.GetImageThumbnail(path).then(base64 => {
+              if (base64) {
+                  node.src = "data:image/png;base64," + base64;
+                  node.onload = () => node.dispatchEvent(new CustomEvent('load'));
+              }
+          }).catch(e => {
+              console.error('[App] Failed to load thumbnail:', e);
           });
       },
       onCancelReply: () => { replyingTo = null; }
@@ -790,7 +910,10 @@
                             {selectedContact} {messages} bind:newMessage bind:selectedFiles {filePreviews}
                             {editingMessageId} {editMessageContent} bind:isCompressed {previewImage}
                             bind:replyingTo {isMobile}
+                            {canLoadMore} onLoadMore={loadMoreMessages}
+                            onJumpToMessage={(e) => jumpToMessage(e.detail)}
                             onBack={() => { selectContact(null); mobileView.set('list'); }}
+                            on:refresh={() => loadMessages(selectedContact?.ID)}
                             {...chatHandlers}
                         />
                     </div>
@@ -850,6 +973,8 @@
                             {selectedContact} {messages} bind:newMessage bind:selectedFiles {filePreviews}
                             {editingMessageId} {editMessageContent} bind:isCompressed {previewImage}
                             bind:replyingTo isMobile={false}
+                            {canLoadMore} onLoadMore={loadMoreMessages}
+                            onJumpToMessage={(e) => jumpToMessage(e.detail)}
                             {...chatHandlers}
                         />
                     {:else}

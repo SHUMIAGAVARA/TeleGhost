@@ -241,6 +241,36 @@ func (r *Repository) Migrate(ctx context.Context) error {
 		}
 	}
 
+	// Миграция: Исправление пустых ChatID
+	if err := r.FixMissingChatIDs(ctx); err != nil {
+		log.Printf("[Repo] Failed to fix missing chat IDs: %v", err)
+	}
+
+	return nil
+}
+
+// FixMissingChatIDs проверяет контакты на наличие пустых ChatID и исправляет их
+func (r *Repository) FixMissingChatIDs(ctx context.Context) error {
+	contacts, err := r.ListContacts(ctx)
+	if err != nil {
+		return err
+	}
+
+	user, err := r.GetMyProfile(ctx)
+	if err != nil || user == nil {
+		return nil
+	}
+
+	for _, c := range contacts {
+		if c.PublicKey != "" {
+			expectedID := identity.CalculateChatID(user.PublicKey, c.PublicKey)
+			if c.ChatID != expectedID {
+				if err := r.UpdateContactAndMigrateChatID(ctx, c, c.ChatID, expectedID); err != nil {
+					// silent fail
+				}
+			}
+		}
+	}
 	return nil
 }
 
@@ -901,6 +931,7 @@ func (r *Repository) GetChatHistory(ctx context.Context, chatID string, limit, o
 	for rows.Next() {
 		msg, err := r.scanMessage(rows)
 		if err != nil {
+			log.Printf("[Repo] scanMessage failed: %v", err)
 			return nil, fmt.Errorf("failed to scan message: %w", err)
 		}
 		messages = append(messages, msg)
@@ -1132,12 +1163,79 @@ func (r *Repository) GetUnreadCountByChat(ctx context.Context) (map[string]int, 
 
 // MarkChatAsRead помечает все сообщения в чате как прочитанные
 func (r *Repository) MarkChatAsRead(ctx context.Context, chatID string) error {
-	query := `UPDATE messages SET is_read = 1 WHERE chat_id = ? AND is_outgoing = 0`
-
-	_, err := r.db.ExecContext(ctx, query, chatID)
+	_, err := r.db.ExecContext(ctx, "UPDATE messages SET is_read = 1 WHERE chat_id = ? AND is_read = 0", chatID)
 	if err != nil {
 		return fmt.Errorf("failed to mark chat as read: %w", err)
 	}
-
 	return nil
+}
+
+// UpdateContactAndMigrateChatID updates the contact and migrates messages in a single transaction
+func (r *Repository) UpdateContactAndMigrateChatID(ctx context.Context, contact *core.Contact, oldChatID, newChatID string) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// 1. Save Contact (Update) inside transaction
+	log.Printf("[Repo] Saving contact %s inside tx...", contact.Nickname)
+
+	// Prepare update query manually since SaveContact is not on Tx
+	query := `
+		UPDATE contacts SET
+			public_key = ?,
+			nickname = ?,
+			bio = ?,
+			avatar = ?,
+			i2p_address = ?,
+			chat_id = ?,
+			is_blocked = ?,
+			is_verified = ?,
+			last_seen = ?,
+			updated_at = ?
+		WHERE id = ?
+	`
+	nickname := r.encryptString(contact.Nickname)
+	bio := r.encryptString(contact.Bio)
+	address := r.encryptString(contact.I2PAddress)
+	pubKey := sql.NullString{String: contact.PublicKey, Valid: contact.PublicKey != ""}
+
+	_, err = tx.ExecContext(ctx, query,
+		pubKey, nickname, bio, contact.Avatar,
+		address, contact.ChatID, contact.IsBlocked, contact.IsVerified,
+		contact.LastSeen, contact.UpdatedAt,
+		contact.ID,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to save contact in tx: %w", err)
+	}
+
+	// 2. Migrate Messages if ChatID changed
+	if oldChatID != newChatID {
+		log.Printf("[Repo] Migrating messages from %s to %s inside tx...", oldChatID, newChatID)
+		_, err = tx.ExecContext(ctx, "UPDATE messages SET chat_id = ? WHERE chat_id = ?", newChatID, oldChatID)
+		if err != nil {
+			return fmt.Errorf("failed to update messages chat ID in tx: %w", err)
+		}
+	}
+
+	return tx.Commit()
+}
+
+// MigrateChatID updates the chat_id for all messages and contact
+func (r *Repository) MigrateChatID(ctx context.Context, oldChatID, newChatID string) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// Update messages
+	_, err = tx.ExecContext(ctx, "UPDATE messages SET chat_id = ? WHERE chat_id = ?", newChatID, oldChatID)
+	if err != nil {
+		return fmt.Errorf("failed to update messages chat ID: %w", err)
+	}
+
+	return tx.Commit()
 }

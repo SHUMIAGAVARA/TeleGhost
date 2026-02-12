@@ -83,6 +83,17 @@ class MainActivity : AppCompatActivity(), mobile.PlatformBridge {
         }
     }
 
+    // Notification Permission Launcher
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            android.util.Log.i(TAG, "Notification permission granted")
+        } else {
+            android.util.Log.w(TAG, "Notification permission denied")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -113,6 +124,14 @@ class MainActivity : AppCompatActivity(), mobile.PlatformBridge {
 
         // Create notification channel
         createNotificationChannel()
+
+        // Request notification permission for Android 13+
+        if (Build.VERSION.SDK_INT >= 33) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) !=
+                android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
 
         // Register this activity as the Native Bridge for Go
         mobile.Mobile.setPlatformBridge(this)
@@ -198,6 +217,7 @@ class MainActivity : AppCompatActivity(), mobile.PlatformBridge {
                     .setContentText(message)
                     .setPriority(androidx.core.app.NotificationCompat.PRIORITY_DEFAULT)
                     .setAutoCancel(true)
+                    .setOngoing(true) // Make notification persistent
 
                 // PendingIntent to open app when clicked
                 val intent = Intent(this, MainActivity::class.java).apply {
@@ -213,6 +233,67 @@ class MainActivity : AppCompatActivity(), mobile.PlatformBridge {
                 }
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Notification failed", e)
+            }
+        }
+    }
+
+    override fun saveFile(path: String, filename: String) {
+        runOnUiThread {
+            try {
+                val file = File(path)
+                if (!file.exists()) {
+                     android.widget.Toast.makeText(this, "File to save not found", android.widget.Toast.LENGTH_SHORT).show()
+                     return@runOnUiThread
+                }
+
+                // Use MediaStore to save to Downloads
+                val contentValues = android.content.ContentValues().apply {
+                    put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, filename)
+                    // Try to detect mime type?
+                    val mime = try {
+                        val ext = MimeTypeMap.getFileExtensionFromUrl(filename)
+                        MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext) ?: "application/octet-stream"
+                    } catch(e: Exception) { "application/octet-stream" }
+                    put(android.provider.MediaStore.MediaColumns.MIME_TYPE, mime)
+                    
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_DOWNLOADS)
+                        put(android.provider.MediaStore.MediaColumns.IS_PENDING, 1) // Mark as pending while writing
+                    }
+                }
+
+                val resolver = applicationContext.contentResolver
+                val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                     resolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                } else {
+                     // Legacy storage? Not fully implementing legacy generic handling here for brevity, 
+                     // but MediaStore.Downloads.EXTERNAL_CONTENT_URI might work on older versions too if targeting API 29? 
+                     // Actually for < Q effectively requires WRITE_EXTERNAL_STORAGE.
+                     // Assuming we are targeting >= 29 or ignoring legacy full support for now.
+                     // But let's try external.
+                     resolver.insert(android.provider.MediaStore.Files.getContentUri("external"), contentValues)
+                }
+
+                if (uri != null) {
+                    resolver.openOutputStream(uri)?.use { output ->
+                        java.io.FileInputStream(file).use { input ->
+                            input.copyTo(output)
+                        }
+                    }
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        contentValues.clear()
+                        contentValues.put(android.provider.MediaStore.MediaColumns.IS_PENDING, 0)
+                        resolver.update(uri, contentValues, null, null)
+                    }
+                    android.widget.Toast.makeText(this, "Saved to Downloads", android.widget.Toast.LENGTH_SHORT).show()
+                } else {
+                    android.widget.Toast.makeText(this, "Failed to create MediaStore entry", android.widget.Toast.LENGTH_SHORT).show()
+                }
+
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Save file failed", e)
+                android.widget.Toast.makeText(this, "Save failed: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
             }
         }
     }

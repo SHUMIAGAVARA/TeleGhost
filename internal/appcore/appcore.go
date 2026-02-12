@@ -833,12 +833,13 @@ func (a *AppCore) OnMessageReceived(msg *core.Message, senderPubKey, senderAddr 
 
 	if !msg.IsOutgoing {
 		// Помечаем как прочитанное сразу, если чат активен
-		if a.ActiveChatID == msg.ChatID {
+		activeChatID := a.GetActiveChatID()
+		if activeChatID == msg.ChatID {
 			a.Repo.MarkChatAsRead(a.Ctx, msg.ChatID)
 		}
 
 		// Подавляем уведомление, если приложение видимо, в фокусе и открыт именно этот чат
-		if !a.IsVisible || !(a.IsFocused && a.ActiveChatID == msg.ChatID) {
+		if !a.IsVisible || !(a.IsFocused && activeChatID == msg.ChatID) {
 			go a.SendNotification(contact.Nickname, msg.Content, msg.ContentType)
 		}
 		go a.UpdateUnreadCount()
@@ -846,10 +847,72 @@ func (a *AppCore) OnMessageReceived(msg *core.Message, senderPubKey, senderAddr 
 }
 
 // OnContactRequest — обработчик запросов дружбы.
+// OnContactRequest — обработчик запросов дружбы.
 func (a *AppCore) OnContactRequest(pubKey, nickname, i2pAddress string) {
-	a.Emitter.Emit("new_contact", map[string]interface{}{
-		"nickname": nickname,
-	})
+	log.Printf("[AppCore] OnContactRequest from %s (%s)", nickname, pubKey[:8])
+
+	if a.Repo == nil {
+		return
+	}
+
+	// 1. Check if we already have this contact (by address)
+	contact, _ := a.Repo.GetContactByAddress(a.Ctx, i2pAddress)
+	if contact != nil {
+		// Contact exists.
+		oldChatID := contact.ChatID
+		updated := false
+
+		// Update Public Key if changed
+		if contact.PublicKey != pubKey {
+			contact.PublicKey = pubKey
+			updated = true
+		}
+
+		// Update Nickname if meaningful change
+		if nickname != "" && nickname != "Unknown" && contact.Nickname != nickname {
+			contact.Nickname = nickname
+			updated = true
+		}
+
+		// Check ChatID change
+		newChatID := identity.CalculateChatID(a.Identity.Keys.PublicKeyBase64, pubKey)
+		if contact.ChatID != newChatID {
+			log.Printf("[AppCore] Updating contact %s. ChatID migration: %s -> %s", contact.Nickname, oldChatID, newChatID)
+			contact.ChatID = newChatID
+			updated = true
+		}
+
+		if updated {
+			contact.UpdatedAt = time.Now()
+			// Save Contact AND Migrate Messages in one transaction
+			if err := a.Repo.UpdateContactAndMigrateChatID(a.Ctx, contact, oldChatID, newChatID); err != nil {
+				log.Printf("[AppCore] Failed to update contact and migrate messages: %v", err)
+				return
+			}
+			a.Emitter.Emit("contact_updated")
+		} else {
+			// No changes needed
+		}
+	} else {
+		// New contact
+		newChatID := identity.CalculateChatID(a.Identity.Keys.PublicKeyBase64, pubKey)
+		contact = &core.Contact{
+			ID:         uuid.New().String(),
+			PublicKey:  pubKey,
+			Nickname:   nickname,
+			I2PAddress: i2pAddress,
+			ChatID:     newChatID,
+			AddedAt:    time.Now(),
+		}
+		if err := a.Repo.SaveContact(a.Ctx, contact); err != nil {
+			log.Printf("[AppCore] Failed to save new contact: %v", err)
+			return
+		}
+		a.Emitter.Emit("new_contact", map[string]interface{}{
+			"nickname": nickname,
+		})
+		a.Emitter.Emit("contact_updated")
+	}
 }
 
 // UpdateUnreadCount обновляет счётчик непрочитанных.

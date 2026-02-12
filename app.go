@@ -409,7 +409,7 @@ func (a *App) SaveFileToLocation(path, filename string) (string, error) {
 // SetActiveChat устанавливает ID активного чата
 func (a *App) SetActiveChat(chatID string) {
 	if a.core != nil {
-		a.core.ActiveChatID = chatID
+		a.core.SetActiveChat(chatID)
 	}
 }
 

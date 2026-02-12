@@ -80,8 +80,9 @@ for i in "${!ARCHS[@]}"; do
         -DWITH_BINARY=OFF \
         -DWITH_STATIC=ON \
         -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT/$ARCH" \
-        -DBoost_INCLUDE_DIR="$BOOST_INCLUDE" \
-        -DBoost_LIBRARY_DIRS="$BOOST_LIB" \
+        -DBOOST_ROOT="$BOOST_ROOT" \
+        -DBOOST_INCLUDEDIR="$BOOST_INCLUDE" \
+        -DBOOST_LIBRARYDIR="$BOOST_LIB" \
         -DBoost_NO_BOOST_CMAKE=ON \
         -DBoost_NO_SYSTEM_PATHS=ON \
         -DBoost_USE_STATIC_LIBS=ON \

@@ -181,9 +181,19 @@ jobs:
           export PATH="$PATH:$(go env GOPATH)/bin"
           export CGO_ENABLED=1
           export ANDROID_NDK_HOME="${{ env.ANDROID_NDK_HOME }}"
+          
+          # Dynamically find OpenSSL directory (e.g. openssl-1.1.1w or openssl-1.1.1)
+          OPENSSL_DIR=$(find openssl_prebuilt -maxdepth 1 -type d -name "openssl-1.1*" | head -n 1)
+          if [ -z "$OPENSSL_DIR" ]; then
+            echo "Error: Could not find OpenSSL directory in openssl_prebuilt"
+            ls -R openssl_prebuilt
+            exit 1
+          fi
+          echo "Found OpenSSL directory: $OPENSSL_DIR"
+          
           # Add Boost and OpenSSL to include path
           # Using arm64 headers as reference
-          export CGO_CXXFLAGS="-I$BOOST_ROOT -I$GITHUB_WORKSPACE/openssl_prebuilt/openssl-1.1.1/arm64-v8a/include"
+          export CGO_CXXFLAGS="-I$BOOST_ROOT -I$GITHUB_WORKSPACE/$OPENSSL_DIR/arm64-v8a/include"
           
           echo "Organizing OpenSSL libraries..."
           I2P_LIB_DIR="internal/network/i2pd/lib"
@@ -192,12 +202,12 @@ jobs:
           mkdir -p "$I2P_LIB_DIR/x86_64"
           mkdir -p "$I2P_LIB_DIR/x86"
           
-          # PurpleI2P structure: openssl-1.1.1/{arch}/lib/
+          # PurpleI2P structure: openssl-1.1.x/{arch}/lib/
           
-          cp $GITHUB_WORKSPACE/openssl_prebuilt/openssl-1.1.1/arm64-v8a/lib/*.a "$I2P_LIB_DIR/arm64-v8a/"
-          cp $GITHUB_WORKSPACE/openssl_prebuilt/openssl-1.1.1/armeabi-v7a/lib/*.a   "$I2P_LIB_DIR/armeabi-v7a/"
-          cp $GITHUB_WORKSPACE/openssl_prebuilt/openssl-1.1.1/x86_64/lib/*.a "$I2P_LIB_DIR/x86_64/"
-          cp $GITHUB_WORKSPACE/openssl_prebuilt/openssl-1.1.1/x86/lib/*.a    "$I2P_LIB_DIR/x86/"
+          cp $GITHUB_WORKSPACE/$OPENSSL_DIR/arm64-v8a/lib/*.a "$I2P_LIB_DIR/arm64-v8a/"
+          cp $GITHUB_WORKSPACE/$OPENSSL_DIR/armeabi-v7a/lib/*.a   "$I2P_LIB_DIR/armeabi-v7a/"
+          cp $GITHUB_WORKSPACE/$OPENSSL_DIR/x86_64/lib/*.a "$I2P_LIB_DIR/x86_64/"
+          cp $GITHUB_WORKSPACE/$OPENSSL_DIR/x86/lib/*.a    "$I2P_LIB_DIR/x86/"
           
           echo "──── Library structure (OpenSSL) ────"
           ls -R internal/network/i2pd/lib

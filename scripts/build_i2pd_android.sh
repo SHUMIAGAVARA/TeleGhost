@@ -27,6 +27,22 @@ ARCHS=("arm64-v8a" "armeabi-v7a" "x86_64" "x86")
 # ABI names for CMake
 ABIS=("arm64-v8a" "armeabi-v7a" "x86_64" "x86")
 
+# Patch Boost once for NDK 26 compatibility (std::unary_function removal in C++17)
+if [ ! -f "$BUILD_DIR/.boost_patched" ]; then
+    echo "Patching Boost headers for NDK 26 compatibility..."
+    # Find headers (version.hpp)
+    TEMP_INCLUDE=$(find "$BOOST_ROOT" -name "version.hpp" | grep "boost/version.hpp" | head -n 1 | sed 's|/boost/version.hpp||')
+    if [ -n "$TEMP_INCLUDE" ]; then
+        echo "   Found Boost include at $TEMP_INCLUDE. Patching..."
+        # Replacing std::unary_function and std::binary_function with __ equivalents provided by libc++ for compatibility
+        find "$TEMP_INCLUDE/boost" -type f -name "*.hpp" -exec sed -i 's/std::unary_function/std::__unary_function/g' {} +
+        find "$TEMP_INCLUDE/boost" -type f -name "*.hpp" -exec sed -i 's/std::binary_function/std::__binary_function/g' {} +
+        touch "$BUILD_DIR/.boost_patched"
+    else
+        echo "   Warning: Could not find Boost headers to patch"
+    fi
+fi
+
 # Loop over architectures
 for i in "${!ARCHS[@]}"; do
     ARCH=${ARCHS[$i]}
@@ -35,7 +51,7 @@ for i in "${!ARCHS[@]}"; do
     echo ">>> Building for $ARCH ($ABI)..."
     
     ARCH_BUILD_DIR="$BUILD_DIR/$ARCH"
-    mkdir -p $ARCH_BUILD_DIR
+    mkdir -p "$ARCH_BUILD_DIR"
     
     # Locate OpenSSL for this Arch
     echo "--- OpenSSL Discovery for $ARCH ---"
@@ -64,7 +80,7 @@ for i in "${!ARCHS[@]}"; do
     # Locate Boost for this Arch
     echo "--- Boost Discovery for $ARCH ---"
     
-    # Find headers (version.hpp)
+    # Find headers (already found above but let's re-verify per arch paths if needed)
     BOOST_INCLUDE_PATH=$(find "$BOOST_ROOT" -name "version.hpp" | grep "boost/version.hpp" | head -n 1 | sed 's|/boost/version.hpp||')
     if [ -z "$BOOST_INCLUDE_PATH" ]; then
         echo "Warning: find could not locate version.hpp, using fallback paths"
@@ -102,7 +118,6 @@ for i in "${!ARCHS[@]}"; do
         -DANDROID_ABI="$ABI" \
         -DANDROID_PLATFORM=android-21 \
         -DWITH_UPNP=NO \
-        -DWITH_AESNI=NO \
         -DBUILD_SHARED_LIBS=OFF \
         -DWITH_LIBRARY=ON \
         -DWITH_BINARY=OFF \

@@ -447,7 +447,7 @@ func openFile(path string) error {
 	var cmd string
 	var args []string
 
-	switch wailsRuntime.GOOS {
+	switch runtime.GOOS {
 	case "windows":
 		cmd = "explorer"
 		args = []string{path}

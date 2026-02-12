@@ -59,6 +59,8 @@ type PlatformServices interface {
 	// HideWindow скрывает окно приложения.
 	HideWindow()
 	Notify(title, message string)
+	// ShareFile shares a file using system share sheet (Mobile) or opens file location (Desktop)
+	ShareFile(path string) error
 }
 
 // ─── Типы данных (для API bridge, совместим со фронтендом) ────────────────────

@@ -2,6 +2,7 @@
     import { Icons } from '../Icons.js';
     import { getInitials, getStatusColor, getStatusText } from '../utils.js';
     import * as AppActions from '../../wailsjs/go/main/App.js';
+    import { Api } from '../lib/api_bridge.js';
 
     export let profileNickname;
     export let profileBio;
@@ -26,6 +27,30 @@
     export let onClose;
     export let onShowSeed;
     export let onCheckUpdates;
+
+    async function onExportReseed() {
+        try {
+            await Api.ExportReseed();
+            // На мобилке откроется Share Sheet, на десктопе папка.
+        } catch (e) {
+            console.error(e);
+            alert('Ошибка экспорта: ' + e);
+        }
+    }
+
+    async function onImportReseed() {
+        try {
+            // SelectFiles returns array of strings
+            const files = await Api.SelectFiles();
+            if (files && files.length > 0) {
+                await Api.ImportReseed(files[0]);
+                alert("Данные сети загружены. Ожидайте подключения...");
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Ошибка импорта: ' + e);
+        }
+    }
 </script>
 
 <div class="settings-panel animate-fade-in">
@@ -142,6 +167,24 @@
                                 <input type="checkbox" bind:checked={routerSettings.logToFile} />
                             </div>
                             <button class="btn-primary full-width" on:click={onSaveRouterSettings} style="margin-top: 10px;">💾 Сохранить и применить</button>
+                        </div>
+
+                        <h4 class="section-title">Экстренное подключение (Reseed)</h4>
+                        <div class="settings-item-group">
+                            <div class="setting-item flex-row bg-box">
+                                <div>
+                                    <span class="label">Поделиться сетью (Экспорт)</span>
+                                    <p class="hint">Создать файл для оффлайн-подключения друга</p>
+                                </div>
+                                <button class="btn-secondary" on:click={onExportReseed}>📤 Экспорт</button>
+                            </div>
+                            <div class="setting-item flex-row bg-box">
+                                <div>
+                                    <span class="label">Загрузить сеть (Импорт)</span>
+                                    <p class="hint">Импортировать файл .zip для подключения</p>
+                                </div>
+                                <button class="btn-secondary" on:click={onImportReseed} disabled={networkStatus === 'online'}>📥 Импорт</button>
+                            </div>
                         </div>
                     </div>
                 {:else if activeSettingsTab === 'about'}

@@ -120,6 +120,10 @@ const METHODS = [
     'CheckForUpdates',
     'GetNetworkStatus',
 
+    // === Reseed ===
+    'ExportReseed',
+    'ImportReseed',
+
     // === Utils ===
     'GetFileBase64',
     'SaveTempImage',

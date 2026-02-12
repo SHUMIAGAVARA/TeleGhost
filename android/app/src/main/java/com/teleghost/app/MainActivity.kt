@@ -105,12 +105,42 @@ class MainActivity : AppCompatActivity(), mobile.PlatformBridge {
                 val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
                     type = "*/*"
                     addCategory(Intent.CATEGORY_OPENABLE)
-                    putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/*", "video/*", "application/pdf", "text/*"))
+                    putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/*", "video/*", "application/pdf", "text/*", "application/zip"))
                 }
                 filePickerLauncher.launch(intent)
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Failed to launch picker", e)
                 mobile.Mobile.onFileSelected("")
+            }
+        }
+    }
+
+    override fun shareFile(path: String) {
+        runOnUiThread {
+            try {
+                val file = File(path)
+                if (!file.exists()) {
+                    android.widget.Toast.makeText(this, "File not found: $path", android.widget.Toast.LENGTH_SHORT).show()
+                    return@runOnUiThread
+                }
+
+                // Use FileProvider to share internal file
+                val uri = androidx.core.content.FileProvider.getUriForFile(
+                    this,
+                    "com.teleghost.app.fileprovider",
+                    file
+                )
+
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "application/zip"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+                startActivity(Intent.createChooser(intent, "Share Reseed File"))
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Failed to share file", e)
+                android.widget.Toast.makeText(this, "Share failed: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
             }
         }
     }

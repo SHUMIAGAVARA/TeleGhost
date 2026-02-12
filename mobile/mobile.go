@@ -88,6 +88,7 @@ func (e *SSEEmitter) unsubscribe(ch chan string) {
 // PlatformBridge defines methods that Native Android/iOS must implement.
 type PlatformBridge interface {
 	PickFile()
+	ShareFile(path string) // New method
 }
 
 var (
@@ -148,6 +149,14 @@ func (p *MobilePlatform) HideWindow() {}
 
 func (p *MobilePlatform) Notify(title, message string) {
 	log.Printf("[Mobile] Notification: %s - %s", title, message)
+}
+
+func (p *MobilePlatform) ShareFile(path string) error {
+	if bridge == nil {
+		return fmt.Errorf("native bridge not connected")
+	}
+	bridge.ShareFile(path)
+	return nil
 }
 
 // ─── Глобальное состояние ───────────────────────────────────────────────────
@@ -500,6 +509,24 @@ func dispatch(app *appcore.AppCore, method string, args []json.RawMessage) (inte
 		var settings map[string]interface{}
 		parseArgs(args, &settings)
 		return nil, app.SaveRouterSettings(settings)
+
+	case "ExportReseed":
+		path, err := app.ExportReseed()
+		if err != nil {
+			return nil, err
+		}
+		// Share file immediately on mobile
+		if err := app.Platform.ShareFile(path); err != nil {
+			log.Printf("[Mobile] Failed to share reseed: %v", err)
+		}
+		return path, nil
+
+	case "ImportReseed":
+		var path string // This path comes from PickFile, so it's a temp file accessible by Go
+		// Actually, PickFile returns a single file path string
+		// Wait, user clicks "Import" -> calls SelectFiles -> gets Path -> calls ImportReseed(path)
+		parseArgs(args, &path)
+		return nil, app.ImportReseed(path)
 
 	default:
 		return nil, fmt.Errorf("unknown method: %s", method)

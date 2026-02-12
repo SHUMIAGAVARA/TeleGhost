@@ -166,6 +166,13 @@ func (p *WailsPlatform) Notify(title, message string) {
 	}
 }
 
+func (p *WailsPlatform) ShareFile(path string) error {
+	// For desktop, just open the folder containing the file
+	dir := filepath.Dir(path)
+	runtime.BrowserOpenURL(p.ctx, "file://"+dir)
+	return nil
+}
+
 // ClipboardSet sets text to clipboard
 func (a *App) ClipboardSet(text string) {
 	runtime.ClipboardSetText(a.ctx, text)
@@ -403,4 +410,37 @@ func (a *App) RequestProfileUpdate(address string) error {
 		return a.core.Messenger.SendProfileRequest(address)
 	}
 	return fmt.Errorf("messenger not initialized")
+}
+
+// ExportReseed wraps AppCore.ExportReseed
+func (a *App) ExportReseed() (string, error) {
+	if a.core == nil {
+		return "", fmt.Errorf("core not initialized")
+	}
+	path, err := a.core.ExportReseed()
+	if err != nil {
+		return "", err
+	}
+	// On desktop, we might want to let user save it where they want?
+	// The user requirement says: "Open system file manager".
+	// ExportReseed returns a temp path.
+	// We can auto-open the folder.
+	a.ShareFile(path)
+	return path, nil
+}
+
+// ImportReseed wraps AppCore.ImportReseed
+func (a *App) ImportReseed(path string) error {
+	if a.core == nil {
+		return fmt.Errorf("core not initialized")
+	}
+	return a.core.ImportReseed(path)
+}
+
+// ShareFile calls WailsPlatform.ShareFile
+func (a *App) ShareFile(path string) error {
+	// For desktop, just open the folder containing the file
+	dir := filepath.Dir(path)
+	runtime.BrowserOpenURL(a.ctx, "file://"+dir)
+	return nil
 }

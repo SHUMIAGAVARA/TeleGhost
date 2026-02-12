@@ -49,7 +49,7 @@ type MessageHandler func(msg *core.Message, senderPubKey, senderAddr string)
 type ContactRequestHandler func(senderPubKey, nickname, i2pAddress string)
 
 // ProfileUpdateHandler обработчик обновлений профиля
-type ProfileUpdateHandler func(senderPubKey, nickname, bio string, avatar []byte)
+type ProfileUpdateHandler func(senderPubKey, nickname, bio string, avatar []byte, senderAddr string)
 
 // Service — мессенджер сервис
 type Service struct {
@@ -535,7 +535,7 @@ func (s *Service) handlePacket(packet *pb.Packet, remoteAddr string) {
 		s.handleTextMessage(packet, senderPubKey, remoteAddr)
 
 	case pb.PacketType_PROFILE_UPDATE:
-		s.handleProfileUpdate(packet, senderPubKey)
+		s.handleProfileUpdate(packet, senderPubKey, remoteAddr)
 
 	case pb.PacketType_HANDSHAKE:
 		s.handleHandshake(packet, senderPubKey)
@@ -735,7 +735,7 @@ func (s *Service) handleTextMessage(packet *pb.Packet, senderPubKey, remoteAddr 
 }
 
 // handleProfileUpdate обрабатывает обновление профиля
-func (s *Service) handleProfileUpdate(packet *pb.Packet, senderPubKey string) {
+func (s *Service) handleProfileUpdate(packet *pb.Packet, senderPubKey, senderAddr string) {
 	profileUpdate := &pb.ProfileUpdate{}
 	if err := proto.Unmarshal(packet.Payload, profileUpdate); err != nil {
 		log.Printf("[Messenger] Failed to unmarshal ProfileUpdate: %v", err)
@@ -744,7 +744,7 @@ func (s *Service) handleProfileUpdate(packet *pb.Packet, senderPubKey string) {
 
 	log.Printf("[Messenger] Profile update from %s: %s", senderPubKey[:min(16, len(senderPubKey))], profileUpdate.Nickname)
 	if s.profileHandler != nil {
-		s.profileHandler(senderPubKey, profileUpdate.Nickname, profileUpdate.Bio, profileUpdate.Avatar)
+		s.profileHandler(senderPubKey, profileUpdate.Nickname, profileUpdate.Bio, profileUpdate.Avatar, senderAddr)
 	}
 }
 

@@ -479,6 +479,11 @@ func dispatch(app *appcore.AppCore, method string, args []json.RawMessage) (inte
 		parseArgs(args, &id)
 		return nil, app.DeleteContact(id)
 
+	case "RequestProfile":
+		var address string
+		parseArgs(args, &address)
+		return nil, app.RequestProfile(address)
+
 	// === Messages ===
 	case "SendText":
 		var contactID, text, replyToID string

@@ -689,7 +689,7 @@ func (a *AppCore) formatProfileAvatarURL(userID, path string) string {
 }
 
 // onProfileUpdate обрабатывает входящее обновление профиля от контакта
-func (a *AppCore) onProfileUpdate(senderPubKey, nickname, bio string, avatar []byte) {
+func (a *AppCore) onProfileUpdate(senderPubKey, nickname, bio string, avatar []byte, senderAddr string) {
 	if a.Repo == nil {
 		return
 	}
@@ -701,7 +701,25 @@ func (a *AppCore) onProfileUpdate(senderPubKey, nickname, bio string, avatar []b
 
 	contact, _ := a.Repo.GetContactByPublicKey(a.Ctx, senderPubKey)
 	if contact == nil {
-		return
+		// Try to find by address (important for b32-only contacts discovery)
+		contact, _ = a.Repo.GetContactByAddress(a.Ctx, senderAddr)
+		if contact != nil {
+			oldChatID := contact.ChatID
+			newChatID := identity.CalculateChatID(a.Identity.Keys.PublicKeyBase64, senderPubKey)
+
+			log.Printf("[AppCore] Discovered PublicKey via ProfileUpdate for %s (%s). Migrating ChatID: %s -> %s", contact.Nickname, senderAddr, oldChatID, newChatID)
+
+			contact.PublicKey = senderPubKey
+			contact.ChatID = newChatID
+			contact.UpdatedAt = time.Now()
+
+			if err := a.Repo.UpdateContactAndMigrateChatID(a.Ctx, contact, oldChatID, newChatID); err != nil {
+				log.Printf("[AppCore] Failed to migrate ChatID via ProfileUpdate for %s: %v", contact.Nickname, err)
+			}
+		} else {
+			// Not a contact we know, just return
+			return
+		}
 	}
 
 	contact.Nickname = nickname
@@ -752,6 +770,14 @@ func (a *AppCore) onProfileRequest(requestorPubKey string) {
 	}
 }
 
+// RequestProfile запрашивает обновление профиля у контакта
+func (a *AppCore) RequestProfile(address string) error {
+	if a.Messenger == nil {
+		return fmt.Errorf("messenger not initialized")
+	}
+	return a.Messenger.SendProfileRequest(address)
+}
+
 // ─── Обработчики входящих сообщений ─────────────────────────────────────────
 
 // OnMessageReceived — обработчик входящих сообщений.
@@ -761,6 +787,7 @@ func (a *AppCore) OnMessageReceived(msg *core.Message, senderPubKey, senderAddr 
 		return
 	}
 
+	msg.SenderAddr = senderAddr
 	var contact *core.Contact
 	contact, _ = a.Repo.GetContactByPublicKey(a.Ctx, senderPubKey)
 	if contact == nil {

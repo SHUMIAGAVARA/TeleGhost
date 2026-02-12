@@ -141,6 +141,9 @@ type Message struct {
 	// SenderID — ID отправителя (User.ID или Contact.ID)
 	SenderID string `json:"sender_id" db:"sender_id"`
 
+	// SenderAddr — I2P адрес отправителя (для сопоставления до того как узнаем PubKey)
+	SenderAddr string `json:"sender_addr,omitempty" db:"-"`
+
 	// Content — содержимое сообщения (расшифрованное)
 	Content string `json:"content" db:"content"`
 

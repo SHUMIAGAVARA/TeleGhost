@@ -147,9 +147,12 @@
         // Более надежная проверка на принадлежность сообщения текущему чату
         const isCurrentChat = selectedContact && (
             msg.ChatID === selectedContact.ChatID || 
+            msg.chat_id === selectedContact.ChatID ||
             msg.ChatID === selectedContact.ID ||
             msg.SenderID === selectedContact.PublicKey ||
-            (msg.IsOutgoing && msg.ChatID === selectedContact.ChatID)
+            msg.sender_id === selectedContact.PublicKey ||
+            (msg.sender_addr && msg.sender_addr === selectedContact.I2PAddress) ||
+            (msg.IsOutgoing && (msg.ChatID === selectedContact.ChatID || msg.chat_id === selectedContact.ChatID))
         );
 
         if (isCurrentChat) {
@@ -185,7 +188,8 @@
             if (updated) {
                 // Critical: Check if ChatID changed
                 if (updated.ChatID !== selectedContact.ChatID) {
-                    console.log("[App] Selected contact updated (ChatID changed), reloading chat...");
+                    console.log("[App] Selected contact updated (ChatID changed), reloading chat from", selectedContact.ChatID, "to", updated.ChatID);
+                    // Update local reference immediately so new_message can match it while loadMessages is pending
                     selectedContact = updated;
                     await loadMessages(updated.ID);
                 } else if (

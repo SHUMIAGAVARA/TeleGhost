@@ -420,12 +420,12 @@ func (a *App) SetAppFocus(focused bool) {
 	}
 }
 
-// RequestProfileUpdate запрашивает обновление профиля у контакта
-func (a *App) RequestProfileUpdate(address string) error {
-	if a.core != nil && a.core.Messenger != nil {
-		return a.core.Messenger.SendProfileRequest(address)
+// RequestProfile запрашивает обновление профиля у контакта
+func (a *App) RequestProfile(address string) error {
+	if a.core != nil {
+		return a.core.RequestProfile(address)
 	}
-	return fmt.Errorf("messenger not initialized")
+	return fmt.Errorf("core not initialized")
 }
 
 // ExportReseed wraps AppCore.ExportReseed

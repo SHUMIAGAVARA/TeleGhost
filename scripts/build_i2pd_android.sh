@@ -126,6 +126,7 @@ for i in "${!ARCHS[@]}"; do
         -DBoost_NO_SYSTEM_PATHS=ON \
         -DBoost_USE_STATIC_LIBS=ON \
         -DBoost_DEBUG=ON \
+        -DCMAKE_CXX_FLAGS="-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_FUNCTION" \
         -DCMAKE_BUILD_TYPE=Release
 
     # CMake Build

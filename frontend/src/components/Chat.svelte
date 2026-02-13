@@ -253,6 +253,17 @@
         }
     }
 
+    // Auto-expand textarea
+    function resizeTextarea() {
+        if (!textarea) return;
+        textarea.style.height = 'auto'; // Reset height to calculate scrollHeight
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    // Watch newMessage to resize (e.g. when cleared or pasted)
+    $: if (newMessage !== undefined) {
+        tick().then(resizeTextarea);
+    }
 </script>
 
 <div class="chat-area animate-fade-in" class:mobile={isMobile}>
@@ -415,10 +426,10 @@
                             <div class="file-offer-card">
                                 <div class="file-icon-large">📁</div>
                                 <div class="file-info">
-                                    <div class="file-title">Файлов: {msg.FileCount}</div>
-                                    <div class="file-size">{(msg.TotalSize / (1024*1024)).toFixed(2)} MB</div>
-                                </div>
+                                    <div class="file-title">Файлов: {msg.FileCount || (msg.Attachments ? msg.Attachments.length : (msg.Filenames ? msg.Filenames.length : 0))}</div>
+                                <div class="file-size">{((msg.TotalSize || 0) / (1024*1024)).toFixed(2)} MB</div>
                             </div>
+                        </div>
                             <div class="file-actions">
                                 {#if !msg.IsOutgoing}
                                     <button class="btn-small btn-success" on:click|stopPropagation={() => onAcceptTransfer(msg)}>Принять</button>
@@ -507,6 +518,7 @@
                     bind:value={newMessage}
                     on:keypress={onKeyPress}
                     on:paste={onPaste}
+                    on:input={resizeTextarea}
                     rows="1"
                     style="width: 100%;"
                 ></textarea>
@@ -588,7 +600,7 @@
 
     .input-area-wrapper { padding: 10px 20px 20px; background: var(--bg-primary); position: sticky; bottom: 0; z-index: 50; border-top: 1px solid var(--border); }
     .input-area { display: flex; align-items: center; gap: 10px; background: var(--bg-secondary); padding: 8px 12px; border-radius: 24px; }
-    .message-input { flex: 1; background: transparent; border: none; color: white; outline: none; resize: none; font-size: 15px; max-height: 150px; padding: 8px 0; }
+    .message-input { flex: 1; background: transparent; border: none; color: white; outline: none; resize: none; font-size: 15px; max-height: 120px; padding: 8px 0; overflow-y: auto; line-height: 1.4; }
 
     .btn-icon { background: transparent; border: none; color: var(--text-secondary); cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
     .btn-icon:hover { background: rgba(255,255,255,0.1); color: white; }

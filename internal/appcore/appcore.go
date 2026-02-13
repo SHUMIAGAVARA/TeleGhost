@@ -148,6 +148,8 @@ type MessageInfo struct {
 	ReplyToID    string                   `json:"ReplyToID,omitempty"`
 	ReplyPreview *ReplyPreview            `json:"ReplyPreview,omitempty"`
 	Attachments  []map[string]interface{} `json:"Attachments,omitempty"`
+	FileCount    int                      `json:"FileCount,omitempty"`
+	TotalSize    int64                    `json:"TotalSize,omitempty"`
 }
 
 // UserInfo — информация о пользователе
@@ -866,6 +868,8 @@ func (a *AppCore) OnMessageReceived(msg *core.Message, senderPubKey, senderAddr 
 		"ReplyToID":    msg.ReplyToID,
 		"ReplyPreview": replyPreview,
 		"Attachments":  attachments,
+		"FileCount":    msg.FileCount,
+		"TotalSize":    msg.TotalSize,
 	})
 
 	if !msg.IsOutgoing {

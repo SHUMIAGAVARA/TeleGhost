@@ -173,6 +173,12 @@ type Message struct {
 
 	// Attachments — список вложений
 	Attachments []*Attachment `json:"attachments,omitempty" db:"-"`
+
+	// FileCount — количество файлов (для FileOffer)
+	FileCount int `json:"file_count,omitempty" db:"file_count"`
+
+	// TotalSize — общий размер файлов (для FileOffer)
+	TotalSize int64 `json:"total_size,omitempty" db:"total_size"`
 }
 
 // Attachment представляет вложение (файл/изображение)

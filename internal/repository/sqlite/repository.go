@@ -217,6 +217,9 @@ func (r *Repository) Migrate(ctx context.Context) error {
 	if err == nil {
 		defer rows.Close()
 		hasIsRead := false
+		hasFileCount := false
+		hasTotalSize := false
+
 		for rows.Next() {
 			var cid int
 			var name, ctype string
@@ -225,7 +228,12 @@ func (r *Repository) Migrate(ctx context.Context) error {
 			if err := rows.Scan(&cid, &name, &ctype, &notnull, &dflt_value, &pk); err == nil {
 				if name == "is_read" {
 					hasIsRead = true
-					break
+				}
+				if name == "file_count" {
+					hasFileCount = true
+				}
+				if name == "total_size" {
+					hasTotalSize = true
 				}
 			}
 		}
@@ -235,8 +243,22 @@ func (r *Repository) Migrate(ctx context.Context) error {
 			_, err = r.db.ExecContext(ctx, "ALTER TABLE messages ADD COLUMN is_read INTEGER DEFAULT 0")
 			if err != nil {
 				log.Printf("[Repo] Failed to add is_read column: %v", err)
-			} else {
-				log.Println("[Repo] is_read column added successfully.")
+			}
+		}
+
+		if !hasFileCount {
+			log.Println("[Repo] Adding file_count column to messages table...")
+			_, err = r.db.ExecContext(ctx, "ALTER TABLE messages ADD COLUMN file_count INTEGER DEFAULT 0")
+			if err != nil {
+				log.Printf("[Repo] Failed to add file_count column: %v", err)
+			}
+		}
+
+		if !hasTotalSize {
+			log.Println("[Repo] Adding total_size column to messages table...")
+			_, err = r.db.ExecContext(ctx, "ALTER TABLE messages ADD COLUMN total_size INTEGER DEFAULT 0")
+			if err != nil {
+				log.Printf("[Repo] Failed to add total_size column: %v", err)
 			}
 		}
 	}
@@ -738,13 +760,15 @@ func (r *Repository) DeleteContact(ctx context.Context, id string) error {
 func (r *Repository) SaveMessage(ctx context.Context, msg *core.Message) error {
 	query := `
 		INSERT INTO messages (id, chat_id, sender_id, content, content_type, status, 
-		                      is_outgoing, reply_to_id, timestamp, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		                      is_outgoing, reply_to_id, timestamp, created_at, updated_at, file_count, total_size)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET
 			content = excluded.content,
 			content_type = excluded.content_type,
 			status = excluded.status,
-			updated_at = excluded.updated_at
+			updated_at = excluded.updated_at,
+			file_count = excluded.file_count,
+			total_size = excluded.total_size
 	`
 
 	now := time.Now()
@@ -764,6 +788,7 @@ func (r *Repository) SaveMessage(ctx context.Context, msg *core.Message) error {
 	_, err := r.db.ExecContext(ctx, query,
 		msg.ID, msg.ChatID, msg.SenderID, content, msg.ContentType, msg.Status,
 		msg.IsOutgoing, msg.ReplyToID, msg.Timestamp, msg.CreatedAt, msg.UpdatedAt,
+		msg.FileCount, msg.TotalSize,
 	)
 
 	if err != nil {
@@ -806,7 +831,7 @@ func (r *Repository) SaveMessage(ctx context.Context, msg *core.Message) error {
 func (r *Repository) GetMessage(ctx context.Context, id string) (*core.Message, error) {
 	query := `
 		SELECT id, chat_id, sender_id, content, content_type, status,
-		       is_outgoing, reply_to_id, timestamp, created_at, updated_at
+		       is_outgoing, reply_to_id, timestamp, created_at, updated_at, file_count, total_size
 		FROM messages WHERE id = ?
 	`
 
@@ -832,6 +857,7 @@ func (r *Repository) scanMessage(row interface {
 	err := row.Scan(
 		&msg.ID, &msg.ChatID, &msg.SenderID, &msg.Content, &msg.ContentType, &msg.Status,
 		&msg.IsOutgoing, &msg.ReplyToID, &msg.Timestamp, &msg.CreatedAt, &msg.UpdatedAt,
+		&msg.FileCount, &msg.TotalSize,
 	)
 	if err != nil {
 		return nil, err
@@ -912,7 +938,7 @@ func (r *Repository) GetChatHistory(ctx context.Context, chatID string, limit, o
 	query := `
 		SELECT * FROM (
 			SELECT id, chat_id, sender_id, content, content_type, status,
-			       is_outgoing, reply_to_id, timestamp, created_at, updated_at
+			       is_outgoing, reply_to_id, timestamp, created_at, updated_at, file_count, total_size
 			FROM messages
 			WHERE chat_id = ?
 			ORDER BY timestamp DESC
@@ -982,7 +1008,7 @@ func (r *Repository) UpdateMessageContent(ctx context.Context, id, newContent st
 func (r *Repository) SearchMessages(ctx context.Context, chatID, queryStr string) ([]*core.Message, error) {
 	query := `
 		SELECT id, chat_id, sender_id, content, content_type, status,
-		       is_outgoing, reply_to_id, timestamp, created_at, updated_at
+		       is_outgoing, reply_to_id, timestamp, created_at, updated_at, file_count, total_size
 		FROM messages
 		WHERE chat_id = ? AND content LIKE ?
 		ORDER BY timestamp DESC
@@ -1001,6 +1027,7 @@ func (r *Repository) SearchMessages(ctx context.Context, chatID, queryStr string
 		err := rows.Scan(
 			&msg.ID, &msg.ChatID, &msg.SenderID, &msg.Content, &msg.ContentType, &msg.Status,
 			&msg.IsOutgoing, &msg.ReplyToID, &msg.Timestamp, &msg.CreatedAt, &msg.UpdatedAt,
+			&msg.FileCount, &msg.TotalSize,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan message: %w", err)

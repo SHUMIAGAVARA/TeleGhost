@@ -173,6 +173,8 @@ func (a *AppCore) GetMessages(contactID string, limit, offset int) ([]*MessageIn
 			IsOutgoing:  m.IsOutgoing,
 			Status:      m.Status.String(),
 			ContentType: m.ContentType,
+			FileCount:   m.FileCount,
+			TotalSize:   m.TotalSize,
 		}
 
 		if m.ReplyToID != nil && *m.ReplyToID != "" {
@@ -481,6 +483,8 @@ func (a *AppCore) SendFileMessage(chatID, text, replyToID string, files []string
 		Timestamp:   now,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
+		FileCount:   len(files), // Cast to int
+		TotalSize:   totalSize,
 	}
 	if replyToID != "" {
 		msg.ReplyToID = &replyToID
@@ -614,6 +618,8 @@ func (a *AppCore) onFileOffer(senderPubKey, messageID, chatID string, filenames 
 		Timestamp:   time.Now().UnixMilli(),
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
+		FileCount:   int(fileCount),
+		TotalSize:   totalSize,
 	}
 	a.Repo.SaveMessage(a.Ctx, msg)
 

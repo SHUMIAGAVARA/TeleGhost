@@ -58,8 +58,9 @@ func (a *AppCore) ExportReseed() (string, error) {
 	}
 	selectedFiles := files[:count]
 
-	// 4. Создаем ZIP архив во временной папке
-	tmpDir := os.TempDir()
+	// 4. Создаем ZIP архив во временной папке внутри DataDir (для Android)
+	tmpDir := filepath.Join(a.DataDir, "tmp")
+	os.MkdirAll(tmpDir, 0700)
 	archiveName := fmt.Sprintf("i2p_reseed_%s.zip", time.Now().Format("20060102_150405"))
 	archivePath := filepath.Join(tmpDir, archiveName)
 

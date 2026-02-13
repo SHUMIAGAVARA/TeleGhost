@@ -53,9 +53,9 @@ func (a *AppCore) SendText(contactID, text, replyToID string) error {
 			log.Printf("[AppCore] Handshake failed: %v", err)
 		}
 
-		// Wait for handshake completion (up to 10 seconds)
+		// Wait for handshake completion (up to 60 seconds)
 		log.Printf("[AppCore] Waiting for handshake with %s...", contact.Nickname)
-		for i := 0; i < 20; i++ {
+		for i := 0; i < 120; i++ {
 			time.Sleep(500 * time.Millisecond)
 			updatedContact, err := a.Repo.GetContact(a.Ctx, contactID)
 			if err == nil && updatedContact != nil && updatedContact.PublicKey != "" {

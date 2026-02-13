@@ -34,6 +34,7 @@
     export let onSaveFile;
     export let onPreviewImage;
     export let startLoadingImage; // Fix: Add missing prop
+    export let isLoading = false;
 
     let textarea;
     let touchStartX = 0;
@@ -151,48 +152,63 @@
     });
 
     // Handle Contact Change & Initialize Loading
-    $: if (selectedContact && selectedContact.ID !== currentContactId) {
-        currentContactId = selectedContact.ID;
-        // Reset state for new chat
+    $: if (isLoading || (selectedContact && selectedContact.ID !== currentContactId)) {
+        if (selectedContact) currentContactId = selectedContact.ID;
+        // Reset state for new chat or loading start
         chatReady = false; 
         initialScrollDone = false;
         imagesLoading = true;
         pendingImages = 0;
         loadedImages = 0;
         
-        // Safety timeout to ensure chat shows even if image load hangs
-        setTimeout(() => {
-            if (!chatReady) {
-                chatReady = true;
-                imagesLoading = false;
-                scrollToBottom(true);
-            }
-        }, 3000);
+        // Safety timeout
+        if (isLoading) {
+             // If legitimate loading, we rely on isLoading becoming false
+        } else {
+            // Fallback if not loading but contact changed (shouldn't happen with new App logic)
+             setTimeout(() => {
+                if (!chatReady && !isLoading) {
+                    chatReady = true;
+                    imagesLoading = false;
+                    scrollToBottom(true);
+                }
+            }, 3000);
+        }
     }
 
-    // Handle Messages Update & Auto-scroll (Point 1)
-    $: if (messages && currentContactId && containerRef) {
-        // Check if we are near bottom BEFORE update (to decide if we should auto-scroll)
-        const distanceToBottom = containerRef.scrollHeight - containerRef.scrollTop - containerRef.clientHeight;
-        const wasNearBottom = distanceToBottom < 100;
-
-        if (wasNearBottom || !initialScrollDone) {
-            tick().then(() => {
-                scrollToBottom(!initialScrollDone);
-                if (!initialScrollDone && chatReady) initialScrollDone = true;
-            });
-        }
-
+    // Handle Messages Update & Auto-scroll
+    $: if (!isLoading && messages && currentContactId && containerRef) {
+        // Logic when data is ready
+        
         if (!chatReady) {
             // Check for images in new messages
             const images = messages.flatMap(m => m.Attachments || []).filter(a => a.MimeType && a.MimeType.startsWith('image/'));
-            if (images.length > 0 && !initialScrollDone) {
-                pendingImages = images.length;
-                // chatReady will be set when images load OR timeout hits
+            
+            if (images.length > 0) {
+                 // Check if we already counted them (to avoid reset loop)
+                 if (pendingImages === 0) {
+                    pendingImages = images.length;
+                    loadedImages = 0;
+                    // Wait for onImageLoad
+                 }
+                 // If all images loaded (rare case of cache)
+                 if (loadedImages >= pendingImages) {
+                     finishLoading();
+                 }
             } else {
-                chatReady = true;
-                imagesLoading = false;
-                scrollToBottom(true);
+                // No images, ready immediately
+                finishLoading();
+            }
+        } else {
+            // Already ready, handle normal new message scroll
+            const distanceToBottom = containerRef.scrollHeight - containerRef.scrollTop - containerRef.clientHeight;
+            const wasNearBottom = distanceToBottom < 100;
+            const isUserSender = messages.length > 0 && messages[messages.length-1].IsOutgoing;
+
+            if (wasNearBottom || isUserSender) {
+                tick().then(() => {
+                    scrollToBottom(true); 
+                });
             }
         }
     }

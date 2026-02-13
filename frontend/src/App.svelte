@@ -348,7 +348,10 @@
       }
   }
 
+  let isChatLoading = false;
+
   async function loadMessages(contactId) {
+      isChatLoading = true;
       const contact = contacts.find(c => c.ID === contactId);
       if (contact && contact.ChatID) {
           await AppActions.MarkChatAsRead(contact.ChatID);
@@ -364,8 +367,10 @@
       } catch (err) {
           messages = [];
           canLoadMore = false;
+      } finally {
+          isChatLoading = false;
       }
-      scrollToBottom(true);
+      // scrollToBottom removed as it belongs to Chat component
   }
 
   async function loadMoreMessages() {
@@ -932,6 +937,7 @@
                 {:else if $mobileView === 'chat' && selectedContact}
                     <div class="content-area">
                         <Chat 
+                            isLoading={isChatLoading}
                             {selectedContact} {messages} bind:newMessage bind:selectedFiles {filePreviews}
                             {editingMessageId} {editMessageContent} bind:isCompressed {previewImage}
                             bind:replyingTo {isMobile}
@@ -995,6 +1001,7 @@
                         />
                     {:else if selectedContact}
                         <Chat 
+                            isLoading={isChatLoading}
                             {selectedContact} {messages} bind:newMessage bind:selectedFiles {filePreviews}
                             {editingMessageId} {editMessageContent} bind:isCompressed {previewImage}
                             bind:replyingTo isMobile={false}

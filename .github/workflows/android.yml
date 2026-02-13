@@ -5,6 +5,7 @@ on:
     branches: [ main, android-* ]
     tags:
       - 'v*'
+      - '[0-9]*'
   pull_request:
     branches: [ main ]
   workflow_dispatch:  # Ручной запуск
@@ -392,7 +393,7 @@ jobs:
     name: Release Android
     needs: [build-aar, build-apk]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Download AAR
         uses: actions/download-artifact@v4

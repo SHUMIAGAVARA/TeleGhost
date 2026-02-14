@@ -11,21 +11,29 @@ linters:
 
 linters-settings:
   errcheck:
-    # Игнорируем ошибки закрытия и удаления, которые забивают лог
-    ignore: fmt:.*,io:Close,os:Remove,os:RemoveAll,sql:Rows.Close,sql:Tx.Rollback
+    # Правильный параметр для исключения функций в новых версиях
+    exclude-functions:
+      - (*os.File).Close
+      - (*os.File).Remove
+      - (io.Closer).Close
+      - (net.Conn).Close
+      - (*net.TCPConn).Close
+      - (os.Remove)
+      - (os.RemoveAll)
+      - (*sql.Rows).Close
+      - (*sql.Tx).Rollback
   gosec:
     excludes:
       - G104 # Unhandled errors
       - G304 # File inclusion via variable
       - G115 # Integer overflow
       - G103 # Unsafe calls
-      - G201 # SQL formatting (мы используем плейсхолдеры, где это критично)
+      - G201 # SQL formatting
 
 issues:
   exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
-  # Игнорируем автогенерируемые файлы и тесты для некоторых проверок
   exclude-rules:
     - path: _test\.go
       linters:

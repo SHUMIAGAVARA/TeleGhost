@@ -35,8 +35,13 @@ func (a *AppCore) ListProfiles() ([]map[string]interface{}, error) {
 }
 
 // CreateProfile создаёт новый зашифрованный профиль.
-func (a *AppCore) CreateProfile(name, pin, mnemonic, userID, avatarPath string, usePin bool) error {
-	if a.ProfileManager == nil {
+func (a *AppCore) CreateProfile(name, pin, mnemonic, existingUserID, avatarPath string, usePin bool) error {
+	log.Printf("[AppCore] Creating/Updating profile for: %s", name)
+
+	var userID string
+	if existingUserID != "" {
+		userID = existingUserID
+	} else {
 		return fmt.Errorf("profile manager not initialized")
 	}
 

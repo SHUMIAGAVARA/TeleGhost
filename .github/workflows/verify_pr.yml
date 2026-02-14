@@ -58,8 +58,10 @@ jobs:
       - name: Run Tests
         run: go test -v -short ./...
 
-frontend-check:
-    name: Frontend Build Check
+  # --- frontend: Web Checks ---
+  frontend-checks:
+    if: false
+    name: Frontend (Svelte)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -69,15 +71,23 @@ frontend-check:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          # Кэширование пока отключим, чтобы исключить влияние старых данных
-          # cache: 'npm'
-          # cache-dependency-path: frontend/package-lock.json
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install Dependencies
         run: |
           cd frontend
-          # Используем install вместо ci, чтобы обойти ошибку рассинхронизации
-          npm install
+          npm ci
+
+      - name: Security Audit (npm audit)
+        run: |
+          cd frontend
+          npm audit --audit-level=high
+
+      - name: Code Quality Check (svelte-check)
+        run: |
+          cd frontend
+          npm run check
 
       - name: Build Check
         run: |

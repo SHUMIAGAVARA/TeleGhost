@@ -483,7 +483,9 @@ func (a *AppCore) sendAsCompressedImages(destination, actualChatID, msgID, text,
 		}
 
 		// Явное приведение типов с проверкой диапазона для gosec (G115)
+		// #nosec G115
 		w32 := int32(width)
+		// #nosec G115
 		h32 := int32(height)
 		if int(w32) != width || int(h32) != height {
 			w32 = 0

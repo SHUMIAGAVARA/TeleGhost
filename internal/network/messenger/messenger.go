@@ -393,6 +393,7 @@ func (s *Service) writePacket(conn net.Conn, data []byte) error {
 		return fmt.Errorf("packet too large: %d", len(data))
 	}
 	sizeBuf := make([]byte, 4)
+	// #nosec G115
 	binary.BigEndian.PutUint32(sizeBuf, uint32(len(data)))
 
 	if _, err := conn.Write(sizeBuf); err != nil {

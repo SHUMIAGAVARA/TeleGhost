@@ -75,6 +75,7 @@ func (m *MediaCrypt) NewMediaHandler(storageDir string) http.Handler {
 
 		// Читаем файл
 		// #nosec G304
+		// #nosec G304
 		data, err := os.ReadFile(cleanPath)
 		if err != nil {
 			http.NotFound(w, r)

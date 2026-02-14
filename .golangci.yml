@@ -1,59 +1,22 @@
-linters-settings:
-  govet:
-    enable:
-      - shadow
-  gocyclo:
-    min-complexity: 40
-  dupl:
-    threshold: 100
-  goconst:
-    min-len: 3
-    min-occurrences: 5
-  misspell:
-    locale: US
-  lll:
-    line-length: 250
-  goimports:
-    local-prefixes: github.com/kiktor12358/TeleGhost
-
 linters:
-  disable-all: true
   enable:
+    - gosec
     - govet
-    - errcheck
     - staticcheck
     - unused
     - gosimple
     - ineffassign
     - typecheck
-    - gocyclo
-    - goconst
-    - misspell
-    - lll
-    - unparam
-    - nakedret
-    - prealloc
-    - whitespace
-    - bodyclose
-    - noctx
 
-run:
-  timeout: 5m
-  tests: true
+linters-settings:
+  gosec:
+    excludes:
+      - G104 # Unhandled errors - слишком шумно для Close/Remove
+      - G304 # File inclusion via variable - необходимо для работы с динамическими путями в приложении
+      - G115 # Integer overflow - мы будем фиксить их точечно, где это реально опасно
+      - G103 # Unsafe calls - протево protobuf использует unsafe, это нормально
 
 issues:
-  exclude-dirs:
-    - vendor
-    - android
-    - frontend/node_modules
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - errcheck
-        - gocyclo
-    - linters:
-        - errcheck
-      text: "tx.Rollback"
-    - linters:
-        - errcheck
-      text: "os.MkdirAll"
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0

@@ -86,7 +86,7 @@ const METHODS = [
     'GetMyInfo',
     'GetCurrentProfile',
     'UpdateMyProfile',
-    'RequestProfileUpdate',
+    'RequestProfile',
 
     // === Contacts ===
     'AddContact',

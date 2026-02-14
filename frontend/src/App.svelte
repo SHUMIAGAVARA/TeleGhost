@@ -785,14 +785,7 @@
       },
       onUpdateProfile: async (addr) => {
           try {
-              if (AppActions.RequestProfile) {
-                  await AppActions.RequestProfile(addr);
-              } else if (AppActions.RequestProfileUpdate) {
-                  // Fallback for older binary if exists
-                  await AppActions.RequestProfileUpdate(addr);
-              } else {
-                  console.warn("RequestProfile not found in AppActions");
-              }
+              await AppActions.RequestProfile(addr);
               showToast('Запрос обновления профиля отправлен', 'info');
           } catch(e) {
               console.error(e);

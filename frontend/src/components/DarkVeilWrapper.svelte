@@ -96,4 +96,5 @@
         position: absolute;
       }
     }
+  }
 </style>

@@ -328,6 +328,7 @@
     .darkveil-mobile.ios {
       -webkit-appearance: none;
       appearance: none;
+    }
 
     .darkveil-mobile.android {
       will-change: transform;
@@ -368,5 +369,4 @@
         animation: none;
       }
     }
-  }
 </style>

@@ -286,18 +286,16 @@
       image-rendering: -webkit-optimize-contrast;
     }
 
-    @media (max-width: 768px) {
-      /* Mobile optimizations */
-      .dark-veil-container {
-        touch-action: none;
-        -webkit-touch-callout: none;
-      }
-
-      .dark-veil-canvas {
-        image-rendering: auto;
-      }
+  @media (max-width: 768px) {
+    /* Mobile optimizations */
+    :global .dark-veil-container {
+      touch-action: none;
+      -webkit-touch-callout: none;
     }
 
+    .dark-veil-canvas {
+      image-rendering: auto;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -30,8 +30,8 @@
 
 .glass-panel {
     background: var(--glass-bg);
-    backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
 }
@@ -114,3 +114,112 @@ button,
 textarea {
     font-family: inherit;
 }
+
+/* ============ DarkVeil Integration ============ */
+/* Ensure DarkVeil background renders properly */
+body {
+    background: var(--bg-primary, #0f0f0f);
+}
+
+/* Desktop - DarkVeil as fixed background */
+@media (min-width: 1025px) {
+    #app {
+        position: relative;
+        z-index: 0;
+    }
+
+    .darkveil-wrapper {
+        z-index: -1 !important;
+    }
+}
+
+/* Tablet - DarkVeil adaptive */
+@media (min-width: 600px) and (max-width: 1024px) {
+    .darkveil-wrapper {
+        position: absolute !important;
+        top: 0;
+        left: 0;
+        z-index: -1;
+    }
+
+    #app {
+        position: relative;
+    }
+}
+
+/* Mobile - Full screen DarkVeil */
+@media (max-width: 599px) {
+    .darkveil-wrapper {
+        position: fixed !important;
+        width: 100vw;
+        height: 100vh;
+        z-index: -1;
+        top: 0;
+        left: 0;
+    }
+
+    #app {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Fix for notch devices */
+    @supports (padding: max(0px)) {
+        .darkveil-wrapper {
+            padding-top: max(0px, env(safe-area-inset-top));
+            padding-left: max(0px, env(safe-area-inset-left));
+            padding-right: max(0px, env(safe-area-inset-right));
+            padding-bottom: max(0px, env(safe-area-inset-bottom));
+        }
+    }
+}
+
+/* iOS specific improvements */
+@supports (-webkit-appearance: none) {
+    .darkveil-wrapper {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+    }
+
+    .dark-veil-canvas,
+    .darkveil-mobile-canvas {
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+    }
+}
+
+/* Android specific improvements */
+@media (hover: none) and (pointer: coarse) {
+    .darkveil-wrapper {
+        will-change: transform;
+        transform: translateZ(0);
+    }
+
+    .dark-veil-canvas,
+    .darkveil-mobile-canvas {
+        image-rendering: pixelated;
+    }
+}
+
+/* Accessibility - Reduce Motion */
+@media (prefers-reduced-motion: reduce) {
+    .darkveil-wrapper {
+        animation: none !important;
+    }
+
+    .dark-veil-canvas,
+    .darkveil-mobile-canvas {
+        animation: none !important;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: more) {
+    .darkveil-wrapper {
+        opacity: 0.85;
+    }
+}
+
+/* ============ End DarkVeil Integration ============ */

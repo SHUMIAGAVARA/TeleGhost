@@ -223,14 +223,14 @@ func (pm *ProfileManager) UpdateProfile(profileID string, name string, avatarPat
 		}
 
 		key := argon2.IDKey([]byte(newPin), salt, vault.ArgonParams.Time, vault.ArgonParams.Memory, vault.ArgonParams.Threads, chacha20poly1305.KeySize)
-		aead, err := chacha20poly1305.NewX(key)
-		if err != nil {
-			return err
+		aead, errAEAD := chacha20poly1305.NewX(key)
+		if errAEAD != nil {
+			return errAEAD
 		}
 
 		nonce := make([]byte, aead.NonceSize())
-		if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-			return err
+		if _, errNonce := io.ReadFull(rand.Reader, nonce); errNonce != nil {
+			return errNonce
 		}
 
 		ciphertext := aead.Seal(nil, nonce, []byte(mnemonic), nil)
